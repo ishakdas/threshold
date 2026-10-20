@@ -47,7 +47,36 @@ enum EsikIcon {
   chevronRight('M9 6l6 6-6 6'),
   arrowLeft('M19 12H5M11 6l-6 6 6 6'),
   arrowRight('M5 12h14M13 6l6 6-6 6'),
-  plus('M12 5v14M5 12h14');
+  plus('M12 5v14M5 12h14'),
+  close('M6 6l12 12M18 6L6 18'),
+  door('M5 21V10a7 7 0 0 1 14 0v11M9.5 21v-6a2.5 2.5 0 0 1 5 0v6'),
+  app(
+    'M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM17 6.5h.01',
+  ),
+  bed(
+    'M3 19V6M3 14h18v5M21 14v-2a3 3 0 0 0-3-3h-7v5M7 10.5a1.5 1.5 0 1 0 0 .01',
+  ),
+  airplane(
+    'M10.5 4.5a1.5 1.5 0 0 1 3 0V10l7 4v2l-7-2v4l2 1.5V21l-3.5-1-3.5 1v-1.5l2-1.5v-4l-7 2v-2l7-4z',
+  ),
+  wifi(
+    'M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5h.01',
+  ),
+  nfc('M7 8a6 6 0 0 1 0 8M10.5 5.5a10 10 0 0 1 0 13M14 3a14 14 0 0 1 0 18'),
+  bolt('M13 3L5 13h6l-1 8 8-10h-6z'),
+  battery(
+    'M4 8h13a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zM21 11v2M7 11v2',
+  ),
+  location(
+    'M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21zM12 7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z',
+  ),
+  trash(
+    'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
+  ),
+  trendUp('M3 17l6-6 4 4 8-8M15 7h6v6'),
+  external(
+    'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
+  );
 
   const EsikIcon(this.path);
   final String path;
@@ -85,3 +114,18 @@ class EsikIconView extends StatelessWidget {
     );
   }
 }
+
+/// Maddeye seçilebilecek ikonlar ve ekran okuyucu için adları.
+const checkItemIcons = <(EsikIcon, String)>[
+  (EsikIcon.iron, 'Ütü'),
+  (EsikIcon.plug, 'Priz'),
+  (EsikIcon.flame, 'Ocak'),
+  (EsikIcon.lock, 'Kilit'),
+  (EsikIcon.key, 'Anahtar'),
+  (EsikIcon.bag, 'Çanta'),
+  (EsikIcon.wallet, 'Cüzdan'),
+  (EsikIcon.bulb, 'Lamba'),
+  (EsikIcon.pill, 'İlaç'),
+  (EsikIcon.notes, 'Not'),
+  (EsikIcon.checklist, 'Liste'),
+];

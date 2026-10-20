@@ -1,0 +1,425 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/day_mode.dart';
+import '../../data/app_state.dart';
+import '../../data/models.dart';
+import '../../theme/esik_palette.dart';
+import '../../ui/atmosphere.dart';
+import '../../ui/components.dart';
+import '../../ui/esik_icons.dart';
+
+class SetupStep {
+  const SetupStep({
+    required this.title,
+    required this.detail,
+    required this.action,
+    required this.icon,
+  });
+
+  final String title;
+  final String detail;
+
+  /// Ana butonun etiketi.
+  final String action;
+  final EsikIcon icon;
+}
+
+/// Seçilen tetikleyicinin Android'de çalışması için gereken adımlar.
+/// Kısayollar'ın olmadığı Android'de iOS'taki kurulum rehberinin karşılığıdır.
+List<SetupStep> setupStepsFor(TriggerKind kind) {
+  const notifications = SetupStep(
+    title: 'Bildirimlere izin ver',
+    detail: 'Eşik yalnızca eşik geldiğinde yazar. Günde en fazla iki bildirim.',
+    action: 'İzin ver',
+    icon: EsikIcon.bell,
+  );
+  const battery = SetupStep(
+    title: 'Arka planda çalışmasına izin ver',
+    detail: 'Samsung pil tasarrufu uygulamaları uyutabilir. Eşik’i “Uyku moduna alınmayan uygulamalar” listesine ekle.',
+    action: 'Pil ayarını aç',
+    icon: EsikIcon.battery,
+  );
+  final specific = switch (kind) {
+    TriggerKind.appClosed => const SetupStep(
+      title: 'Kullanım erişimi ver',
+      detail: 'Instagram’ın kapandığını anlamak için hangi uygulamanın açık olduğunu görmemiz gerekir.',
+      action: 'Kullanım erişimini aç',
+      icon: EsikIcon.app,
+    ),
+    TriggerKind.sleepMode => const SetupStep(
+      title: 'Bildirim erişimi ver',
+      detail: 'Uyku modu açıldığında haberimiz olsun diye. Bildirimlerinin içeriği okunmaz.',
+      action: 'Erişimi aç',
+      icon: EsikIcon.bed,
+    ),
+    TriggerKind.leftHomeWifi => const SetupStep(
+      title: 'Ev Wi‑Fi’ını seç',
+      detail: 'Wi‑Fi adını okuyabilmek için Android konum izni ister. Konumun kaydedilmez.',
+      action: 'Konum izni ver',
+      icon: EsikIcon.location,
+    ),
+    TriggerKind.nfcTag => const SetupStep(
+      title: 'Etiketi hazırla',
+      detail: 'Boş bir NFC etiketini telefonun arkasına tut; Eşik etikete kendi bağlantısını yazar.',
+      action: 'Etiketi yaz',
+      icon: EsikIcon.nfc,
+    ),
+    TriggerKind.alarmStopped => const SetupStep(
+      title: 'Sabah alarmın kurulu olsun',
+      detail: 'Ek izin gerekmez. Saat uygulamasındaki alarm kapandığında sıradaki alarm değişir; Eşik bunu fark eder.',
+      action: 'Anladım',
+      icon: EsikIcon.alarm,
+    ),
+    _ => null,
+  };
+  final test = SetupStep(
+    title: 'Dene',
+    detail: switch (kind) {
+      TriggerKind.charging =>
+        'Telefonu şarja tak. Birkaç saniye içinde bildirim gelmeli.',
+      TriggerKind.unplugged =>
+        'Telefonu şarjdan çıkar. Birkaç saniye içinde bildirim gelmeli.',
+      TriggerKind.airplaneMode => 'Uçak modunu açıp kapat. Bildirim gelmeli.',
+      TriggerKind.nfcTag => 'Etikete dokun. Kontrol ekranı açılmalı.',
+      _ => 'Deneme bildirimi gönderelim; gerçek tetikleyici de aynı şekilde gelecek.',
+    },
+    action: 'Deneme bildirimi gönder',
+    icon: kind.icon,
+  );
+  return [notifications, battery, ?specific, test];
+}
+
+class SetupGuideScreen extends ConsumerStatefulWidget {
+  const SetupGuideScreen({super.key, this.mode});
+  final DayMode? mode;
+
+  @override
+  ConsumerState<SetupGuideScreen> createState() => _SetupGuideScreenState();
+}
+
+class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
+  // 6. aşamada gerçek izin durumları okunacak; şimdilik dokunuldukça ilerler.
+  int _current = 0;
+
+  void _advance(int total) {
+    HapticFeedback.mediumImpact();
+    if (_current < total - 1) {
+      setState(() => _current++);
+    } else {
+      context.go('/bugun');
+    }
+  }
+
+  void _close() => context.canPop() ? context.pop() : context.go('/bugun');
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = widget.mode ?? ref.watch(dayModeProvider);
+    final kind = ref.watch(triggerConfigProvider)[mode]!.kind;
+    final steps = setupStepsFor(kind);
+    final step = steps[_current];
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Atmosphere(
+        glowTop: -420,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ScreenHeader(
+                  title: 'Kurulum',
+                  onBack: _close,
+                  trailing: InfoChip(
+                    label: 'Adım ${_current + 1} / ${steps.length}',
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(top: 12),
+                    children: [
+                      _StepVisual(step: step, kind: kind),
+                      const SizedBox(height: 20),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          step.title,
+                          style: t.headlineMedium?.copyWith(fontSize: 26),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          step.detail,
+                          style: t.bodyMedium?.copyWith(color: p.textMuted),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      for (var i = 0; i < steps.length; i++)
+                        _TimelineRow(
+                          index: i,
+                          step: steps[i],
+                          state: i < _current
+                              ? _StepState.done
+                              : i == _current
+                              ? _StepState.current
+                              : _StepState.upcoming,
+                          isLast: i == steps.length - 1,
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 10,
+                      child: SecondaryPillButton(
+                        label: 'Sonra',
+                        icon: EsikIcon.clock,
+                        onPressed: () => context.go('/bugun'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 16,
+                      child: PrimaryPillButton(
+                        label: step.action,
+                        expand: true,
+                        onPressed: () => _advance(steps.length),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StepVisual extends StatelessWidget {
+  const _StepVisual({required this.step, required this.kind});
+  final SetupStep step;
+  final TriggerKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: p.surfaceBorder),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [p.surfaceTop, p.surfaceBottom],
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 340,
+            height: 300,
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  p.accent.withValues(alpha: 0.45),
+                  p.accent.withValues(alpha: 0.12),
+                  p.accent.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+          for (final r in [200.0, 150.0, 104.0])
+            Container(
+              width: r,
+              height: r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: p.accent.withValues(alpha: 0.18 + (200 - r) / 800),
+                ),
+              ),
+            ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            transitionBuilder: (child, a) => ScaleTransition(
+              scale: a,
+              child: FadeTransition(opacity: a, child: child),
+            ),
+            child: Container(
+              key: ValueKey(step.title),
+              width: 78,
+              height: 78,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  center: Alignment(-0.24, -0.36),
+                  colors: [
+                    Color(0xFFFFE7C2),
+                    Color(0xFFFFB262),
+                    Color(0xFFE5762C),
+                  ],
+                  stops: [0, 0.45, 1],
+                ),
+                boxShadow: [
+                  BoxShadow(color: Color(0xB3FFA050), blurRadius: 50),
+                ],
+              ),
+              child: Center(
+                child: EsikIconView(
+                  step.icon,
+                  size: 34,
+                  color: Colors.white,
+                  strokeWidth: 1.6,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _StepState { done, current, upcoming }
+
+class _TimelineRow extends StatelessWidget {
+  const _TimelineRow({
+    required this.index,
+    required this.step,
+    required this.state,
+    required this.isLast,
+  });
+
+  final int index;
+  final SetupStep step;
+  final _StepState state;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+
+    final Widget node = switch (state) {
+      _StepState.done => Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: p.accentGradient,
+          ),
+        ),
+        child: const Center(
+          child: EsikIconView(
+            EsikIcon.check,
+            size: 12,
+            color: Colors.white,
+            strokeWidth: 3.2,
+          ),
+        ),
+      ),
+      _StepState.current => Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: p.backgroundGradient.last,
+          border: Border.all(color: p.accent, width: 2),
+          boxShadow: [
+            BoxShadow(color: p.accent.withValues(alpha: 0.7), blurRadius: 14),
+          ],
+        ),
+        child: Center(
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle),
+          ),
+        ),
+      ),
+      _StepState.upcoming => Container(
+        width: 22,
+        height: 22,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: p.text.withValues(alpha: 0.3), width: 1.5),
+        ),
+        child: Center(
+          child: Text(
+            '${index + 1}',
+            style: TextStyle(fontSize: 11, color: p.text),
+          ),
+        ),
+      ),
+    };
+
+    return Semantics(
+      label:
+          '${index + 1}. adım, ${step.title}, ${switch (state) {
+            _StepState.done => 'tamamlandı',
+            _StepState.current => 'şu anki adım',
+            _StepState.upcoming => 'sırada',
+          }}',
+      excludeSemantics: true,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: 22,
+              child: Column(
+                children: [
+                  node,
+                  if (!isLast)
+                    Expanded(
+                      child: Container(
+                        width: 2,
+                        color: state == _StepState.done
+                            ? p.accent.withValues(alpha: 0.8)
+                            : p.text.withValues(alpha: 0.14),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(top: 1, bottom: isLast ? 0 : 22),
+                child: Text(
+                  step.title,
+                  style: t.bodyLarge?.copyWith(
+                    fontSize: 15,
+                    fontWeight: state == _StepState.current
+                        ? FontWeight.w500
+                        : FontWeight.w300,
+                    color: state == _StepState.done ? p.textMuted : p.text,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

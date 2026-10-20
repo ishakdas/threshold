@@ -3,102 +3,371 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/day_mode.dart';
+import '../../data/app_state.dart';
+import '../../data/models.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
+import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../ui/esik_logo.dart';
 import '../../ui/threshold_door.dart';
+import 'day_strip.dart';
 
-/// Ana ekran. 1. aşamada başlık, mod anahtarı ve kapı görseliyle iskelet;
-/// gün şeridi ve eşik kartları 2. aşamada gelir.
+/// Tek ana ekran: üstte gün şeridi, ortada şu anki eşiğin büyük kartı,
+/// altta diğer eşiğin özeti.
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(dayModeProvider);
+    final other = mode == DayMode.evening ? DayMode.morning : DayMode.evening;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final evening = mode == DayMode.evening;
 
     return Atmosphere(
       child: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 140),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
           children: [
-            Row(
-              children: [
-                EsikLogo(archColor: p.text, lightColor: p.accent),
-                const SizedBox(width: 9),
-                Text('Eşik', style: t.titleLarge),
-                const Spacer(),
-                _ModeChip(
-                  evening: evening,
-                  onTap: ref.read(dayModeProvider.notifier).toggle,
-                ),
-              ],
-            ),
-            const SizedBox(height: 48),
-            const Center(child: ThresholdDoor()),
-            const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 5,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: p.accent,
-                    shape: BoxShape.circle,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  EsikLogo(archColor: p.text, lightColor: p.accent),
+                  const SizedBox(width: 9),
+                  Text('Eşik', style: t.titleLarge),
+                  const Spacer(),
+                  _ModeChip(
+                    evening: mode == DayMode.evening,
+                    onTap: ref.read(dayModeProvider.notifier).toggle,
                   ),
-                ),
-                const SizedBox(width: 7),
-                Text(
-                  evening ? 'Bu akşamki eşiğin' : 'Bu sabahki eşiğin',
-                  style: t.labelMedium?.copyWith(color: p.textMuted),
-                ),
-              ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            DayStrip(entries: _stripEntries(ref)),
+            const SizedBox(height: 10),
+            _ThresholdCard(mode: mode),
+            const SizedBox(height: 10),
+            _SummaryCard(mode: other),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<DayStripEntry> _stripEntries(WidgetRef ref) {
+    final now = ref.watch(clockProvider)();
+    final today = DateTime(now.year, now.month, now.day);
+    final history = ref.watch(historyProvider);
+    final progress = ref.watch(todayProgressProvider);
+    double past(DateTime d) {
+      final log = history.where((l) => l.date == d).firstOrNull;
+      if (log == null) return 0;
+      return [
+            log.evening,
+            log.morning,
+          ].where((o) => o != CheckOutcome.missed).length /
+          2;
+    }
+
+    return [
+      for (var offset = -3; offset <= 3; offset++)
+        () {
+          final d = today.add(Duration(days: offset));
+          return DayStripEntry(
+            day: d.day,
+            weekday: turkishWeekdays[d.weekday - 1],
+            isToday: offset == 0,
+            isFuture: offset > 0,
+            progress: offset == 0
+                ? progress.values.where((s) => s.isComplete).length / 2
+                : past(d),
+          );
+        }(),
+    ];
+  }
+}
+
+class _ThresholdCard extends ConsumerWidget {
+  const _ThresholdCard({required this.mode});
+  final DayMode mode;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final config = ref.watch(triggerConfigProvider)[mode]!;
+    final items = ref.watch(checklistProvider)[mode]!;
+    final session = ref.watch(todayProgressProvider)[mode]!;
+    final evening = mode == DayMode.evening;
+    final done = session.checked.length.clamp(0, items.length);
+    final remaining = items.length - done;
+
+    final String buttonLabel;
+    if (session.isComplete) {
+      final at = TimeOfDay.fromDateTime(session.completedAt!);
+      buttonLabel = 'Tamamlandı · ${formatTime(at)}';
+    } else if (done > 0) {
+      buttonLabel = 'Devam et · $remaining madde kaldı';
+    } else {
+      buttonLabel = 'Şimdi kontrol et';
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: p.surfaceBorder),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            p.backgroundGradient.last.withValues(alpha: 0.25),
+            p.backgroundGradient.last.withValues(alpha: 0.85),
+            p.backgroundGradient.last.withValues(alpha: 0.95),
+          ],
+          stops: const [0, 0.55, 1],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
+        child: Column(
+          children: [
+            const ThresholdDoor(),
+            const SizedBox(height: 22),
+            DotLabel(
+              evening ? 'Bu akşamki eşiğin' : 'Bu sabahki eşiğin',
+              center: true,
             ),
             const SizedBox(height: 4),
             Text(
-              evening ? 'Şarja takınca' : 'Alarmı durdurunca',
+              config.kind.title,
               textAlign: TextAlign.center,
               style: t.headlineMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              evening
-                  ? 'Telefonu şarja taktığında ütü, yapılacaklar ve kapı kontrolün önüne gelir.'
-                  : 'Kapıdan çıkmadan önce şarj aleti, notlar ve anahtar–cüzdan kontrolü.',
+              '${config.kind.when} ${items.length} maddelik kontrolün önüne gelir.',
               textAlign: TextAlign.center,
               style: t.bodyMedium?.copyWith(color: p.textMuted),
             ),
-            const SizedBox(height: 18),
-            Center(
-              child: FilledButton.icon(
-                onPressed: () => context.push('/kontrol'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: p.primaryButton,
-                  foregroundColor: p.onPrimaryButton,
-                  minimumSize: const Size(0, 44),
-                  padding: const EdgeInsets.symmetric(horizontal: 22),
-                  textStyle: t.labelLarge,
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 16,
+              alignment: WrapAlignment.center,
+              children: [
+                _Meta(
+                  icon: EsikIcon.list,
+                  text: '${items.length} madde · $done/${items.length}',
                 ),
-                icon: EsikIconView(
-                  EsikIcon.check,
-                  size: 14,
-                  color: p.onPrimaryButton,
-                  strokeWidth: 2.4,
-                ),
-                label: const Text('Şimdi kontrol et'),
-              ),
+                if (config.windowEnabled)
+                  _Meta(
+                    icon: EsikIcon.clock,
+                    text:
+                        '${formatTime(config.windowStart)}–${formatTime(config.windowEnd)}',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            PrimaryPillButton(
+              label: buttonLabel,
+              icon: EsikIcon.check,
+              height: 44,
+              onPressed: () => context.push('/kontrol'),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _Meta extends StatelessWidget {
+  const _Meta({required this.icon, required this.text});
+  final EsikIcon icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        EsikIconView(icon, size: 14, color: p.textMuted, strokeWidth: 1.8),
+        const SizedBox(width: 5),
+        Text(
+          text,
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: p.textMuted),
+        ),
+      ],
+    );
+  }
+}
+
+/// Diğer eşiğin özeti: büyük ince sayı ve son 7 günün çubukları.
+class _SummaryCard extends ConsumerWidget {
+  const _SummaryCard({required this.mode});
+  final DayMode mode;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final evening = mode == DayMode.evening;
+    final config = ref.watch(triggerConfigProvider)[mode]!;
+    final items = ref.watch(checklistProvider)[mode]!;
+    final session = ref.watch(todayProgressProvider)[mode]!;
+    final history = ref.watch(historyProvider);
+    final last7 = history.sublist(history.length - 7);
+
+    // Akşam ekranında sabah kartı bugünün sabahını, sabah ekranında akşam kartı
+    // dünün akşamını özetler.
+    final String count;
+    final String status;
+    if (session.isComplete) {
+      count = '${items.length}/${items.length}';
+      final at = formatTime(TimeOfDay.fromDateTime(session.completedAt!));
+      status = evening ? 'Bu akşam $at’de tamam' : 'Bu sabah $at’de tamam';
+    } else if (!evening) {
+      count = '–';
+      status = 'Bu sabah henüz yapılmadı';
+    } else {
+      final y = history.last;
+      final ok = y.evening != CheckOutcome.missed;
+      count = ok ? '${items.length}/${items.length}' : '0/${items.length}';
+      status = ok && y.eveningAt != null
+          ? 'Dün akşam ${formatTime(y.eveningAt!)}’de tamam'
+          : 'Dün akşam atlandı';
+    }
+
+    return Semantics(
+      button: true,
+      label: '${evening ? 'Akşam' : 'Sabah'} eşiğine geç',
+      child: SurfaceCard(
+        onTap: () => ref.read(dayModeProvider.notifier).set(mode),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                IconCircle(
+                  icon: evening ? EsikIcon.moon : EsikIcon.sun,
+                  size: 32,
+                  strokeWidth: 1.8,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${evening ? 'Akşam' : 'Sabah'} eşiği · ${lowerFirst(config.kind.title)}',
+                    style: t.bodyLarge?.copyWith(
+                      fontSize: 15,
+                      color: p.text.withValues(alpha: 0.85),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                EsikIconView(
+                  EsikIcon.chevronRight,
+                  size: 16,
+                  color: p.text,
+                  strokeWidth: 1.8,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(count, style: t.displayLarge),
+                      Text(
+                        status,
+                        style: t.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w300,
+                          color: p.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _MiniBars(logs: last7, mode: mode),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniBars extends StatelessWidget {
+  const _MiniBars({required this.logs, required this.mode});
+  final List<DayLog> logs;
+  final DayMode mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final done = logs
+        .where((l) => l.outcome(mode) != CheckOutcome.missed)
+        .length;
+    return Semantics(
+      label: 'Son 7 gün: $done tamamlandı',
+      excludeSemantics: true,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < logs.length; i++) ...[
+            if (i > 0) const SizedBox(width: 9),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 7,
+                  height: _barHeight(logs[i]),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: logs[i].outcome(mode) == CheckOutcome.missed
+                        ? p.text.withValues(alpha: 0.16)
+                        : null,
+                    gradient: logs[i].outcome(mode) == CheckOutcome.missed
+                        ? null
+                        : LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              const Color(0xFFFFC27A),
+                              p.accentGradient.last,
+                            ],
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  turkishWeekdayInitials[logs[i].date.weekday - 1],
+                  style: TextStyle(fontSize: 11, color: p.textFaint),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Tetikleyiciyle tamamlanan gün tam boy, yedek bildirimle tamamlanan gün
+  /// yarım boy, atlanan gün kısa ve soluk.
+  double _barHeight(DayLog log) => switch (log.outcome(mode)) {
+    CheckOutcome.done => 34,
+    CheckOutcome.viaBackup => 18,
+    CheckOutcome.missed => 8,
+  };
 }
 
 class _ModeChip extends StatelessWidget {
@@ -108,38 +377,15 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
     return Semantics(
       button: true,
       label: evening ? 'Akşam modu. Sabaha geç' : 'Sabah modu. Akşama geç',
       excludeSemantics: true,
-      child: InkWell(
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: p.chip,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: p.chipBorder),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              EsikIconView(
-                evening ? EsikIcon.moon : EsikIcon.sun,
-                size: 13,
-                color: p.text,
-                strokeWidth: 2,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                evening ? 'Akşam modu' : 'Sabah modu',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-            ],
-          ),
+        child: InfoChip(
+          label: evening ? 'Akşam modu' : 'Sabah modu',
+          icon: evening ? EsikIcon.moon : EsikIcon.sun,
         ),
       ),
     );

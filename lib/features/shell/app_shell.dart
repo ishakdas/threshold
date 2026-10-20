@@ -11,7 +11,7 @@ class AppShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   static const tabs = [
-    GlassTab(icon: EsikIcon.moon, label: 'Bugün'),
+    GlassTab(icon: EsikIcon.door, label: 'Bugün'),
     GlassTab(icon: EsikIcon.list, label: 'Liste'),
     GlassTab(icon: EsikIcon.history, label: 'Geçmiş'),
     GlassTab(icon: EsikIcon.sliders, label: 'Ayarlar'),

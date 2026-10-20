@@ -39,7 +39,7 @@ assets/
 ## Yol haritası
 
 1. **Kurulum** — proje, tema, logo, CI ✅
-2. **Arayüz** — 7 ekranın tamamı, akşam/sabah modu, tik animasyonu
+2. **Arayüz** — 7 ekranın tamamı, akşam/sabah modu, tik animasyonu ✅ (veriler şimdilik bellekte, geçmiş örnek veri)
 3. **Veri** — liste düzenleme, geçmiş (yerel veritabanı)
 4. **Bildirimler** — "Hepsi tamam" eylemi, yedek saat
 5. **Tetikleyiciler** — şarj, NFC, Wi‑Fi, alarm; ardından diğerleri
