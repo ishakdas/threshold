@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eşik logosu: kapı kemeri ve içinden sızan amber ışık.
+     lib/ui/esik_logo.dart ile aynı yollar (24 birimlik tuval, 108dp'ye 2.4 kat ölçekli). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Kapının önüne düşen yumuşak ışık -->
+    <path android:pathData="M54,22a40,40 0,1 0,0.01 0z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="54"
+                android:centerY="62"
+                android:gradientRadius="40">
+                <item android:offset="0" android:color="#66FFB25C" />
+                <item android:offset="1" android:color="#00FFB25C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <group
+        android:scaleX="2.4"
+        android:scaleY="2.4"
+        android:translateX="25.2"
+        android:translateY="24">
+        <path
+            android:pathData="M5,22V10a7,7 0,0 1,14 0v12"
+            android:strokeColor="#F5EFE6"
+            android:strokeWidth="1.6"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="#FFB25C"
+            android:pathData="M9.5,22v-8a2.5,2.5 0,0 1,5 0v8z" />
+    </group>
+</vector>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ temalı ikonlar için tek renkli logo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="2.4"
+        android:scaleY="2.4"
+        android:translateX="25.2"
+        android:translateY="24">
+        <path
+            android:pathData="M5,22V10a7,7 0,0 1,14 0v12"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="1.6"
+            android:strokeLineCap="round" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M9.5,22v-8a2.5,2.5 0,0 1,5 0v8z" />
+    </group>
+</vector>
