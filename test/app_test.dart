@@ -77,10 +77,8 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Geçmiş').last);
     await tester.pumpAndSettle();
     expect(find.text('Eşik etkinliği'), findsOneWidget);
-    expect(
-      find.bySemanticsLabel('28 eşikten 26 tanesi tamamlandı'),
-      findsOneWidget,
-    );
+    // Yeni kurulum: henüz geçmiş yok.
+    expect(find.bySemanticsLabel('Henüz kayıt yok'), findsOneWidget);
 
     await tester.tap(find.bySemanticsLabel('Ayarlar'));
     await tester.pumpAndSettle();

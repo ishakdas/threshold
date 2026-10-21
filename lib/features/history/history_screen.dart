@@ -22,14 +22,12 @@ class HistoryScreen extends ConsumerWidget {
     final logs = ref.watch(historyProvider);
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final total = logs.length * 2;
-    final done = logs.fold<int>(
-      0,
-      (n, l) =>
-          n +
-          (l.evening != CheckOutcome.missed ? 1 : 0) +
-          (l.morning != CheckOutcome.missed ? 1 : 0),
-    );
+    final outcomes = [
+      for (final l in logs) ...[l.evening, l.morning],
+    ];
+    final total = outcomes.where((o) => o.tracked).length;
+    final done = outcomes.where((o) => o.completed).length;
+    final anyUntracked = outcomes.any((o) => !o.tracked);
     final from = logs.first.date, to = logs.last.date;
     final eveningTimes = [for (final l in logs) ?l.eveningAt];
     final kind = ref.watch(triggerConfigProvider)[DayMode.evening]!.kind;
@@ -92,7 +90,7 @@ class HistoryScreen extends ConsumerWidget {
                     const SizedBox(height: 14),
                     _PillGrid(logs: logs),
                     const SizedBox(height: 12),
-                    const _Legend(),
+                    _Legend(showUntracked: anyUntracked),
                   ],
                 ),
               ),
@@ -142,7 +140,9 @@ class _ScoreGauge extends StatelessWidget {
         final w = c.maxWidth;
         final r = (w - 60) / 2;
         return Semantics(
-          label: '$total eşikten $done tanesi tamamlandı',
+          label: total == 0
+              ? 'Henüz kayıt yok'
+              : '$total eşikten $done tanesi tamamlandı',
           excludeSemantics: true,
           child: SizedBox(
             height: r + 40,
@@ -171,10 +171,10 @@ class _ScoreGauge extends StatelessWidget {
                     children: [
                       Text.rich(
                         TextSpan(
-                          text: '$done',
+                          text: total == 0 ? '–' : '$done',
                           children: [
                             TextSpan(
-                              text: '/$total',
+                              text: total == 0 ? '' : '/$total',
                               style: TextStyle(
                                 fontSize: 28,
                                 color: p.textMuted,
@@ -186,12 +186,19 @@ class _ScoreGauge extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       InfoChip(
-                        label: '%${(f * 100).round()} tamamlandı',
-                        icon: EsikIcon.check,
+                        label: total == 0
+                            ? 'Henüz kayıt yok'
+                            : '%${(f * 100).round()} tamamlandı',
+                        icon: total == 0 ? EsikIcon.clock : EsikIcon.check,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        f >= 0.85 ? 'Eşiği geçtin' : 'Yolun yarısındasın',
+                        switch (f) {
+                          _ when total == 0 => 'İlk eşiğin yakında',
+                          >= 0.85 => 'Eşiği geçtin',
+                          >= 0.5 => 'Yolun yarısındasın',
+                          _ => 'Her gün yeni bir eşik',
+                        },
                         style: t.bodyLarge?.copyWith(
                           fontSize: 17,
                           fontWeight: FontWeight.w400,
@@ -365,7 +372,15 @@ class _Pill extends StatelessWidget {
         height: 22,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(11),
-          color: p.text.withValues(alpha: 0.08),
+          color: p.text.withValues(alpha: 0.14),
+        ),
+      ),
+      // Uygulama o gün kurulu değildi: içi boş, ince çerçeve.
+      CheckOutcome.notTracked => Container(
+        height: 22,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: p.text.withValues(alpha: 0.12)),
         ),
       ),
     };
@@ -399,7 +414,8 @@ class _DashedPillPainter extends CustomPainter {
 }
 
 class _Legend extends StatelessWidget {
-  const _Legend();
+  const _Legend({required this.showUntracked});
+  final bool showUntracked;
 
   @override
   Widget build(BuildContext context) {
@@ -420,6 +436,8 @@ class _Legend extends StatelessWidget {
         item(const _Pill(outcome: CheckOutcome.done), 'Tamamlandı'),
         item(const _Pill(outcome: CheckOutcome.viaBackup), 'Yedek bildirimle'),
         item(const _Pill(outcome: CheckOutcome.missed), 'Atlandı'),
+        if (showUntracked)
+          item(const _Pill(outcome: CheckOutcome.notTracked), 'Kayıt yok'),
       ],
     );
   }

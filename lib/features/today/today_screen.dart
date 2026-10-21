@@ -59,24 +59,19 @@ class TodayScreen extends ConsumerWidget {
   }
 
   List<DayStripEntry> _stripEntries(WidgetRef ref) {
-    final now = ref.watch(clockProvider)();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = ref.watch(todayProvider);
     final history = ref.watch(historyProvider);
     final progress = ref.watch(todayProgressProvider);
     double past(DateTime d) {
       final log = history.where((l) => l.date == d).firstOrNull;
       if (log == null) return 0;
-      return [
-            log.evening,
-            log.morning,
-          ].where((o) => o != CheckOutcome.missed).length /
-          2;
+      return [log.evening, log.morning].where((o) => o.completed).length / 2;
     }
 
     return [
       for (var offset = -3; offset <= 3; offset++)
         () {
-          final d = today.add(Duration(days: offset));
+          final d = DateTime(today.year, today.month, today.day + offset);
           return DayStripEntry(
             day: d.day,
             weekday: turkishWeekdays[d.weekday - 1],
@@ -224,23 +219,28 @@ class _SummaryCard extends ConsumerWidget {
     final last7 = history.sublist(history.length - 7);
 
     // Akşam ekranında sabah kartı bugünün sabahını, sabah ekranında akşam kartı
-    // dünün akşamını özetler.
+    // dünün akşamını özetler (bu akşamki kontrol henüz gelmedi).
+    final n = items.length;
     final String count;
     final String status;
     if (session.isComplete) {
-      count = '${items.length}/${items.length}';
+      count = '$n/$n';
       final at = formatTime(TimeOfDay.fromDateTime(session.completedAt!));
       status = evening ? 'Bu akşam $at’de tamam' : 'Bu sabah $at’de tamam';
     } else if (!evening) {
-      count = '–';
-      status = 'Bu sabah henüz yapılmadı';
+      final done = session.checked.length.clamp(0, n);
+      count = done == 0 ? '–' : '$done/$n';
+      status = done == 0 ? 'Bu sabah yapılmadı' : 'Bu sabah yarım kaldı';
     } else {
       final y = history.last;
-      final ok = y.evening != CheckOutcome.missed;
-      count = ok ? '${items.length}/${items.length}' : '0/${items.length}';
-      status = ok && y.eveningAt != null
-          ? 'Dün akşam ${formatTime(y.eveningAt!)}’de tamam'
-          : 'Dün akşam atlandı';
+      (count, status) = switch (y.evening) {
+        CheckOutcome.done || CheckOutcome.viaBackup => (
+          '$n/$n',
+          'Dün akşam ${formatTime(y.eveningAt!)}’de tamam',
+        ),
+        CheckOutcome.missed => ('0/$n', 'Dün akşam atlandı'),
+        CheckOutcome.notTracked => ('–', 'Dün akşam kayıt yok'),
+      };
     }
 
     return Semantics(
@@ -314,9 +314,7 @@ class _MiniBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final done = logs
-        .where((l) => l.outcome(mode) != CheckOutcome.missed)
-        .length;
+    final done = logs.where((l) => l.outcome(mode).completed).length;
     return Semantics(
       label: 'Son 7 gün: $done tamamlandı',
       excludeSemantics: true,
@@ -333,10 +331,12 @@ class _MiniBars extends StatelessWidget {
                   height: _barHeight(logs[i]),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    color: logs[i].outcome(mode) == CheckOutcome.missed
-                        ? p.text.withValues(alpha: 0.16)
-                        : null,
-                    gradient: logs[i].outcome(mode) == CheckOutcome.missed
+                    color: logs[i].outcome(mode).completed
+                        ? null
+                        : p.text.withValues(
+                            alpha: logs[i].outcome(mode).tracked ? 0.16 : 0.07,
+                          ),
+                    gradient: !logs[i].outcome(mode).completed
                         ? null
                         : LinearGradient(
                             begin: Alignment.topCenter,
@@ -362,11 +362,12 @@ class _MiniBars extends StatelessWidget {
   }
 
   /// Tetikleyiciyle tamamlanan gün tam boy, yedek bildirimle tamamlanan gün
-  /// yarım boy, atlanan gün kısa ve soluk.
+  /// yarım boy, atlanan gün kısa ve soluk; kayıt olmayan gün en kısa.
   double _barHeight(DayLog log) => switch (log.outcome(mode)) {
     CheckOutcome.done => 34,
     CheckOutcome.viaBackup => 18,
     CheckOutcome.missed => 8,
+    CheckOutcome.notTracked => 4,
   };
 }
 

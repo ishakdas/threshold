@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threshold/core/day_mode.dart';
 import 'package:threshold/data/app_state.dart';
 import 'package:threshold/data/models.dart';
@@ -7,9 +8,17 @@ import 'package:threshold/features/setup/setup_guide_screen.dart';
 import 'package:threshold/ui/esik_icons.dart';
 
 void main() {
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
+  });
+
   ProviderContainer container() {
     final c = ProviderContainer(
       overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 20, 22, 14)),
       ],
     );

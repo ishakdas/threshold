@@ -13,6 +13,39 @@ class CheckItem {
 
   CheckItem copyWith({String? title, EsikIcon? icon}) =>
       CheckItem(id: id, title: title ?? this.title, icon: icon ?? this.icon);
+
+  Map<String, Object?> toJson() => {
+    'id': id,
+    'title': title,
+    'icon': icon.name,
+  };
+
+  factory CheckItem.fromJson(Map<String, Object?> json) => CheckItem(
+    id: json['id']! as String,
+    title: json['title']! as String,
+    icon: _byName(EsikIcon.values, json['icon'], EsikIcon.checklist),
+  );
+}
+
+/// Kayıtlı bir enum adını çözer; bilinmeyen ya da eksik ad için [fallback].
+T _byName<T extends Enum>(List<T> values, Object? name, T fallback) {
+  for (final v in values) {
+    if (v.name == name) return v;
+  }
+  return fallback;
+}
+
+String _timeToJson(TimeOfDay t) => formatTime(t);
+
+TimeOfDay _timeFromJson(Object? v, TimeOfDay fallback) {
+  if (v is! String) return fallback;
+  final parts = v.split(':');
+  if (parts.length != 2) return fallback;
+  final h = int.tryParse(parts[0]), m = int.tryParse(parts[1]);
+  if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) {
+    return fallback;
+  }
+  return TimeOfDay(hour: h, minute: m);
 }
 
 /// Bir eşiği başlatan davranış. Her tetikleyici yalnızca bir moda aittir.
@@ -121,6 +154,53 @@ class TriggerConfig {
     backupEnabled: backupEnabled ?? this.backupEnabled,
     backupTime: backupTime ?? this.backupTime,
   );
+
+  Map<String, Object?> toJson() => {
+    'kind': kind.name,
+    'windowStart': _timeToJson(windowStart),
+    'windowEnd': _timeToJson(windowEnd),
+    'windowEnabled': windowEnabled,
+    'backupEnabled': backupEnabled,
+    'backupTime': _timeToJson(backupTime),
+  };
+
+  /// [fallback], eksik ya da bozuk alanlar için kullanılır.
+  factory TriggerConfig.fromJson(
+    Map<String, Object?> json,
+    TriggerConfig fallback,
+  ) {
+    final kind = _byName(TriggerKind.values, json['kind'], fallback.kind);
+    return TriggerConfig(
+      // Başka bir moda ait tetikleyici kaydedilmişse varsayılana dön.
+      kind: kind.mode == fallback.kind.mode ? kind : fallback.kind,
+      windowStart: _timeFromJson(json['windowStart'], fallback.windowStart),
+      windowEnd: _timeFromJson(json['windowEnd'], fallback.windowEnd),
+      windowEnabled: json['windowEnabled'] as bool? ?? fallback.windowEnabled,
+      backupEnabled: json['backupEnabled'] as bool? ?? fallback.backupEnabled,
+      backupTime: _timeFromJson(json['backupTime'], fallback.backupTime),
+    );
+  }
+}
+
+/// Bir eşik gününün bir modundaki kontrol: tiklenen maddeler ve bitiş anı.
+class CheckSession {
+  const CheckSession({this.checked = const {}, this.completedAt});
+
+  final Set<String> checked;
+  final DateTime? completedAt;
+
+  bool get isComplete => completedAt != null;
+  bool get isEmpty => checked.isEmpty && completedAt == null;
+
+  Map<String, Object?> toJson() => {
+    'checked': checked.toList(),
+    if (completedAt != null) 'completedAt': completedAt!.toIso8601String(),
+  };
+
+  factory CheckSession.fromJson(Map<String, Object?> json) => CheckSession(
+    checked: {...(json['checked'] as List? ?? const []).whereType<String>()},
+    completedAt: DateTime.tryParse(json['completedAt'] as String? ?? ''),
+  );
 }
 
 /// Bir günün bir eşiğinin sonucu.
@@ -133,6 +213,12 @@ enum CheckOutcome {
 
   /// Kontrol yapılmadı.
   missed,
+
+  /// O gün uygulama henüz kurulu değildi; ne tamam ne atlandı sayılır.
+  notTracked;
+
+  bool get completed => this == done || this == viaBackup;
+  bool get tracked => this != notTracked;
 }
 
 class DayLog {

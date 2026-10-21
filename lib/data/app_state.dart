@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,13 +7,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/day_mode.dart';
 import '../ui/esik_icons.dart';
 import 'models.dart';
-
-// 2. aşama: liste, tetikleyici ve ilerleme bellekte tutulur. 3. aşamada bu
-// notifier'lar aynı arayüzle yerel veritabanına bağlanacak.
+import 'store.dart';
 
 /// main() içinde gerçek örnekle override edilir.
 final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('main() içinde override edilmeli'),
+);
+
+final storeProvider = Provider<EsikStore>(
+  (ref) => EsikStore(ref.watch(sharedPreferencesProvider)),
 );
 
 class OnboardingNotifier extends Notifier<bool> {
@@ -31,61 +35,104 @@ final onboardingSeenProvider = NotifierProvider<OnboardingNotifier, bool>(
   OnboardingNotifier.new,
 );
 
+/// Uygulamanın ilk açıldığı eşik günü. Ondan önceki günler geçmişte
+/// "atlandı" değil "kayıt yok" sayılır.
+final installDayProvider = Provider<DateTime>((ref) {
+  final store = ref.watch(storeProvider);
+  final saved = parseDayKey(store.readString(EsikStore.installedOnKey) ?? '');
+  if (saved != null) return saved;
+  final today = thresholdDay(ref.read(clockProvider)());
+  unawaited(store.writeString(EsikStore.installedOnKey, dayKey(today)));
+  return today;
+});
+
+// ---------------------------------------------------------------------------
+// Kontrol listesi
+
+const defaultChecklist = <DayMode, List<CheckItem>>{
+  DayMode.evening: [
+    CheckItem(id: 'e1', title: 'Ütünün fişini çektim mi?', icon: EsikIcon.iron),
+    CheckItem(
+      id: 'e2',
+      title: 'Yapılacaklar listemi tikledim mi?',
+      icon: EsikIcon.checklist,
+    ),
+    CheckItem(id: 'e3', title: 'Kapıyı kilitledim mi?', icon: EsikIcon.lock),
+  ],
+  DayMode.morning: [
+    CheckItem(
+      id: 'm1',
+      title: 'Çantama şarj aletini koydum mu?',
+      icon: EsikIcon.bag,
+    ),
+    CheckItem(
+      id: 'm2',
+      title: 'Akşamdan aldığım notlara baktım mı?',
+      icon: EsikIcon.notes,
+    ),
+    CheckItem(
+      id: 'm3',
+      title: 'Anahtar ve cüzdan yanımda mı?',
+      icon: EsikIcon.key,
+    ),
+  ],
+};
+
 class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
-  var _nextId = 100;
+  var _counter = 0;
+
+  EsikStore get _store => ref.read(storeProvider);
 
   @override
-  Map<DayMode, List<CheckItem>> build() => {
-    DayMode.evening: const [
-      CheckItem(
-        id: 'e1',
-        title: 'Ütünün fişini çektim mi?',
-        icon: EsikIcon.iron,
-      ),
-      CheckItem(
-        id: 'e2',
-        title: 'Yapılacaklar listemi tikledim mi?',
-        icon: EsikIcon.checklist,
-      ),
-      CheckItem(id: 'e3', title: 'Kapıyı kilitledim mi?', icon: EsikIcon.lock),
-    ],
-    DayMode.morning: const [
-      CheckItem(
-        id: 'm1',
-        title: 'Çantama şarj aletini koydum mu?',
-        icon: EsikIcon.bag,
-      ),
-      CheckItem(
-        id: 'm2',
-        title: 'Akşamdan aldığım notlara baktım mı?',
-        icon: EsikIcon.notes,
-      ),
-      CheckItem(
-        id: 'm3',
-        title: 'Anahtar ve cüzdan yanımda mı?',
-        icon: EsikIcon.key,
-      ),
-    ],
-  };
+  Map<DayMode, List<CheckItem>> build() {
+    final json = ref.watch(storeProvider).readJson(EsikStore.checklistKey);
+    if (json == null) return defaultChecklist;
+    try {
+      return {
+        for (final mode in DayMode.values)
+          mode: [
+            for (final e in (json[mode.name] as List? ?? const []))
+              if (e is Map<String, Object?>) CheckItem.fromJson(e),
+          ],
+      };
+    } on Object {
+      // Beklenmedik biçimde kayıt: kullanıcıyı boş listeyle bırakmaktansa
+      // varsayılan listeye dön.
+      return defaultChecklist;
+    }
+  }
+
+  void _save(Map<DayMode, List<CheckItem>> next) {
+    state = next;
+    unawaited(
+      _store.writeJson(EsikStore.checklistKey, {
+        for (final e in next.entries)
+          e.key.name: [for (final i in e.value) i.toJson()],
+      }),
+    );
+  }
+
+  String _newId() =>
+      '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}${_counter++}';
 
   void add(DayMode mode, String title, EsikIcon icon) {
     final trimmed = title.trim();
     if (trimmed.isEmpty) return;
-    final item = CheckItem(id: 'n${_nextId++}', title: trimmed, icon: icon);
-    state = {
+    final item = CheckItem(id: _newId(), title: trimmed, icon: icon);
+    _save({
       ...state,
       mode: [...state[mode]!, item],
-    };
+    });
   }
 
   void remove(DayMode mode, String id) {
-    state = {
+    _save({
       ...state,
       mode: [
         for (final i in state[mode]!)
           if (i.id != id) i,
       ],
-    };
+    });
   }
 
   /// [newIndex], öğe yerinden çıkarıldıktan sonraki listedeki hedef sıradır
@@ -93,14 +140,14 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
   void reorder(DayMode mode, int oldIndex, int newIndex) {
     final list = [...state[mode]!];
     list.insert(newIndex, list.removeAt(oldIndex));
-    state = {...state, mode: list};
+    _save({...state, mode: list});
   }
 
   /// Silmeyi geri almak için.
   void insert(DayMode mode, int index, CheckItem item) {
     final list = [...state[mode]!]
       ..insert(index.clamp(0, state[mode]!.length), item);
-    state = {...state, mode: list};
+    _save({...state, mode: list});
   }
 }
 
@@ -109,25 +156,48 @@ final checklistProvider =
       ChecklistNotifier.new,
     );
 
+// ---------------------------------------------------------------------------
+// Eşik ayarları
+
+const defaultTriggerConfigs = <DayMode, TriggerConfig>{
+  DayMode.evening: TriggerConfig(
+    kind: TriggerKind.charging,
+    windowStart: TimeOfDay(hour: 22, minute: 0),
+    windowEnd: TimeOfDay(hour: 2, minute: 0),
+    backupTime: TimeOfDay(hour: 22, minute: 30),
+  ),
+  DayMode.morning: TriggerConfig(
+    kind: TriggerKind.alarmStopped,
+    windowStart: TimeOfDay(hour: 6, minute: 0),
+    windowEnd: TimeOfDay(hour: 10, minute: 0),
+    backupTime: TimeOfDay(hour: 8, minute: 15),
+  ),
+};
+
 class TriggerConfigNotifier extends Notifier<Map<DayMode, TriggerConfig>> {
   @override
-  Map<DayMode, TriggerConfig> build() => {
-    DayMode.evening: const TriggerConfig(
-      kind: TriggerKind.charging,
-      windowStart: TimeOfDay(hour: 22, minute: 0),
-      windowEnd: TimeOfDay(hour: 2, minute: 0),
-      backupTime: TimeOfDay(hour: 22, minute: 30),
-    ),
-    DayMode.morning: const TriggerConfig(
-      kind: TriggerKind.alarmStopped,
-      windowStart: TimeOfDay(hour: 6, minute: 0),
-      windowEnd: TimeOfDay(hour: 10, minute: 0),
-      backupTime: TimeOfDay(hour: 8, minute: 15),
-    ),
-  };
+  Map<DayMode, TriggerConfig> build() {
+    final json = ref.watch(storeProvider).readJson(EsikStore.triggersKey);
+    return {
+      for (final mode in DayMode.values)
+        mode: switch (json?[mode.name]) {
+          final Map<String, Object?> m => TriggerConfig.fromJson(
+            m,
+            defaultTriggerConfigs[mode]!,
+          ),
+          _ => defaultTriggerConfigs[mode]!,
+        },
+    };
+  }
 
-  void update(DayMode mode, TriggerConfig config) =>
-      state = {...state, mode: config};
+  void update(DayMode mode, TriggerConfig config) {
+    state = {...state, mode: config};
+    unawaited(
+      ref.read(storeProvider).writeJson(EsikStore.triggersKey, {
+        for (final e in state.entries) e.key.name: e.value.toJson(),
+      }),
+    );
+  }
 }
 
 final triggerConfigProvider =
@@ -135,37 +205,106 @@ final triggerConfigProvider =
       TriggerConfigNotifier.new,
     );
 
-/// Bugünkü bir eşik kontrolünün durumu.
-class CheckSession {
-  const CheckSession({this.checked = const {}, this.completedAt});
+// ---------------------------------------------------------------------------
+// Günlük kayıt: eşik günü → mod → kontrol
 
-  final Set<String> checked;
-  final DateTime? completedAt;
+typedef CheckLog = Map<String, Map<DayMode, CheckSession>>;
 
-  bool get isComplete => completedAt != null;
+class CheckLogNotifier extends Notifier<CheckLog> {
+  /// Bundan eski kayıtlar silinir; geçmiş ekranı yalnızca son 14 günü gösterir.
+  static const keepDays = 400;
+
+  @override
+  CheckLog build() {
+    final json =
+        ref.watch(storeProvider).readJson(EsikStore.logKey) ?? const {};
+    final log = <String, Map<DayMode, CheckSession>>{};
+    for (final day in json.entries) {
+      final modes = day.value;
+      if (parseDayKey(day.key) == null || modes is! Map<String, Object?>) {
+        continue;
+      }
+      log[day.key] = {
+        for (final mode in DayMode.values)
+          if (modes[mode.name] case final Map<String, Object?> s)
+            mode: CheckSession.fromJson(s),
+      };
+    }
+    return log;
+  }
+
+  CheckSession session(DateTime day, DayMode mode) =>
+      state[dayKey(day)]?[mode] ?? const CheckSession();
+
+  void _put(DateTime day, DayMode mode, CheckSession session) {
+    final key = dayKey(day);
+    final next = {...state};
+    final modes = {...?next[key]};
+    if (session.isEmpty) {
+      modes.remove(mode);
+    } else {
+      modes[mode] = session;
+    }
+    if (modes.isEmpty) {
+      next.remove(key);
+    } else {
+      next[key] = modes;
+    }
+    final oldest = thresholdDay(ref.read(clockProvider)())
+        .subtract(const Duration(days: keepDays));
+    next.removeWhere((k, _) => parseDayKey(k)!.isBefore(oldest));
+    state = next;
+    unawaited(
+      ref.read(storeProvider).writeJson(EsikStore.logKey, {
+        for (final d in next.entries)
+          d.key: {
+            for (final m in d.value.entries) m.key.name: m.value.toJson(),
+          },
+      }),
+    );
+  }
+
+  void toggle(DateTime day, DayMode mode, String itemId) {
+    final checked = {...session(day, mode).checked};
+    if (!checked.remove(itemId)) checked.add(itemId);
+    _put(day, mode, CheckSession(checked: checked));
+  }
+
+  void complete(DateTime day, DayMode mode, Set<String> ids, DateTime at) =>
+      _put(day, mode, CheckSession(checked: ids, completedAt: at));
+
+  void reset(DateTime day, DayMode mode) =>
+      _put(day, mode, const CheckSession());
 }
 
+final checkLogProvider = NotifierProvider<CheckLogNotifier, CheckLog>(
+  CheckLogNotifier.new,
+);
+
+/// Bugünün (eşik gününün) iki kontrolü. Ekranlar bunu kullanır; veri
+/// [checkLogProvider]'da kalıcıdır, gün değişince kendiliğinden boşalır.
 class TodayProgressNotifier extends Notifier<Map<DayMode, CheckSession>> {
   @override
-  Map<DayMode, CheckSession> build() => {
-    DayMode.evening: const CheckSession(),
-    DayMode.morning: const CheckSession(),
-  };
-
-  void toggle(DayMode mode, String itemId) {
-    final s = state[mode]!;
-    final checked = {...s.checked};
-    if (!checked.remove(itemId)) checked.add(itemId);
-    state = {...state, mode: CheckSession(checked: checked)};
+  Map<DayMode, CheckSession> build() {
+    final key = dayKey(ref.watch(todayProvider));
+    final day = ref.watch(checkLogProvider)[key];
+    return {
+      for (final mode in DayMode.values)
+        mode: day?[mode] ?? const CheckSession(),
+    };
   }
+
+  CheckLogNotifier get _log => ref.read(checkLogProvider.notifier);
+  DateTime get _today => ref.read(todayProvider);
+
+  void toggle(DayMode mode, String itemId) => _log.toggle(_today, mode, itemId);
 
   void completeAll(DayMode mode) {
     final ids = ref.read(checklistProvider)[mode]!.map((i) => i.id).toSet();
-    final now = ref.read(clockProvider)();
-    state = {...state, mode: CheckSession(checked: ids, completedAt: now)};
+    _log.complete(_today, mode, ids, ref.read(clockProvider)());
   }
 
-  void reset(DayMode mode) => state = {...state, mode: const CheckSession()};
+  void reset(DayMode mode) => _log.reset(_today, mode);
 }
 
 final todayProgressProvider =
@@ -173,62 +312,33 @@ final todayProgressProvider =
       TodayProgressNotifier.new,
     );
 
-/// Son 14 günün kaydı. 2. aşamada örnek veridir; 3. aşamada veritabanından gelir.
+/// Bugünden önceki 14 eşik günü, eskiden yeniye.
 final historyProvider = Provider<List<DayLog>>((ref) {
-  final today = ref.watch(clockProvider)();
-  final start = DateTime(today.year, today.month, today.day);
-  // Eskiden yeniye 14 gün. a: akşam, s: sabah; d: tamam, y: yedekle, m: atlandı.
-  const evening = 'dddmdydddddddd';
-  const morning = 'dydddddddddddm';
-  const eveningTimes = [
-    (22, 51),
-    (23, 4),
-    (22, 40),
-    (0, 0),
-    (23, 12),
-    (22, 30),
-    (23, 40),
-    (0, 12),
-    (22, 47),
-    (23, 2),
-    (22, 58),
-    (22, 31),
-    (23, 15),
-    (23, 8),
-  ];
-  const morningTimes = [
-    (7, 42),
-    (8, 15),
-    (7, 20),
-    (7, 55),
-    (8, 2),
-    (9, 20),
-    (10, 5),
-    (7, 31),
-    (7, 18),
-    (7, 46),
-    (8, 0),
-    (7, 12),
-    (7, 38),
-    (0, 0),
-  ];
-  CheckOutcome o(String c) => switch (c) {
-    'd' => CheckOutcome.done,
-    'y' => CheckOutcome.viaBackup,
-    _ => CheckOutcome.missed,
-  };
+  final today = ref.watch(todayProvider);
+  final installed = ref.watch(installDayProvider);
+  final log = ref.watch(checkLogProvider);
+
+  (CheckOutcome, TimeOfDay?) outcome(DateTime day, DayMode mode) {
+    if (day.isBefore(installed)) return (CheckOutcome.notTracked, null);
+    final s = log[dayKey(day)]?[mode];
+    if (s == null || !s.isComplete) return (CheckOutcome.missed, null);
+    return (CheckOutcome.done, TimeOfDay.fromDateTime(s.completedAt!));
+  }
+
   return [
-    for (var i = 0; i < 14; i++)
-      DayLog(
-        date: start.subtract(Duration(days: 14 - i)),
-        evening: o(evening[i]),
-        morning: o(morning[i]),
-        eveningAt: evening[i] == 'm'
-            ? null
-            : TimeOfDay(hour: eveningTimes[i].$1, minute: eveningTimes[i].$2),
-        morningAt: morning[i] == 'm'
-            ? null
-            : TimeOfDay(hour: morningTimes[i].$1, minute: morningTimes[i].$2),
-      ),
+    for (var i = 14; i >= 1; i--)
+      () {
+        // Gün eklerken saat değil takvim kullan (yaz saati geçişlerine karşı).
+        final day = DateTime(today.year, today.month, today.day - i);
+        final (e, eAt) = outcome(day, DayMode.evening);
+        final (m, mAt) = outcome(day, DayMode.morning);
+        return DayLog(
+          date: day,
+          evening: e,
+          morning: m,
+          eveningAt: eAt,
+          morningAt: mAt,
+        );
+      }(),
   ];
 });
