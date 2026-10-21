@@ -47,8 +47,17 @@ jobs:
       # Şimdilik debug anahtarıyla imzalanır; Play Store'a çıkmadan önce
       # yükleme anahtarı GitHub Secrets'a eklenecek.
       - run: flutter build apk --release --build-number=${{ github.run_number }}
+      - run: mkdir -p dist && cp build/app/outputs/flutter-apk/app-release.apk dist/esik.apk
+      # Tanı amaçlı ikinci APK: Impeller'ı Vulkan yerine OpenGL ES ile çalıştırır.
+      # Bazı Samsung Exynos/Xclipse GPU'larda Vulkan ilk kareyi çizemeyebiliyor.
+      - name: OpenGL ES sürümü
+        run: |
+          sed -i 's|android:icon="@mipmap/ic_launcher">|android:icon="@mipmap/ic_launcher">\n        <meta-data android:name="io.flutter.embedding.android.ImpellerBackend" android:value="opengles" />|' android/app/src/main/AndroidManifest.xml
+          grep -q ImpellerBackend android/app/src/main/AndroidManifest.xml
+          flutter build apk --release --build-number=${{ github.run_number }}
+          cp build/app/outputs/flutter-apk/app-release.apk dist/esik-opengles.apk
       - uses: actions/upload-artifact@v4
         with:
           name: esik-${{ github.run_number }}-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: dist/*.apk
           retention-days: 30
