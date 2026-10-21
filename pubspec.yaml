@@ -36,3 +36,10 @@ flutter:
           weight: 500
         - asset: assets/fonts/Inter-SemiBold.ttf
           weight: 600
+
+# shared_preferences_android 2.5.x Android'le JNI üzerinden konuşuyor ve sürüm
+# derlemesinde R8, yalnızca JNI'dan çağrılan metotları siliyor
+# (NoSuchMethodError: SharedPreferencesApiRegistrar.getAll). Düzeltme yayımlanana
+# kadar platform kanalı kullanan son sürüme sabitlenir.
+dependency_overrides:
+  shared_preferences_android: 2.4.28

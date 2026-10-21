@@ -24,6 +24,15 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
       - run: flutter pub get
+      # JNI kullanan eklentiler sürüm derlemesinde R8 yüzünden çökebiliyor
+      # (bkz. pubspec.yaml'daki shared_preferences_android notu). Yeni bir eklenti
+      # JNI getirirse bilinçli karar verilsin diye derleme durur.
+      - name: JNI bağımlılığı kontrolü
+        run: |
+          if grep -qE '^  jni:' pubspec.lock; then
+            echo "::error::pubspec.lock'a 'jni' paketi girdi. Sürüm APK'sında NoSuchMethodError riski var; cihazda test edip bu kontrolü güncelleyin."
+            exit 1
+          fi
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
       - run: flutter test
@@ -47,17 +56,8 @@ jobs:
       # Şimdilik debug anahtarıyla imzalanır; Play Store'a çıkmadan önce
       # yükleme anahtarı GitHub Secrets'a eklenecek.
       - run: flutter build apk --release --build-number=${{ github.run_number }}
-      - run: mkdir -p dist && cp build/app/outputs/flutter-apk/app-release.apk dist/esik.apk
-      # Tanı amaçlı ikinci APK: Impeller'ı Vulkan yerine OpenGL ES ile çalıştırır.
-      # Bazı Samsung Exynos/Xclipse GPU'larda Vulkan ilk kareyi çizemeyebiliyor.
-      - name: OpenGL ES sürümü
-        run: |
-          sed -i 's|android:icon="@mipmap/ic_launcher">|android:icon="@mipmap/ic_launcher">\n        <meta-data android:name="io.flutter.embedding.android.ImpellerBackend" android:value="opengles" />|' android/app/src/main/AndroidManifest.xml
-          grep -q ImpellerBackend android/app/src/main/AndroidManifest.xml
-          flutter build apk --release --build-number=${{ github.run_number }}
-          cp build/app/outputs/flutter-apk/app-release.apk dist/esik-opengles.apk
       - uses: actions/upload-artifact@v4
         with:
           name: esik-${{ github.run_number }}-apk
-          path: dist/*.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
