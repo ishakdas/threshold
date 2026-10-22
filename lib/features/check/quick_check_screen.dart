@@ -17,10 +17,13 @@ import 'glow_orb.dart';
 
 /// Bildirime dokununca açılan hızlı kontrol. Büyük, tiklenebilir maddeler.
 class QuickCheckScreen extends ConsumerStatefulWidget {
-  const QuickCheckScreen({super.key, this.mode});
+  const QuickCheckScreen({super.key, this.mode, this.fromBackup = false});
 
   /// Boşsa günün o anki modu kullanılır.
   final DayMode? mode;
+
+  /// Yedek saatteki bildirimden açıldıysa; geçmişte "yedek bildirimle" görünür.
+  final bool fromBackup;
 
   @override
   ConsumerState<QuickCheckScreen> createState() => _QuickCheckScreenState();
@@ -58,7 +61,14 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
 
   void _completeAll() {
     HapticFeedback.heavyImpact();
-    ref.read(todayProgressProvider.notifier).completeAll(_mode);
+    ref
+        .read(todayProgressProvider.notifier)
+        .completeAll(
+          _mode,
+          source: widget.fromBackup
+              ? CheckSession.sourceBackup
+              : CheckSession.sourceApp,
+        );
   }
 
   void _close() => context.canPop() ? context.pop() : context.go('/bugun');

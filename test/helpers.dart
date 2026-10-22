@@ -14,6 +14,7 @@ Future<void> pumpApp(
   WidgetTester tester, {
   DateTime? now,
   bool onboardingSeen = true,
+  bool settleAnimations = true,
 }) async {
   tester.view.physicalSize = const Size(393 * 3, 852 * 3);
   tester.view.devicePixelRatio = 3;
@@ -30,7 +31,8 @@ Future<void> pumpApp(
       child: const EsikApp(),
     ),
   );
-  await tester.pumpAndSettle();
+  // Hızlı kontrol açıksa kürenin sonsuz animasyonu pumpAndSettle'ı bitirmez.
+  settleAnimations ? await tester.pumpAndSettle() : await settle(tester);
 }
 
 /// Kürenin sonsuz "nefes" animasyonu yüzünden pumpAndSettle bitmez;

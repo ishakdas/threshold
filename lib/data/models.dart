@@ -184,22 +184,33 @@ class TriggerConfig {
 
 /// Bir eşik gününün bir modundaki kontrol: tiklenen maddeler ve bitiş anı.
 class CheckSession {
-  const CheckSession({this.checked = const {}, this.completedAt});
+  const CheckSession({this.checked = const {}, this.completedAt, this.source});
 
   final Set<String> checked;
   final DateTime? completedAt;
 
+  /// Nereden tamamlandı: [sourceApp], [sourceNotification] ya da [sourceBackup].
+  /// Android tarafı (EsikData.kt) aynı değerleri yazar.
+  final String? source;
+
+  static const sourceApp = 'app';
+  static const sourceNotification = 'notification';
+  static const sourceBackup = 'backup';
+
   bool get isComplete => completedAt != null;
   bool get isEmpty => checked.isEmpty && completedAt == null;
+  bool get viaBackup => source == sourceBackup;
 
   Map<String, Object?> toJson() => {
     'checked': checked.toList(),
     if (completedAt != null) 'completedAt': completedAt!.toIso8601String(),
+    'source': ?source,
   };
 
   factory CheckSession.fromJson(Map<String, Object?> json) => CheckSession(
     checked: {...(json['checked'] as List? ?? const []).whereType<String>()},
     completedAt: DateTime.tryParse(json['completedAt'] as String? ?? ''),
+    source: json['source'] as String?,
   );
 }
 

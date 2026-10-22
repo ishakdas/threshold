@@ -10,15 +10,21 @@ import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
+import '../../platform/native_bridge.dart';
+
+/// Adımın ana butonunun ne yapacağı.
+enum SetupStepKind { notifications, battery, trigger, test }
 
 class SetupStep {
   const SetupStep({
+    required this.kind,
     required this.title,
     required this.detail,
     required this.action,
     required this.icon,
   });
 
+  final SetupStepKind kind;
   final String title;
   final String detail;
 
@@ -31,12 +37,14 @@ class SetupStep {
 /// Kısayollar'ın olmadığı Android'de iOS'taki kurulum rehberinin karşılığıdır.
 List<SetupStep> setupStepsFor(TriggerKind kind) {
   const notifications = SetupStep(
+    kind: SetupStepKind.notifications,
     title: 'Bildirimlere izin ver',
     detail: 'Eşik yalnızca eşik geldiğinde yazar. Günde en fazla iki bildirim.',
     action: 'İzin ver',
     icon: EsikIcon.bell,
   );
   const battery = SetupStep(
+    kind: SetupStepKind.battery,
     title: 'Arka planda çalışmasına izin ver',
     detail: 'Samsung pil tasarrufu uygulamaları uyutabilir. Eşik’i “Uyku moduna alınmayan uygulamalar” listesine ekle.',
     action: 'Pil ayarını aç',
@@ -44,30 +52,35 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
   );
   final specific = switch (kind) {
     TriggerKind.appClosed => const SetupStep(
+      kind: SetupStepKind.trigger,
       title: 'Kullanım erişimi ver',
       detail: 'Instagram’ın kapandığını anlamak için hangi uygulamanın açık olduğunu görmemiz gerekir.',
       action: 'Kullanım erişimini aç',
       icon: EsikIcon.app,
     ),
     TriggerKind.sleepMode => const SetupStep(
+      kind: SetupStepKind.trigger,
       title: 'Bildirim erişimi ver',
       detail: 'Uyku modu açıldığında haberimiz olsun diye. Bildirimlerinin içeriği okunmaz.',
       action: 'Erişimi aç',
       icon: EsikIcon.bed,
     ),
     TriggerKind.leftHomeWifi => const SetupStep(
+      kind: SetupStepKind.trigger,
       title: 'Ev Wi‑Fi’ını seç',
       detail: 'Wi‑Fi adını okuyabilmek için Android konum izni ister. Konumun kaydedilmez.',
       action: 'Konum izni ver',
       icon: EsikIcon.location,
     ),
     TriggerKind.nfcTag => const SetupStep(
+      kind: SetupStepKind.trigger,
       title: 'Etiketi hazırla',
       detail: 'Boş bir NFC etiketini telefonun arkasına tut; Eşik etikete kendi bağlantısını yazar.',
       action: 'Etiketi yaz',
       icon: EsikIcon.nfc,
     ),
     TriggerKind.alarmStopped => const SetupStep(
+      kind: SetupStepKind.trigger,
       title: 'Sabah alarmın kurulu olsun',
       detail: 'Ek izin gerekmez. Saat uygulamasındaki alarm kapandığında sıradaki alarm değişir; Eşik bunu fark eder.',
       action: 'Anladım',
@@ -76,6 +89,7 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
     _ => null,
   };
   final test = SetupStep(
+    kind: SetupStepKind.test,
     title: 'Dene',
     detail: switch (kind) {
       TriggerKind.charging =>
@@ -101,8 +115,59 @@ class SetupGuideScreen extends ConsumerStatefulWidget {
 }
 
 class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
-  // 6. aşamada gerçek izin durumları okunacak; şimdilik dokunuldukça ilerler.
   int _current = 0;
+  bool _busy = false;
+
+  /// Adımın işini yapar, sonra bir sonraki adıma geçer.
+  Future<void> _run(SetupStep step, DayMode mode, int total) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final bridge = ref.read(nativeBridgeProvider);
+    var advance = true;
+    switch (step.kind) {
+      case SetupStepKind.notifications:
+        if (!await bridge.requestNotificationPermission()) {
+          _snack(
+            'Bildirim izni verilmedi. İstersen ayarlardan açabilirsin.',
+            actionLabel: 'Ayarlar',
+            onAction: bridge.openNotificationSettings,
+          );
+        }
+      case SetupStepKind.battery:
+        await bridge.openBatterySettings();
+      case SetupStepKind.trigger:
+        // Tetikleyiciye özel izinler 5. ve 6. aşamada bağlanacak.
+        break;
+      case SetupStepKind.test:
+        if (!await bridge.showTestNotification(mode)) {
+          advance = false;
+          _snack(
+            'Bildirim gönderilemedi: bildirim izni kapalı.',
+            actionLabel: 'Ayarlar',
+            onAction: bridge.openNotificationSettings,
+          );
+        }
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (advance) _advance(total);
+  }
+
+  void _snack(String text, {String? actionLabel, VoidCallback? onAction}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 90),
+          content: Text(text),
+          action: actionLabel == null
+              ? null
+              : SnackBarAction(label: actionLabel, onPressed: onAction!),
+        ),
+      );
+  }
 
   void _advance(int total) {
     HapticFeedback.mediumImpact();
@@ -117,7 +182,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mode = widget.mode ?? ref.watch(dayModeProvider);
+    final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
     final kind = ref.watch(triggerConfigProvider)[mode]!.kind;
     final steps = setupStepsFor(kind);
     final step = steps[_current];
@@ -194,7 +259,9 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                       child: PrimaryPillButton(
                         label: step.action,
                         expand: true,
-                        onPressed: () => _advance(steps.length),
+                        onPressed: _busy
+                            ? null
+                            : () => _run(step, mode, steps.length),
                       ),
                     ),
                   ],

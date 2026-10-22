@@ -86,7 +86,11 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
   @override
   Map<DayMode, List<CheckItem>> build() {
     final json = ref.watch(storeProvider).readJson(EsikStore.checklistKey);
-    if (json == null) return defaultChecklist;
+    if (json == null) {
+      // Android tarafı (bildirim metni) listeyi diskten okur; varsayılanı da yaz.
+      _persist(defaultChecklist);
+      return defaultChecklist;
+    }
     try {
       return {
         for (final mode in DayMode.values)
@@ -104,13 +108,15 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
 
   void _save(Map<DayMode, List<CheckItem>> next) {
     state = next;
-    unawaited(
-      _store.writeJson(EsikStore.checklistKey, {
-        for (final e in next.entries)
-          e.key.name: [for (final i in e.value) i.toJson()],
-      }),
-    );
+    _persist(next);
   }
+
+  void _persist(Map<DayMode, List<CheckItem>> lists) => unawaited(
+    _store.writeJson(EsikStore.checklistKey, {
+      for (final e in lists.entries)
+        e.key.name: [for (final i in e.value) i.toJson()],
+    }),
+  );
 
   String _newId() =>
       '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}${_counter++}';
@@ -178,9 +184,14 @@ class TriggerConfigNotifier extends Notifier<Map<DayMode, TriggerConfig>> {
   @override
   Map<DayMode, TriggerConfig> build() {
     final json = ref.watch(storeProvider).readJson(EsikStore.triggersKey);
+    if (json == null) {
+      // Android tarafı yedek saati diskten okur; varsayılanı da yaz.
+      _persist(defaultTriggerConfigs);
+      return defaultTriggerConfigs;
+    }
     return {
       for (final mode in DayMode.values)
-        mode: switch (json?[mode.name]) {
+        mode: switch (json[mode.name]) {
           final Map<String, Object?> m => TriggerConfig.fromJson(
             m,
             defaultTriggerConfigs[mode]!,
@@ -192,12 +203,14 @@ class TriggerConfigNotifier extends Notifier<Map<DayMode, TriggerConfig>> {
 
   void update(DayMode mode, TriggerConfig config) {
     state = {...state, mode: config};
-    unawaited(
-      ref.read(storeProvider).writeJson(EsikStore.triggersKey, {
-        for (final e in state.entries) e.key.name: e.value.toJson(),
-      }),
-    );
+    _persist(state);
   }
+
+  void _persist(Map<DayMode, TriggerConfig> configs) => unawaited(
+    ref.read(storeProvider).writeJson(EsikStore.triggersKey, {
+      for (final e in configs.entries) e.key.name: e.value.toJson(),
+    }),
+  );
 }
 
 final triggerConfigProvider =
@@ -270,8 +283,17 @@ class CheckLogNotifier extends Notifier<CheckLog> {
     _put(day, mode, CheckSession(checked: checked));
   }
 
-  void complete(DateTime day, DayMode mode, Set<String> ids, DateTime at) =>
-      _put(day, mode, CheckSession(checked: ids, completedAt: at));
+  void complete(
+    DateTime day,
+    DayMode mode,
+    Set<String> ids,
+    DateTime at, {
+    String source = CheckSession.sourceApp,
+  }) => _put(
+    day,
+    mode,
+    CheckSession(checked: ids, completedAt: at, source: source),
+  );
 
   void reset(DateTime day, DayMode mode) =>
       _put(day, mode, const CheckSession());
@@ -299,9 +321,11 @@ class TodayProgressNotifier extends Notifier<Map<DayMode, CheckSession>> {
 
   void toggle(DayMode mode, String itemId) => _log.toggle(_today, mode, itemId);
 
-  void completeAll(DayMode mode) {
+  /// [source]: kontrol yedek saatteki bildirimden açıldıysa
+  /// [CheckSession.sourceBackup]; geçmişte "yedek bildirimle" görünür.
+  void completeAll(DayMode mode, {String source = CheckSession.sourceApp}) {
     final ids = ref.read(checklistProvider)[mode]!.map((i) => i.id).toSet();
-    _log.complete(_today, mode, ids, ref.read(clockProvider)());
+    _log.complete(_today, mode, ids, ref.read(clockProvider)(), source: source);
   }
 
   void reset(DayMode mode) => _log.reset(_today, mode);
@@ -322,7 +346,10 @@ final historyProvider = Provider<List<DayLog>>((ref) {
     if (day.isBefore(installed)) return (CheckOutcome.notTracked, null);
     final s = log[dayKey(day)]?[mode];
     if (s == null || !s.isComplete) return (CheckOutcome.missed, null);
-    return (CheckOutcome.done, TimeOfDay.fromDateTime(s.completedAt!));
+    return (
+      s.viaBackup ? CheckOutcome.viaBackup : CheckOutcome.done,
+      TimeOfDay.fromDateTime(s.completedAt!),
+    );
   }
 
   return [

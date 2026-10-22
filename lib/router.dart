@@ -68,7 +68,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/kontrol',
-        builder: (_, state) => QuickCheckScreen(mode: _modeParam(state)),
+        builder: (_, state) => QuickCheckScreen(
+          mode: _modeParam(state),
+          fromBackup: state.uri.queryParameters['kaynak'] == 'yedek',
+        ),
       ),
       GoRoute(
         path: '/kurulum',
