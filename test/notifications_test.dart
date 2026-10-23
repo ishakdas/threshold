@@ -18,6 +18,7 @@ List<MethodCall> fakeNative(
   WidgetTester? tester, {
   bool permission = true,
   bool testSent = true,
+  String nfc = 'written',
 }) {
   final calls = <MethodCall>[];
   final messenger =
@@ -28,6 +29,7 @@ List<MethodCall> fakeNative(
     return switch (call.method) {
       'requestNotificationPermission' || 'notificationsGranted' => permission,
       'showTestNotification' => testSent,
+      'writeNfcTag' => nfc,
       _ => null,
     };
   });
@@ -57,6 +59,41 @@ void main() {
       ]);
       expect(calls.last.arguments, {'mode': 'morning'});
     });
+  });
+
+  test('durum: yedek ve tetikleyici sonuçları okunur', () {
+    final at = DateTime(2026, 10, 23, 7, 2);
+    final status = ThresholdStatus.parse({
+      'morning': {
+        'next': null,
+        'lastAt': null,
+        'lastOutcome': null,
+        'triggerAt': at.millisecondsSinceEpoch,
+        'triggerOutcome': 'shown',
+      },
+      'evening': {'next': 0, 'triggerOutcome': 'bilinmeyen'},
+    })!;
+    expect(status[DayMode.morning]!.triggerAt, at);
+    expect(status[DayMode.morning]!.triggerOutcome, NotifyOutcome.shown);
+    expect(status[DayMode.morning]!.next, isNull);
+    expect(status[DayMode.evening]!.triggerOutcome, isNull);
+  });
+
+  testWidgets('ayar değişince Android işleri yeniden kurulur', (tester) async {
+    final calls = fakeNative(tester);
+    await pumpApp(tester);
+    final c = ProviderScope.containerOf(tester.element(find.text('Eşik')));
+    calls.clear();
+    c
+        .read(triggerConfigProvider.notifier)
+        .update(
+          DayMode.morning,
+          c
+              .read(triggerConfigProvider)[DayMode.morning]!
+              .copyWith(kind: TriggerKind.leftHomeWifi),
+        );
+    await tester.pumpAndSettle();
+    expect(calls.map((c) => c.method), contains('reschedule'));
   });
 
   group('Android ile kayıt biçimi', () {
@@ -191,6 +228,75 @@ void main() {
       );
       expect(find.text('Şarja takınca'), findsOneWidget);
     });
+  });
+
+  group('NFC etiketi', () {
+    Future<void> openNfcSetup(WidgetTester tester) async {
+      await pumpApp(tester);
+      final element = tester.element(find.text('Eşik'));
+      final c = ProviderScope.containerOf(element);
+      c
+          .read(triggerConfigProvider.notifier)
+          .update(
+            DayMode.morning,
+            c
+                .read(triggerConfigProvider)[DayMode.morning]!
+                .copyWith(kind: TriggerKind.nfcTag),
+          );
+      GoRouter.of(element).push('/kurulum?mod=sabah');
+      await tester.pumpAndSettle();
+      for (final label in ['İzin ver', 'Pil ayarını aç']) {
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('Etiketi hazırla'), findsWidgets);
+    }
+
+    testWidgets('etiket yazılınca son adıma geçer', (tester) async {
+      final calls = fakeNative(tester);
+      await openNfcSetup(tester);
+
+      await tester.tap(find.text('Etiketi yaz'));
+      await tester.pumpAndSettle();
+
+      expect(calls.map((c) => c.method), contains('writeNfcTag'));
+      expect(find.textContaining('Etiket hazır'), findsOneWidget);
+      expect(find.text('Adım 4 / 4'), findsOneWidget);
+
+      await tester.tap(find.text('Bitir'));
+      await tester.pumpAndSettle();
+      expect(
+        calls.map((c) => c.method),
+        isNot(contains('showTestNotification')),
+      );
+    });
+
+    testWidgets('NFC kapalıysa uyarır ve adımda kalır', (tester) async {
+      fakeNative(tester, nfc: 'disabled');
+      await openNfcSetup(tester);
+
+      await tester.tap(find.text('Etiketi yaz'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('NFC kapalı'), findsOneWidget);
+      expect(find.text('Adım 3 / 4'), findsOneWidget);
+    });
+  });
+
+  testWidgets('henüz desteklenmeyen tetikleyici seçilemez', (tester) async {
+    await pumpApp(tester);
+    final element = tester.element(find.text('Eşik'));
+    GoRouter.of(element).go('/ayarlar');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Yakında'), findsWidgets);
+    await tester.tap(find.text('Uyku modu'));
+    await tester.pumpAndSettle();
+    final c = ProviderScope.containerOf(element);
+    expect(
+      c.read(triggerConfigProvider)[DayMode.evening]!.kind,
+      TriggerKind.charging,
+    );
   });
 
   testWidgets('bildirimden açılış yönlendirmesi hızlı kontrolü açar', (

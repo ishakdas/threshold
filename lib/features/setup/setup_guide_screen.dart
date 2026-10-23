@@ -67,10 +67,10 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
     ),
     TriggerKind.leftHomeWifi => const SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Ev Wi‑Fi’ını seç',
-      detail: 'Wi‑Fi adını okuyabilmek için Android konum izni ister. Konumun kaydedilmez.',
-      action: 'Konum izni ver',
-      icon: EsikIcon.location,
+      title: 'Mobil veri açık kalsın',
+      detail: 'Sabah aralığında evin Wi‑Fi’ına bağlıyken Eşik hazırda bekler; bağlantı kopup telefon mobil veriye geçince hatırlatır. Wi‑Fi adı okunmaz, konum izni gerekmez.',
+      action: 'Anladım',
+      icon: EsikIcon.wifi,
     ),
     TriggerKind.nfcTag => const SetupStep(
       kind: SetupStepKind.trigger,
@@ -82,7 +82,7 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
     TriggerKind.alarmStopped => const SetupStep(
       kind: SetupStepKind.trigger,
       title: 'Sabah alarmın kurulu olsun',
-      detail: 'Ek izin gerekmez. Saat uygulamasındaki alarm kapandığında sıradaki alarm değişir; Eşik bunu fark eder.',
+      detail: 'Ek izin gerekmez. Saat uygulamasındaki alarm çalıp kapandığında Eşik bunu fark eder. Ertelersen son çalışı bekler.',
       action: 'Anladım',
       icon: EsikIcon.alarm,
     ),
@@ -92,15 +92,13 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
     kind: SetupStepKind.test,
     title: 'Dene',
     detail: switch (kind) {
-      TriggerKind.charging =>
-        'Telefonu şarja tak. Birkaç saniye içinde bildirim gelmeli.',
-      TriggerKind.unplugged =>
-        'Telefonu şarjdan çıkar. Birkaç saniye içinde bildirim gelmeli.',
-      TriggerKind.airplaneMode => 'Uçak modunu açıp kapat. Bildirim gelmeli.',
-      TriggerKind.nfcTag => 'Etikete dokun. Kontrol ekranı açılmalı.',
+      TriggerKind.charging => 'Önce deneme bildirimi. Gerçeği, seçtiğin saat aralığında telefonu şarja taktıktan sonra bir dakika içinde gelir.',
+      TriggerKind.leftHomeWifi => 'Önce deneme bildirimi. Gerçeği, sabah aralığında Wi‑Fi’ı kapatıp mobil veriye geçince gelir.',
+      TriggerKind.alarmStopped => 'Önce deneme bildirimi. Gerçeği, sabah aralığında çalan bir alarmı kapattıktan sonra gelir.',
+      TriggerKind.nfcTag => 'Uygulamadan çık, kilidi açık telefonu etikete dokundur. Kontrol ekranı açılmalı.',
       _ => 'Deneme bildirimi gönderelim; gerçek tetikleyici de aynı şekilde gelecek.',
     },
-    action: 'Deneme bildirimi gönder',
+    action: kind == TriggerKind.nfcTag ? 'Bitir' : 'Deneme bildirimi gönder',
     icon: kind.icon,
   );
   return [notifications, battery, ?specific, test];
@@ -118,8 +116,22 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   int _current = 0;
   bool _busy = false;
 
+  /// Etiket yazılırken telefonun etikete yaklaştırılması bekleniyor.
+  bool _waitingForTag = false;
+
+  @override
+  void dispose() {
+    if (_waitingForTag) ref.read(nativeBridgeProvider).cancelNfcTag();
+    super.dispose();
+  }
+
   /// Adımın işini yapar, sonra bir sonraki adıma geçer.
-  Future<void> _run(SetupStep step, DayMode mode, int total) async {
+  Future<void> _run(
+    SetupStep step,
+    DayMode mode,
+    TriggerKind kind,
+    int total,
+  ) async {
     if (_busy) return;
     setState(() => _busy = true);
     final bridge = ref.read(nativeBridgeProvider);
@@ -136,9 +148,9 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
       case SetupStepKind.battery:
         await bridge.openBatterySettings();
       case SetupStepKind.trigger:
-        // Tetikleyiciye özel izinler 5. ve 6. aşamada bağlanacak.
-        break;
+        if (kind == TriggerKind.nfcTag) advance = await _writeTag(bridge);
       case SetupStepKind.test:
+        if (kind == TriggerKind.nfcTag) break;
         if (!await bridge.showTestNotification(mode)) {
           advance = false;
           _snack(
@@ -151,6 +163,38 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (advance) _advance(total);
+  }
+
+  /// Etiketi yazar; yazıldıysa true.
+  Future<bool> _writeTag(NativeBridge bridge) async {
+    setState(() => _waitingForTag = true);
+    final result = await bridge.writeNfcTag();
+    if (!mounted) return false;
+    setState(() => _waitingForTag = false);
+    switch (result) {
+      case NfcWriteResult.written:
+        HapticFeedback.heavyImpact();
+        _snack('Etiket hazır. Kapının yanına yapıştırabilirsin.');
+        return true;
+      case NfcWriteResult.cancelled:
+        break;
+      case NfcWriteResult.disabled:
+        _snack(
+          'NFC kapalı. Açıp tekrar dene.',
+          actionLabel: 'Ayarlar',
+          onAction: bridge.openNfcSettings,
+        );
+      case NfcWriteResult.unsupported:
+        _snack('Bu telefonda NFC yok. Başka bir sabah tetikleyicisi seç.');
+      case NfcWriteResult.readOnly:
+        _snack('Bu etiket kilitli, üzerine yazılamıyor. Boş bir etiket dene.');
+      case NfcWriteResult.tooSmall:
+      case NfcWriteResult.incompatible:
+        _snack('Bu etiket uygun değil. NTAG213 ya da benzeri bir etiket dene.');
+      case NfcWriteResult.error:
+        _snack('Yazılamadı. Telefonu etikete biraz daha uzun tut.');
+    }
+    return false;
   }
 
   void _snack(String text, {String? actionLabel, VoidCallback? onAction}) {
@@ -215,7 +259,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
-                          step.title,
+                          _waitingForTag ? 'Etikete yaklaştır' : step.title,
                           style: t.headlineMedium?.copyWith(fontSize: 26),
                         ),
                       ),
@@ -223,7 +267,9 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
-                          step.detail,
+                          _waitingForTag
+                              ? 'Telefonun arkasını etikete değdir ve titreşimi bekle.'
+                              : step.detail,
                           style: t.bodyMedium?.copyWith(color: p.textMuted),
                         ),
                       ),
@@ -256,13 +302,20 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       flex: 16,
-                      child: PrimaryPillButton(
-                        label: step.action,
-                        expand: true,
-                        onPressed: _busy
-                            ? null
-                            : () => _run(step, mode, steps.length),
-                      ),
+                      child: _waitingForTag
+                          ? SecondaryPillButton(
+                              label: 'Vazgeç',
+                              icon: EsikIcon.nfc,
+                              onPressed: () =>
+                                  ref.read(nativeBridgeProvider).cancelNfcTag(),
+                            )
+                          : PrimaryPillButton(
+                              label: step.action,
+                              expand: true,
+                              onPressed: _busy
+                                  ? null
+                                  : () => _run(step, mode, kind, steps.length),
+                            ),
                     ),
                   ],
                 ),

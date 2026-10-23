@@ -43,12 +43,24 @@ class NativeBridge {
   /// Uygulama bir bildirime dokunularak açıldıysa gidilecek ekran (bir kez).
   Future<String?> takeLaunchRoute() => _call<String>('takeLaunchRoute');
 
-  /// Yedek saat alarmlarını diskteki ayara göre yeniden kurar ve son durumu döner.
-  Future<Map<DayMode, BackupStatus>?> rescheduleBackups() async =>
-      BackupStatus.parse(await _call<Object?>('rescheduleBackups'));
+  /// Yedek saat alarmlarını ve tetikleyici işlerini diskteki ayara göre
+  /// yeniden kurar, son durumu döner.
+  Future<Map<DayMode, ThresholdStatus>?> reschedule() async =>
+      ThresholdStatus.parse(await _call<Object?>('reschedule'));
 
-  Future<Map<DayMode, BackupStatus>?> backupStatus() async =>
-      BackupStatus.parse(await _call<Object?>('backupStatus'));
+  Future<Map<DayMode, ThresholdStatus>?> status() async =>
+      ThresholdStatus.parse(await _call<Object?>('backupStatus'));
+
+  /// Telefon bir etikete yaklaştırılana ya da [cancelNfcTag] çağrılana kadar bekler.
+  Future<NfcWriteResult> writeNfcTag() async {
+    final name = await _call<String>('writeNfcTag');
+    return NfcWriteResult.values.where((r) => r.name == name).firstOrNull ??
+        NfcWriteResult.unsupported;
+  }
+
+  Future<void> cancelNfcTag() => _call<void>('cancelNfcTag');
+
+  Future<void> openNfcSettings() => _call<void>('openNfcSettings');
 
   Future<bool> notificationsGranted() async =>
       await _call<bool>('notificationsGranted') ?? false;
@@ -72,53 +84,81 @@ class NativeBridge {
 
 final nativeBridgeProvider = Provider<NativeBridge>((ref) => NativeBridge());
 
-/// Yedek saat alarmının durumu (Android'deki BackupScheduler.status).
-class BackupStatus {
-  const BackupStatus({this.next, this.lastAt, this.lastOutcome});
+/// Bir modun yedek alarmı ve tetikleyicisinin durumu (Android'deki
+/// BackupScheduler.status).
+class ThresholdStatus {
+  const ThresholdStatus({
+    this.next,
+    this.lastAt,
+    this.lastOutcome,
+    this.triggerAt,
+    this.triggerOutcome,
+  });
 
-  /// Sıradaki alarm; yedek kapalıysa null.
+  /// Sıradaki yedek alarm; yedek kapalıysa null.
   final DateTime? next;
 
-  /// Son alarmın çaldığı an ve sonucu.
+  /// Son yedek alarmın çaldığı an ve sonucu.
   final DateTime? lastAt;
-  final BackupOutcome? lastOutcome;
+  final NotifyOutcome? lastOutcome;
+
+  /// Tetikleyicinin (şarj, alarm, Wi‑Fi) son çalıştığı an ve sonucu.
+  final DateTime? triggerAt;
+  final NotifyOutcome? triggerOutcome;
 
   static DateTime? _time(Object? ms) =>
       ms is int ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
 
-  static Map<DayMode, BackupStatus>? parse(Object? raw) {
+  static NotifyOutcome? _outcome(Object? name) =>
+      NotifyOutcome.values.where((o) => o.name == name).firstOrNull;
+
+  static Map<DayMode, ThresholdStatus>? parse(Object? raw) {
     if (raw is! Map) return null;
     return {
       for (final mode in DayMode.values)
         if (raw[mode.name] case final Map m)
-          mode: BackupStatus(
+          mode: ThresholdStatus(
             next: _time(m['next']),
             lastAt: _time(m['lastAt']),
-            lastOutcome: BackupOutcome.values
-                .where((o) => o.name == m['lastOutcome'])
-                .firstOrNull,
+            lastOutcome: _outcome(m['lastOutcome']),
+            triggerAt: _time(m['triggerAt']),
+            triggerOutcome: _outcome(m['triggerOutcome']),
           ),
     };
   }
 }
 
-/// Android'deki BackupOutcome ile aynı adlar.
-enum BackupOutcome {
+/// NFC etiketi yazmanın sonucu (Android'deki NfcTagWriter ile aynı adlar).
+enum NfcWriteResult {
+  written,
+  cancelled,
+  unsupported,
+  disabled,
+  readOnly,
+  tooSmall,
+  incompatible,
+  error,
+}
+
+/// Android'deki NotifyOutcome ile aynı adlar.
+enum NotifyOutcome {
   shown('gönderildi'),
   alreadyDone('atlandı: kontrol zaten yapılmıştı'),
   alreadyNotified('atlandı: o gün bildirim zaten gelmişti'),
   noPermission('gönderilemedi: bildirim izni kapalı'),
   disabled('atlandı: yedek kapalı');
 
-  const BackupOutcome(this.description);
+  const NotifyOutcome(this.description);
   final String description;
 }
 
-/// Ayarlar ekranındaki "Sıradaki yedek" satırı için. Ön plana dönünce yenilenir;
+/// Ayarlar ekranındaki durum satırı için. Ön plana dönünce yenilenir;
 /// alarmlar yeniden kurulunca app.dart bunu geçersiz kılar.
-final backupStatusProvider = FutureProvider<Map<DayMode, BackupStatus>?>((ref) {
+final thresholdStatusProvider = FutureProvider<Map<DayMode, ThresholdStatus>?>((
+  ref,
+) {
   ref.watch(clockTickProvider);
-  return ref.watch(nativeBridgeProvider).backupStatus();
+  return ref.watch(nativeBridgeProvider).status();
 });
 
 /// Bildirim izni var mı? Ön plana dönünce yeniden sorulur. Android kanalı

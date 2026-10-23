@@ -42,7 +42,7 @@ assets/
 2. **Arayüz** — 7 ekranın tamamı, akşam/sabah modu, tik animasyonu ✅
 3. **Veri** — liste, eşik ayarları ve günlük kayıtlar telefonda kalıcı; geçmiş gerçek kayıtlardan ✅
 4. **Bildirimler** — bildirimdeki "Hepsi tamam", yedek saat, deneme bildirimi ✅
-5. **Tetikleyiciler** — şarj, NFC, Wi‑Fi, alarm; ardından diğerleri
+5. **Tetikleyiciler** — şarja takınca, alarm kapanınca, Wi‑Fi'dan çıkınca, kapıdaki NFC etiketi ✅; şarjdan çıkarma, uyku/uçak modu ve uygulama kapanınca sonra
 6. **İzin rehberi** — bildirim, pil optimizasyonu, konum/NFC
 7. **Play Store** — dahili test kanalı
 8. **iOS** — Kısayollar entegrasyonu

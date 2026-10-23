@@ -44,8 +44,8 @@ class _EsikAppState extends ConsumerState<EsikApp> {
 
   Future<void> _reschedule() async {
     await ref.read(triggerConfigProvider.notifier).saved;
-    await _bridge.rescheduleBackups();
-    if (mounted) ref.invalidate(backupStatusProvider);
+    await _bridge.reschedule();
+    if (mounted) ref.invalidate(thresholdStatusProvider);
   }
 
   void _openRoute(String route) {
@@ -62,8 +62,8 @@ class _EsikAppState extends ConsumerState<EsikApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Yedek saat ya da açık/kapalı değişince, ayar diske yazıldıktan sonra
-    // Android alarmlarını yeniden kur.
+    // Eşik ayarı değişince, ayar diske yazıldıktan sonra Android'deki yedek
+    // alarmları ve tetikleyici işlerini yeniden kur.
     ref.listen(triggerConfigProvider, (_, _) => _reschedule());
     final mode = ref.watch(dayModeProvider);
     return MaterialApp.router(

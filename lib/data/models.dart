@@ -117,6 +117,13 @@ enum TriggerKind {
   final String when;
   final EsikIcon icon;
 
+  /// Android'de çalışan tetikleyiciler (android/.../Triggers.kt). Diğerleri
+  /// listede "Yakında" olarak görünür; o güne kadar yedek saat devrede.
+  bool get supported => switch (this) {
+    charging || alarmStopped || leftHomeWifi || nfcTag => true,
+    appClosed || sleepMode || airplaneMode || unplugged => false,
+  };
+
   static List<TriggerKind> forMode(DayMode mode) =>
       values.where((k) => k.mode == mode).toList();
 }

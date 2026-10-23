@@ -139,10 +139,12 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                     _TriggerTile(
                       kind: kind,
                       selected: kind == c.kind,
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        _update(c.copyWith(kind: kind));
-                      },
+                      onTap: kind.supported
+                          ? () {
+                              HapticFeedback.selectionClick();
+                              _update(c.copyWith(kind: kind));
+                            }
+                          : null,
                     ),
                 ],
               ),
@@ -188,7 +190,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                   ],
                 ),
               ),
-              _BackupStatusLine(mode: _mode),
+              _StatusLine(mode: _mode),
               const SizedBox(height: 16),
               PrimaryPillButton(
                 label: 'Kurulumu kontrol et',
@@ -223,62 +225,75 @@ class _TriggerTile extends StatelessWidget {
 
   final TriggerKind kind;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// Henüz desteklenmeyen tetikleyicide null: kart soluk ve "Yakında" yazar.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
+    final soon = !kind.supported;
     return Semantics(
       selected: selected,
       button: true,
-      label: '${kind.title}, ${kind.subtitle}',
+      enabled: onTap != null,
+      label: '${kind.title}, ${soon ? 'yakında' : kind.subtitle}',
       excludeSemantics: true,
-      child: SurfaceCard(
-        radius: 26,
-        highlighted: selected,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        onTap: onTap,
-        child: Row(
-          children: [
-            IconCircle(icon: kind.icon, size: 40, active: selected),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    kind.title,
-                    style: t.labelLarge?.copyWith(fontWeight: FontWeight.w400),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    selected ? 'Seçili' : kind.subtitle,
-                    style: t.labelSmall?.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w300,
-                      color: p.textMuted,
+      child: Opacity(
+        opacity: soon && !selected ? 0.45 : 1,
+        child: SurfaceCard(
+          radius: 26,
+          highlighted: selected,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          onTap: onTap,
+          child: Row(
+            children: [
+              IconCircle(icon: kind.icon, size: 40, active: selected),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      kind.title,
+                      style: t.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w400,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      soon
+                          ? 'Yakında'
+                          : selected
+                          ? 'Seçili'
+                          : kind.subtitle,
+                      style: t.labelSmall?.copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w300,
+                        color: p.textMuted,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// "Sıradaki yedek: bugün 14:05 · Son: 08:15 gönderildi". Yedek bildirimin
-/// gerçekten kurulduğunu ve son seferde ne olduğunu gösterir.
-class _BackupStatusLine extends ConsumerWidget {
-  const _BackupStatusLine({required this.mode});
+/// "Sıradaki yedek: bugün 14:05", son yedeğin ve son tetikleyicinin sonucu.
+/// Bildirimin gerçekten kurulduğunu ve son seferde ne olduğunu gösterir.
+class _StatusLine extends ConsumerWidget {
+  const _StatusLine({required this.mode});
   final DayMode mode;
 
   static String _when(DateTime at, DateTime now) {
@@ -294,10 +309,22 @@ class _BackupStatusLine extends ConsumerWidget {
     return '$day ${formatTime(t)}';
   }
 
+  /// Tetikleyicinin çalışması için bilinmesi gereken tek şey.
+  static String? _hint(TriggerKind kind) => switch (kind) {
+    TriggerKind.charging => 'Şarja taktıktan sonra bir dakika içinde gelir.',
+    TriggerKind.alarmStopped =>
+      'Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.',
+    TriggerKind.leftHomeWifi =>
+      'Wi‑Fi’dan kopup mobil veriye geçince gelir; mobil veri açık olmalı.',
+    TriggerKind.nfcTag => 'Etikete dokununca kontrol ekranı açılır.',
+    _ => 'Bu tetikleyici yakında. O zamana kadar yedek saat hatırlatır.',
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
-    final status = ref.watch(backupStatusProvider).value?[mode];
+    final status = ref.watch(thresholdStatusProvider).value?[mode];
+    final kind = ref.watch(triggerConfigProvider)[mode]!.kind;
     // Android kanalı yoksa (testler) satır gösterilmez.
     if (status == null) return const SizedBox.shrink();
     final now = ref.watch(clockProvider)();
@@ -306,7 +333,10 @@ class _BackupStatusLine extends ConsumerWidget {
           ? 'Yedek bildirim kapalı'
           : 'Sıradaki yedek: ${_when(status.next!, now)}',
       if (status.lastAt != null && status.lastOutcome != null)
-        'Son: ${_when(status.lastAt!, now)} ${status.lastOutcome!.description}',
+        'Son yedek: ${_when(status.lastAt!, now)} ${status.lastOutcome!.description}',
+      if (status.triggerAt != null && status.triggerOutcome != null)
+        '${kind.title}: ${_when(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
+      ?_hint(kind),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),

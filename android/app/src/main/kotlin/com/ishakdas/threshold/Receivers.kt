@@ -30,13 +30,10 @@ class BackupReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val mode = Mode.of(intent.getStringExtra(EsikNotifications.EXTRA_MODE))
         if (mode != null) {
-            val day = EsikData.thresholdDay()
-            val outcome = when {
-                !EsikData.config(context, mode).backupEnabled -> BackupOutcome.DISABLED
-                EsikData.isComplete(context, day, mode) -> BackupOutcome.ALREADY_DONE
-                EsikData.wasNotified(context, day, mode) -> BackupOutcome.ALREADY_NOTIFIED
-                EsikNotifications.show(context, mode, Reason.BACKUP) -> BackupOutcome.SHOWN
-                else -> BackupOutcome.NO_PERMISSION
+            val outcome = if (EsikData.config(context, mode).backupEnabled) {
+                Thresholds.notifyIfDue(context, mode, Reason.BACKUP)
+            } else {
+                NotifyOutcome.DISABLED
             }
             BackupScheduler.recordOutcome(context, mode, outcome)
         }
@@ -44,33 +41,25 @@ class BackupReceiver : BroadcastReceiver() {
     }
 }
 
-/** Telefon yeniden başlayınca, uygulama güncellenince ya da saat değişince alarmları yeniden kurar. */
+/** Telefon yeniden başlayınca, uygulama güncellenince ya da saat değişince alarmları ve işleri yeniden kurar. */
 class RescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         BackupScheduler.schedule(context)
+        TriggerScheduler.schedule(context)
     }
-}
-
-/** Yedek alarm çaldığında ne oldu. Ayarlar ekranında gösterilir. */
-enum class BackupOutcome(val key: String) {
-    SHOWN("shown"),
-    ALREADY_DONE("alreadyDone"),
-    ALREADY_NOTIFIED("alreadyNotified"),
-    NO_PERMISSION("noPermission"),
-    DISABLED("disabled"),
 }
 
 object BackupScheduler {
     private fun state(c: Context) = c.getSharedPreferences("esik_backup", Context.MODE_PRIVATE)
 
-    fun recordOutcome(c: Context, mode: Mode, outcome: BackupOutcome) {
+    fun recordOutcome(c: Context, mode: Mode, outcome: NotifyOutcome) {
         state(c).edit()
             .putLong("last.${mode.key}.at", System.currentTimeMillis())
             .putString("last.${mode.key}.outcome", outcome.key)
             .apply()
     }
 
-    /** Dart'a: her mod için sıradaki alarm ve son alarmın sonucu. */
+    /** Dart'a: her mod için sıradaki yedek, son yedeğin ve son tetikleyicinin sonucu. */
     fun status(c: Context): Map<String, Map<String, Any?>> {
         val p = state(c)
         return Mode.entries.associate { mode ->
@@ -79,6 +68,8 @@ object BackupScheduler {
                 "next" to p.getLong("next.$k", 0L).takeIf { it > 0 },
                 "lastAt" to p.getLong("last.$k.at", 0L).takeIf { it > 0 },
                 "lastOutcome" to p.getString("last.$k.outcome", null),
+                "triggerAt" to TriggerScheduler.lastAt(c, mode),
+                "triggerOutcome" to TriggerScheduler.lastOutcome(c, mode),
             )
         }
     }

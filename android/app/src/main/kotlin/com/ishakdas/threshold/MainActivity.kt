@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -27,6 +28,7 @@ object EsikBridge {
 class MainActivity : FlutterActivity() {
     private var channel: MethodChannel? = null
     private var permissionResult: MethodChannel.Result? = null
+    private var nfcResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -34,13 +36,10 @@ class MainActivity : FlutterActivity() {
         val ch = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "esik/native")
         ch.setMethodCallHandler { call, result ->
             when (call.method) {
-                "takeLaunchRoute" -> {
-                    val route = intent?.getStringExtra(EsikNotifications.EXTRA_ROUTE)
-                    intent?.removeExtra(EsikNotifications.EXTRA_ROUTE)
-                    result.success(route)
-                }
-                "rescheduleBackups" -> {
+                "takeLaunchRoute" -> result.success(takeRoute(intent))
+                "reschedule" -> {
                     BackupScheduler.schedule(this)
+                    TriggerScheduler.schedule(this)
                     result.success(BackupScheduler.status(this))
                 }
                 "backupStatus" -> result.success(BackupScheduler.status(this))
@@ -56,6 +55,15 @@ class MainActivity : FlutterActivity() {
                 }
                 "openBatterySettings" -> {
                     openSettings(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    result.success(null)
+                }
+                "writeNfcTag" -> writeNfcTag(result)
+                "cancelNfcTag" -> {
+                    finishNfc("cancelled")
+                    result.success(null)
+                }
+                "openNfcSettings" -> {
+                    openSettings(Settings.ACTION_NFC_SETTINGS)
                     result.success(null)
                 }
                 "openNotificationSettings" -> {
@@ -75,9 +83,60 @@ class MainActivity : FlutterActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val route = intent.getStringExtra(EsikNotifications.EXTRA_ROUTE) ?: return
-        intent.removeExtra(EsikNotifications.EXTRA_ROUTE)
+        val route = takeRoute(intent) ?: return
         channel?.invokeMethod("openRoute", route)
+    }
+
+    /**
+     * Açılıştaki yönlendirme, bir kez: bildirimdeki ekran ya da kapıdaki
+     * NFC etiketi (esik://kontrol, o anki modun kontrolünü açar).
+     */
+    private fun takeRoute(intent: Intent?): String? {
+        if (intent == null) return null
+        intent.getStringExtra(EsikNotifications.EXTRA_ROUTE)?.let {
+            intent.removeExtra(EsikNotifications.EXTRA_ROUTE)
+            return it
+        }
+        val data = intent.data
+        if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED &&
+            data?.scheme == NfcTagWriter.SCHEME && data.host == NfcTagWriter.HOST
+        ) {
+            intent.action = Intent.ACTION_MAIN
+            intent.data = null
+            return "/kontrol"
+        }
+        return null
+    }
+
+    private fun writeNfcTag(result: MethodChannel.Result) {
+        val adapter = NfcAdapter.getDefaultAdapter(this)
+        when {
+            adapter == null -> result.success("unsupported")
+            !adapter.isEnabled -> result.success("disabled")
+            else -> {
+                finishNfc("cancelled")
+                nfcResult = result
+                val flags = NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_NFC_B or
+                    NfcAdapter.FLAG_READER_NFC_F or NfcAdapter.FLAG_READER_NFC_V
+                adapter.enableReaderMode(this, { tag ->
+                    val outcome = NfcTagWriter.write(tag, packageName)
+                    runOnUiThread { finishNfc(outcome) }
+                }, flags, null)
+            }
+        }
+    }
+
+    private fun finishNfc(outcome: String) {
+        val result = nfcResult ?: return
+        nfcResult = null
+        NfcAdapter.getDefaultAdapter(this)?.let { runCatching { it.disableReaderMode(this) } }
+        result.success(outcome)
+    }
+
+    // Okuyucu modu yalnızca ön plandayken çalışır.
+    override fun onPause() {
+        finishNfc("cancelled")
+        super.onPause()
     }
 
     override fun onDestroy() {

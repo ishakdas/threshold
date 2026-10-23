@@ -91,7 +91,7 @@ void main() {
       'Dene',
     ]);
     expect(steps(TriggerKind.appClosed), contains('Kullanım erişimi ver'));
-    expect(steps(TriggerKind.leftHomeWifi), contains('Ev Wi‑Fi’ını seç'));
+    expect(steps(TriggerKind.leftHomeWifi), contains('Mobil veri açık kalsın'));
     expect(steps(TriggerKind.nfcTag), contains('Etiketi hazırla'));
   });
 
