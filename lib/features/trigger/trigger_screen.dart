@@ -10,10 +10,11 @@ import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
+import '../../platform/native_bridge.dart';
 import 'arc_range_picker.dart';
 
 /// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
-/// Değişiklikler "Kaydet"e basılınca uygulanır.
+/// Her değişiklik anında kaydedilir; yedek alarm da hemen yeniden kurulur.
 class TriggerScreen extends ConsumerStatefulWidget {
   const TriggerScreen({super.key});
 
@@ -23,36 +24,14 @@ class TriggerScreen extends ConsumerStatefulWidget {
 
 class _TriggerScreenState extends ConsumerState<TriggerScreen> {
   late DayMode _mode = ref.read(dayModeProvider);
-  late Map<DayMode, TriggerConfig> _draft = {
-    ...ref.read(triggerConfigProvider),
-  };
 
-  TriggerConfig get _config => _draft[_mode]!;
+  TriggerConfig get _config => ref.read(triggerConfigProvider)[_mode]!;
   void _update(TriggerConfig c) =>
-      setState(() => _draft = {..._draft, _mode: c});
+      ref.read(triggerConfigProvider.notifier).update(_mode, c);
 
-  bool get _dirty {
-    final saved = ref.read(triggerConfigProvider);
-    return DayMode.values.any((m) {
-      final a = saved[m]!, b = _draft[m]!;
-      return a.kind != b.kind ||
-          a.windowStart != b.windowStart ||
-          a.windowEnd != b.windowEnd ||
-          a.windowEnabled != b.windowEnabled ||
-          a.backupEnabled != b.backupEnabled ||
-          a.backupTime != b.backupTime;
-    });
-  }
-
-  void _save() {
-    final notifier = ref.read(triggerConfigProvider.notifier);
-    for (final m in DayMode.values) {
-      notifier.update(m, _draft[m]!);
-    }
-    context.push(
-      '/kurulum?mod=${_mode == DayMode.evening ? 'aksam' : 'sabah'}',
-    );
-  }
+  void _openSetup() => context.push(
+    '/kurulum?mod=${_mode == DayMode.evening ? 'aksam' : 'sabah'}',
+  );
 
   Future<void> _pickBackup() async {
     final picked = await showTimePicker(
@@ -72,7 +51,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = _mode == DayMode.evening;
-    final c = _config;
+    final c = ref.watch(triggerConfigProvider)[_mode]!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -186,14 +165,14 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                               text: 'Hiçbiri olmazsa ',
                               children: [
                                 TextSpan(
-                                  text: formatTime(c.backupTime),
+                                  text: timeAt(c.backupTime),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     decoration: TextDecoration.underline,
                                     decorationColor: p.textFaint,
                                   ),
                                 ),
-                                const TextSpan(text: '’da hatırlat'),
+                                const TextSpan(text: ' hatırlat'),
                               ],
                             ),
                             style: t.bodyMedium,
@@ -209,14 +188,23 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                   ],
                 ),
               ),
+              _BackupStatusLine(mode: _mode),
               const SizedBox(height: 16),
               PrimaryPillButton(
-                label: _dirty
-                    ? 'Kaydet ve kurulumu yap'
-                    : 'Kurulumu kontrol et',
+                label: 'Kurulumu kontrol et',
                 trailingIcon: EsikIcon.arrowRight,
                 expand: true,
-                onPressed: _save,
+                onPressed: _openSetup,
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  'Değişiklikler kendiliğinden kaydedilir',
+                  style: t.labelSmall?.copyWith(
+                    fontSize: 12,
+                    color: p.textFaint,
+                  ),
+                ),
               ),
             ],
           ),
@@ -281,6 +269,53 @@ class _TriggerTile extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Sıradaki yedek: bugün 14:05 · Son: 08:15 gönderildi". Yedek bildirimin
+/// gerçekten kurulduğunu ve son seferde ne olduğunu gösterir.
+class _BackupStatusLine extends ConsumerWidget {
+  const _BackupStatusLine({required this.mode});
+  final DayMode mode;
+
+  static String _when(DateTime at, DateTime now) {
+    final t = TimeOfDay.fromDateTime(at);
+    final d = DateTime(at.year, at.month, at.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final day = switch (d.difference(today).inDays) {
+      0 => 'bugün',
+      1 => 'yarın',
+      -1 => 'dün',
+      _ => '${at.day}.${at.month}',
+    };
+    return '$day ${formatTime(t)}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final status = ref.watch(backupStatusProvider).value?[mode];
+    // Android kanalı yoksa (testler) satır gösterilmez.
+    if (status == null) return const SizedBox.shrink();
+    final now = ref.watch(clockProvider)();
+    final lines = [
+      status.next == null
+          ? 'Yedek bildirim kapalı'
+          : 'Sıradaki yedek: ${_when(status.next!, now)}',
+      if (status.lastAt != null && status.lastOutcome != null)
+        'Son: ${_when(status.lastAt!, now)} ${status.lastOutcome!.description}',
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),
+      child: Text(
+        lines.join('\n'),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w300,
+          color: p.textMuted,
+          height: 1.5,
         ),
       ),
     );

@@ -254,6 +254,18 @@ class DayLog {
 String formatTime(TimeOfDay t) =>
     '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+/// Saati bulunma ekiyle yazar: "22:30’da", "08:15’te", "23:08’de".
+/// Ek, saatin okunuşundaki son sayıya göre seçilir (dakika 00 ise saate göre).
+String timeAt(TimeOfDay t) {
+  final n = t.minute != 0 ? t.minute : t.hour;
+  // Birler: bir, iki, üç, dört, beş, altı, yedi, sekiz, dokuz.
+  const units = ['', 'de', 'de', 'te', 'te', 'te', 'da', 'de', 'de', 'da'];
+  // Onlar: sıfır, on, yirmi, otuz, kırk, elli.
+  const tens = ['da', 'da', 'de', 'da', 'ta', 'de'];
+  final suffix = n % 10 != 0 ? units[n % 10] : tens[n ~/ 10];
+  return '${formatTime(t)}’$suffix';
+}
+
 /// Türkçe kurallarına uygun ilk harfi küçültme ("İ" → "i", "I" → "ı").
 String lowerFirst(String s) {
   if (s.isEmpty) return s;

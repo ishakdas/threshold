@@ -31,13 +31,14 @@ class BackupReceiver : BroadcastReceiver() {
         val mode = Mode.of(intent.getStringExtra(EsikNotifications.EXTRA_MODE))
         if (mode != null) {
             val day = EsikData.thresholdDay()
-            val config = EsikData.config(context, mode)
-            if (config.backupEnabled &&
-                !EsikData.isComplete(context, day, mode) &&
-                !EsikData.wasNotified(context, day, mode)
-            ) {
-                EsikNotifications.show(context, mode, Reason.BACKUP)
+            val outcome = when {
+                !EsikData.config(context, mode).backupEnabled -> BackupOutcome.DISABLED
+                EsikData.isComplete(context, day, mode) -> BackupOutcome.ALREADY_DONE
+                EsikData.wasNotified(context, day, mode) -> BackupOutcome.ALREADY_NOTIFIED
+                EsikNotifications.show(context, mode, Reason.BACKUP) -> BackupOutcome.SHOWN
+                else -> BackupOutcome.NO_PERMISSION
             }
+            BackupScheduler.recordOutcome(context, mode, outcome)
         }
         BackupScheduler.schedule(context)
     }
@@ -50,7 +51,38 @@ class RescheduleReceiver : BroadcastReceiver() {
     }
 }
 
+/** Yedek alarm çaldığında ne oldu. Ayarlar ekranında gösterilir. */
+enum class BackupOutcome(val key: String) {
+    SHOWN("shown"),
+    ALREADY_DONE("alreadyDone"),
+    ALREADY_NOTIFIED("alreadyNotified"),
+    NO_PERMISSION("noPermission"),
+    DISABLED("disabled"),
+}
+
 object BackupScheduler {
+    private fun state(c: Context) = c.getSharedPreferences("esik_backup", Context.MODE_PRIVATE)
+
+    fun recordOutcome(c: Context, mode: Mode, outcome: BackupOutcome) {
+        state(c).edit()
+            .putLong("last.${mode.key}.at", System.currentTimeMillis())
+            .putString("last.${mode.key}.outcome", outcome.key)
+            .apply()
+    }
+
+    /** Dart'a: her mod için sıradaki alarm ve son alarmın sonucu. */
+    fun status(c: Context): Map<String, Map<String, Any?>> {
+        val p = state(c)
+        return Mode.entries.associate { mode ->
+            val k = mode.key
+            mode.key to mapOf(
+                "next" to p.getLong("next.$k", 0L).takeIf { it > 0 },
+                "lastAt" to p.getLong("last.$k.at", 0L).takeIf { it > 0 },
+                "lastOutcome" to p.getString("last.$k.outcome", null),
+            )
+        }
+    }
+
     private fun pending(c: Context, mode: Mode): PendingIntent = PendingIntent.getBroadcast(
         c,
         if (mode == Mode.EVENING) 31 else 32,
@@ -70,9 +102,13 @@ object BackupScheduler {
             val pi = pending(c, mode)
             am.cancel(pi)
             val config = EsikData.config(c, mode)
-            if (!config.backupEnabled) continue
+            if (!config.backupEnabled) {
+                state(c).edit().remove("next.${mode.key}").apply()
+                continue
+            }
             val at = nextOccurrence(config.backupTime)
                 .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            state(c).edit().putLong("next.${mode.key}", at).apply()
             // Kesin alarm izni (SCHEDULE_EXACT_ALARM) istemiyoruz: bir hatırlatma
             // için birkaç dakikalık gecikme kabul edilebilir. Bu alarm Doze'da da çalışır.
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)

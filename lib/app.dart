@@ -30,7 +30,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     _lifecycle;
     _bridge.listen(onOpenRoute: _openRoute, onDataChanged: _reloadData);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      unawaited(_bridge.rescheduleBackups());
+      unawaited(_reschedule());
       final route = await _bridge.takeLaunchRoute();
       if (route != null) _openRoute(route);
     });
@@ -40,6 +40,12 @@ class _EsikAppState extends ConsumerState<EsikApp> {
   void dispose() {
     _lifecycle.dispose();
     super.dispose();
+  }
+
+  Future<void> _reschedule() async {
+    await ref.read(triggerConfigProvider.notifier).saved;
+    await _bridge.rescheduleBackups();
+    if (mounted) ref.invalidate(backupStatusProvider);
   }
 
   void _openRoute(String route) {
@@ -56,8 +62,9 @@ class _EsikAppState extends ConsumerState<EsikApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Yedek saat ya da açık/kapalı değişince Android alarmlarını yeniden kur.
-    ref.listen(triggerConfigProvider, (_, _) => _bridge.rescheduleBackups());
+    // Yedek saat ya da açık/kapalı değişince, ayar diske yazıldıktan sonra
+    // Android alarmlarını yeniden kur.
+    ref.listen(triggerConfigProvider, (_, _) => _reschedule());
     final mode = ref.watch(dayModeProvider);
     return MaterialApp.router(
       title: 'Eşik',

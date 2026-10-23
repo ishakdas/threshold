@@ -201,16 +201,23 @@ class TriggerConfigNotifier extends Notifier<Map<DayMode, TriggerConfig>> {
     };
   }
 
+  /// Son yazmanın bitişi. Android ayarı diskten okuduğu için alarmlar ancak
+  /// bu tamamlandıktan sonra yeniden kurulmalı.
+  Future<void> saved = Future.value();
+
   void update(DayMode mode, TriggerConfig config) {
-    state = {...state, mode: config};
-    _persist(state);
+    final next = {...state, mode: config};
+    // Önce yazmayı başlat: state değişince dinleyiciler hemen çalışır ve
+    // [saved]'i bu yazmanın kendisi olarak görmeliler.
+    _persist(next);
+    state = next;
   }
 
-  void _persist(Map<DayMode, TriggerConfig> configs) => unawaited(
-    ref.read(storeProvider).writeJson(EsikStore.triggersKey, {
+  void _persist(Map<DayMode, TriggerConfig> configs) {
+    saved = ref.read(storeProvider).writeJson(EsikStore.triggersKey, {
       for (final e in configs.entries) e.key.name: e.value.toJson(),
-    }),
-  );
+    });
+  }
 }
 
 final triggerConfigProvider =

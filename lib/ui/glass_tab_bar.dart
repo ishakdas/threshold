@@ -34,10 +34,12 @@ class GlassTabBar extends StatelessWidget {
 
     Widget tab(int i) {
       final selected = i == currentIndex;
+      final color = selected ? p.text : p.textMuted;
       return Semantics(
         selected: selected,
         button: true,
         label: tabs[i].label,
+        excludeSemantics: true,
         child: InkResponse(
           onTap: () {
             HapticFeedback.selectionClick();
@@ -45,14 +47,30 @@ class GlassTabBar extends StatelessWidget {
           },
           radius: 28,
           child: SizedBox(
-            width: 52,
-            height: 52,
-            child: Center(
-              child: EsikIconView(
-                tabs[i].icon,
-                color: selected ? p.text : p.textMuted,
-                strokeWidth: selected ? 2.2 : 1.6,
-              ),
+            width: 56,
+            height: 54,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                EsikIconView(
+                  tabs[i].icon,
+                  size: 22,
+                  color: color,
+                  strokeWidth: selected ? 2.2 : 1.6,
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  tabs[i].label,
+                  maxLines: 1,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    fontSize: 10,
+                    height: 1.1,
+                    color: color,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

@@ -41,8 +41,9 @@ class MainActivity : FlutterActivity() {
                 }
                 "rescheduleBackups" -> {
                     BackupScheduler.schedule(this)
-                    result.success(null)
+                    result.success(BackupScheduler.status(this))
                 }
+                "backupStatus" -> result.success(BackupScheduler.status(this))
                 "notificationsGranted" -> result.success(EsikNotifications.hasPermission(this))
                 "requestNotificationPermission" -> requestNotificationPermission(result)
                 "showTestNotification" -> {

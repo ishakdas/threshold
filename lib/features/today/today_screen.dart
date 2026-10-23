@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
 import '../../data/models.dart';
+import '../../platform/native_bridge.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
@@ -49,6 +50,11 @@ class TodayScreen extends ConsumerWidget {
             const SizedBox(height: 14),
             DayStrip(entries: _stripEntries(ref)),
             const SizedBox(height: 10),
+            // Bildirim izni yoksa eşik hiçbir zaman haber veremez.
+            if (ref.watch(notificationsGrantedProvider).value == false) ...[
+              const _SetupCard(),
+              const SizedBox(height: 10),
+            ],
             _ThresholdCard(mode: mode),
             const SizedBox(height: 10),
             _SummaryCard(mode: other),
@@ -225,8 +231,8 @@ class _SummaryCard extends ConsumerWidget {
     final String status;
     if (session.isComplete) {
       count = '$n/$n';
-      final at = formatTime(TimeOfDay.fromDateTime(session.completedAt!));
-      status = evening ? 'Bu akşam $at’de tamam' : 'Bu sabah $at’de tamam';
+      final at = timeAt(TimeOfDay.fromDateTime(session.completedAt!));
+      status = evening ? 'Bu akşam $at tamam' : 'Bu sabah $at tamam';
     } else if (!evening) {
       final done = session.checked.length.clamp(0, n);
       count = done == 0 ? '–' : '$done/$n';
@@ -236,7 +242,7 @@ class _SummaryCard extends ConsumerWidget {
       (count, status) = switch (y.evening) {
         CheckOutcome.done || CheckOutcome.viaBackup => (
           '$n/$n',
-          'Dün akşam ${formatTime(y.eveningAt!)}’de tamam',
+          'Dün akşam ${timeAt(y.eveningAt!)} tamam',
         ),
         CheckOutcome.missed => ('0/$n', 'Dün akşam atlandı'),
         CheckOutcome.notTracked => ('–', 'Dün akşam kayıt yok'),
@@ -387,6 +393,50 @@ class _ModeChip extends StatelessWidget {
         child: InfoChip(
           label: evening ? 'Akşam modu' : 'Sabah modu',
           icon: evening ? EsikIcon.moon : EsikIcon.sun,
+        ),
+      ),
+    );
+  }
+}
+
+class _SetupCard extends StatelessWidget {
+  const _SetupCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      label: 'Bildirimler kapalı. Kurulumu tamamla',
+      excludeSemantics: true,
+      child: SurfaceCard(
+        highlighted: true,
+        radius: 24,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        onTap: () => context.push('/kurulum'),
+        child: Row(
+          children: [
+            const IconCircle(icon: EsikIcon.bell, size: 40, active: true),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Kurulumu tamamla', style: t.labelLarge),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Bildirimler kapalı; eşik geldiğinde haber veremeyiz.',
+                    style: t.labelMedium?.copyWith(
+                      fontWeight: FontWeight.w300,
+                      color: p.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
+          ],
         ),
       ),
     );
