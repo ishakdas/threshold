@@ -77,6 +77,23 @@ void main() {
     expect(status[DayMode.morning]!.triggerOutcome, NotifyOutcome.shown);
     expect(status[DayMode.morning]!.next, isNull);
     expect(status[DayMode.evening]!.triggerOutcome, isNull);
+    expect(status[DayMode.evening]!.wait, isNull);
+  });
+
+  test('durum: tetikleyicinin beklediği şey okunur', () {
+    final at = DateTime(2026, 10, 24, 7, 0);
+    final status = ThresholdStatus.parse({
+      'morning': {
+        'triggerWait': {'wait': 'alarm', 'at': at.millisecondsSinceEpoch},
+      },
+      'evening': {
+        'triggerWait': {'wait': 'charging', 'at': null},
+      },
+    })!;
+    expect(status[DayMode.morning]!.wait, TriggerWait.alarm);
+    expect(status[DayMode.morning]!.waitAt, at);
+    expect(status[DayMode.evening]!.wait, TriggerWait.charging);
+    expect(status[DayMode.evening]!.waitAt, isNull);
   });
 
   testWidgets('ayar değişince Android işleri yeniden kurulur', (tester) async {

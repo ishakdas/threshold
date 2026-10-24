@@ -40,12 +40,11 @@ data class Window(val start: LocalTime, val end: LocalTime) {
         }
 
     companion object {
-        /** Aralık kapalıysa modun tamamı (Dart'taki dayModeFor ile aynı sınırlar). */
-        fun of(mode: Mode, config: TriggerConfig): Window = when {
-            config.windowEnabled -> Window(config.windowStart, config.windowEnd)
-            mode == Mode.EVENING -> Window(LocalTime.of(17, 0), LocalTime.of(4, 0))
-            else -> Window(LocalTime.of(4, 0), LocalTime.of(17, 0))
-        }
+        /** Aralık kapalıysa ("Her saatte") günün tamamı. */
+        fun of(config: TriggerConfig): Window =
+            if (config.windowEnabled) Window(config.windowStart, config.windowEnd) else ALL_DAY
+
+        private val ALL_DAY = Window(LocalTime.MIDNIGHT, LocalTime.MIDNIGHT)
     }
 }
 
@@ -128,7 +127,7 @@ object TriggerScheduler {
         val evening = EsikData.config(c, Mode.EVENING)
         if (evening.kind == "charging") {
             val skip = Thresholds.handledToday(c, Mode.EVENING)
-            scheduleCharging(c, Window.of(Mode.EVENING, evening).delayUntilOpen(now, skip))
+            scheduleCharging(c, Window.of(evening).delayUntilOpen(now, skip))
         } else {
             jobs(c).cancel(JOB_CHARGING)
         }
@@ -136,7 +135,7 @@ object TriggerScheduler {
         val morning = EsikData.config(c, Mode.MORNING)
         if (morning.kind != "alarmStopped") jobs(c).cancel(JOB_ALARM)
         if (morning.kind == "leftHomeWifi") {
-            val window = Window.of(Mode.MORNING, morning)
+            val window = Window.of(morning)
             val skip = Thresholds.handledToday(c, Mode.MORNING)
             if (!skip && window.contains(now.toLocalTime()) && armedToday(c)) {
                 scheduleWifiLeft(c)
@@ -150,12 +149,14 @@ object TriggerScheduler {
     }
 
     private fun scheduleCharging(c: Context, delay: Long) {
+        rememberFrom(c, JOB_CHARGING, delay)
         jobs(c).schedule(
             job(c, JOB_CHARGING).setRequiresCharging(true).setMinimumLatency(delay).build(),
         )
     }
 
     private fun scheduleWifiArm(c: Context, delay: Long) {
+        rememberFrom(c, JOB_WIFI_ARM, delay)
         jobs(c).cancel(JOB_WIFI_LEFT)
         val b = job(c, JOB_WIFI_ARM).setMinimumLatency(delay)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -184,6 +185,41 @@ object TriggerScheduler {
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
         .build()
+
+    /** Bekleyen tetikleyici işinin ne zamandan itibaren devrede olduğu (durum satırı için). */
+    private fun rememberFrom(c: Context, job: Int, delay: Long) {
+        state(c).edit().putLong("from.$job", System.currentTimeMillis() + delay).apply()
+    }
+
+    private fun from(c: Context, job: Int): Long? =
+        state(c).getLong("from.$job", 0L).takeIf { it > 0 }
+
+    /**
+     * Dart'a: tetikleyici şu an neyi bekliyor. "wait" adları Dart'taki
+     * TriggerWait ile aynıdır; "at" o beklemeyle ilgili an (ms).
+     */
+    fun waiting(c: Context, mode: Mode): Map<String, Any?>? {
+        val kind = EsikData.config(c, mode).kind
+        val pending = { id: Int -> jobs(c).getPendingJob(id) != null }
+        return when {
+            mode == Mode.EVENING && kind == "charging" ->
+                if (pending(JOB_CHARGING)) mapOf("wait" to "charging", "at" to from(c, JOB_CHARGING)) else mapOf("wait" to "none")
+            mode == Mode.MORNING && kind == "alarmStopped" -> {
+                val next = nextAlarm(c)
+                when {
+                    pending(JOB_ALARM) -> mapOf("wait" to "alarmSettling")
+                    next > 0 -> mapOf("wait" to "alarm", "at" to next)
+                    else -> mapOf("wait" to "noAlarm")
+                }
+            }
+            mode == Mode.MORNING && kind == "leftHomeWifi" -> when {
+                pending(JOB_WIFI_LEFT) -> mapOf("wait" to "leaving")
+                pending(JOB_WIFI_ARM) -> mapOf("wait" to "wifi", "at" to from(c, JOB_WIFI_ARM))
+                else -> mapOf("wait" to "none")
+            }
+            else -> null
+        }
+    }
 
     private fun armedToday(c: Context): Boolean =
         state(c).getString("wifi.armed", null) == EsikData.thresholdDay().toString()
@@ -218,7 +254,7 @@ object TriggerScheduler {
         when (id) {
             JOB_CHARGING -> {
                 val config = EsikData.config(c, Mode.EVENING)
-                val window = Window.of(Mode.EVENING, config)
+                val window = Window.of(config)
                 if (config.kind == "charging" && window.contains(now.toLocalTime())) {
                     recordOutcome(c, Mode.EVENING, Thresholds.notifyIfDue(c, Mode.EVENING, Reason.TRIGGER))
                 }
@@ -231,14 +267,14 @@ object TriggerScheduler {
                 val snoozed = next > 0 && next - System.currentTimeMillis() < SNOOZE_MS
                 // Ertelendiyse sıradaki çalışta yeniden bakılır.
                 if (config.kind == "alarmStopped" && !snoozed &&
-                    Window.of(Mode.MORNING, config).contains(now.toLocalTime())
+                    Window.of(config).contains(now.toLocalTime())
                 ) {
                     recordOutcome(c, Mode.MORNING, Thresholds.notifyIfDue(c, Mode.MORNING, Reason.TRIGGER))
                 }
             }
             JOB_WIFI_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
-                val window = Window.of(Mode.MORNING, config)
+                val window = Window.of(config)
                 if (config.kind != "leftHomeWifi") return
                 if (window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)) {
                     setArmed(c, true)
@@ -249,7 +285,7 @@ object TriggerScheduler {
             }
             JOB_WIFI_LEFT -> {
                 val config = EsikData.config(c, Mode.MORNING)
-                val window = Window.of(Mode.MORNING, config)
+                val window = Window.of(config)
                 if (config.kind != "leftHomeWifi") return
                 if (window.contains(now.toLocalTime()) && armedToday(c)) {
                     recordOutcome(c, Mode.MORNING, Thresholds.notifyIfDue(c, Mode.MORNING, Reason.TRIGGER))

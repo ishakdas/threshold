@@ -93,6 +93,8 @@ class ThresholdStatus {
     this.lastOutcome,
     this.triggerAt,
     this.triggerOutcome,
+    this.wait,
+    this.waitAt,
   });
 
   /// Sıradaki yedek alarm; yedek kapalıysa null.
@@ -105,6 +107,12 @@ class ThresholdStatus {
   /// Tetikleyicinin (şarj, alarm, Wi‑Fi) son çalıştığı an ve sonucu.
   final DateTime? triggerAt;
   final NotifyOutcome? triggerOutcome;
+
+  /// Tetikleyicinin şu an beklediği şey; NFC ve henüz desteklenmeyenlerde null.
+  final TriggerWait? wait;
+
+  /// Beklemeyle ilgili an: sıradaki alarm ya da beklemenin başladığı an.
+  final DateTime? waitAt;
 
   static DateTime? _time(Object? ms) =>
       ms is int ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
@@ -123,9 +131,42 @@ class ThresholdStatus {
             lastOutcome: _outcome(m['lastOutcome']),
             triggerAt: _time(m['triggerAt']),
             triggerOutcome: _outcome(m['triggerOutcome']),
+            wait: switch (m['triggerWait']) {
+              final Map w =>
+                TriggerWait.values
+                    .where((v) => v.name == w['wait'])
+                    .firstOrNull,
+              _ => null,
+            },
+            waitAt: switch (m['triggerWait']) {
+              final Map w => _time(w['at']),
+              _ => null,
+            },
           ),
     };
   }
+}
+
+/// Tetikleyicinin şu an beklediği şey (Android'deki TriggerScheduler.waiting).
+enum TriggerWait {
+  /// Şarja takılmasını bekliyor ([ThresholdStatus.waitAt]'ten itibaren).
+  charging,
+
+  /// Sıradaki alarm [ThresholdStatus.waitAt]'te.
+  alarm,
+
+  /// Alarm az önce çaldı; kapatılmasına ya da ertelenmesine bakılacak.
+  alarmSettling,
+  noAlarm,
+
+  /// Wi‑Fi'a bağlanmayı bekliyor ([ThresholdStatus.waitAt]'ten itibaren).
+  wifi,
+
+  /// Wi‑Fi'dan kopup mobil veriye geçmeyi bekliyor.
+  leaving,
+
+  /// İş kurulu değil; olmaması gerekir.
+  none,
 }
 
 /// NFC etiketi yazmanın sonucu (Android'deki NfcTagWriter ile aynı adlar).

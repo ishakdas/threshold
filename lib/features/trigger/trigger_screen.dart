@@ -309,9 +309,31 @@ class _StatusLine extends ConsumerWidget {
     return '$day ${formatTime(t)}';
   }
 
+  /// "Durum: şarj bekleniyor". Tetikleyicinin gerçekten kurulu olduğunu gösterir.
+  static String? _waiting(ThresholdStatus status, DateTime now) {
+    final at = status.waitAt;
+    // Bekleme henüz başlamadıysa ne zaman başlayacağı.
+    final later = at != null && at.isAfter(now.add(const Duration(minutes: 1)))
+        ? '${_when(at, now)} itibarıyla '
+        : '';
+    final text = switch (status.wait) {
+      null => null,
+      TriggerWait.charging =>
+        '$later'
+            'şarja takılması bekleniyor',
+      TriggerWait.wifi => '${later}Wi‑Fi bağlantısı bekleniyor',
+      TriggerWait.leaving => 'Wi‑Fi’dan çıkış bekleniyor',
+      TriggerWait.alarm => 'sıradaki alarm ${_when(at!, now)}',
+      TriggerWait.alarmSettling => 'alarm çaldı, kapanması bekleniyor',
+      TriggerWait.noAlarm => 'kurulu alarm yok',
+      TriggerWait.none => 'kurulu değil',
+    };
+    return text == null ? null : 'Durum: $text';
+  }
+
   /// Tetikleyicinin çalışması için bilinmesi gereken tek şey.
   static String? _hint(TriggerKind kind) => switch (kind) {
-    TriggerKind.charging => 'Şarja taktıktan sonra bir dakika içinde gelir.',
+    TriggerKind.charging => 'Şarja taktıktan sonra birkaç dakika içinde gelir.',
     TriggerKind.alarmStopped =>
       'Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.',
     TriggerKind.leftHomeWifi =>
@@ -336,6 +358,7 @@ class _StatusLine extends ConsumerWidget {
         'Son yedek: ${_when(status.lastAt!, now)} ${status.lastOutcome!.description}',
       if (status.triggerAt != null && status.triggerOutcome != null)
         '${kind.title}: ${_when(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
+      ?_waiting(status, now),
       ?_hint(kind),
     ];
     return Padding(
