@@ -1,6 +1,7 @@
 package com.ishakdas.threshold
 
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -9,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.nfc.NdefMessage
@@ -19,6 +21,7 @@ import android.nfc.tech.NdefFormatable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -85,6 +88,8 @@ object Thresholds {
  *   çalan alarm fark edilir; erteleme bitene kadar beklenir.
  * - Ev Wi‑Fi'ından çıkınca: önce Wi‑Fi'a bağlıyken "kurulur", sonra telefon
  *   mobil veriye geçince bildirir. Wi‑Fi adı okunmadığı için konum izni gerekmez.
+ * - Sessize alınca / sessizden çıkarınca: zil modu ve Rahatsız Etmeyin ayarı
+ *   değişince JobScheduler uyandırır (TriggerContentUri); ek izin gerekmez.
  * - Kapıdaki etiket: etiket uygulamayı doğrudan açar (MainActivity), iş yok.
  */
 object TriggerScheduler {
@@ -92,6 +97,7 @@ object TriggerScheduler {
     const val JOB_ALARM = 42
     const val JOB_WIFI_ARM = 43
     const val JOB_WIFI_LEFT = 44
+    const val JOB_SILENCE = 45
 
     /** Çalan alarmdan bu kadar sonra bakılır: kullanıcı alarmı kapatmış ya da ertelemiş olur. */
     private const val ALARM_SETTLE_MS = 90_000L
@@ -133,6 +139,13 @@ object TriggerScheduler {
         }
 
         val morning = EsikData.config(c, Mode.MORNING)
+        if (evening.kind == "silenced" || morning.kind == "unsilenced") {
+            // İş zaten bekliyorsa son bilinen durum onun; yeniden kurarken ezme.
+            if (jobs(c).getPendingJob(JOB_SILENCE) == null) rememberSilent(c, isSilent(c))
+            scheduleSilence(c)
+        } else {
+            jobs(c).cancel(JOB_SILENCE)
+        }
         if (morning.kind != "alarmStopped") jobs(c).cancel(JOB_ALARM)
         if (morning.kind == "leftHomeWifi") {
             val window = Window.of(morning)
@@ -179,6 +192,29 @@ object TriggerScheduler {
         jobs(c).schedule(b.build())
     }
 
+    /** Zil modu (sessiz/titreşim/normal) ya da Rahatsız Etmeyin değişince çalışır. Tek seferlik. */
+    private fun scheduleSilence(c: Context) {
+        val b = job(c, JOB_SILENCE)
+        for (name in listOf(Settings.Global.MODE_RINGER, "zen_mode")) {
+            b.addTriggerContentUri(JobInfo.TriggerContentUri(Settings.Global.getUriFor(name), 0))
+        }
+        jobs(c).schedule(b.setTriggerContentUpdateDelay(500).setTriggerContentMaxDelay(3_000).build())
+    }
+
+    /** Sessiz: zil normal değil (sessiz ya da titreşim) veya Rahatsız Etmeyin açık. */
+    fun isSilent(c: Context): Boolean {
+        val ringer = c.getSystemService(AudioManager::class.java).ringerMode
+        val filter = c.getSystemService(NotificationManager::class.java).currentInterruptionFilter
+        return ringer != AudioManager.RINGER_MODE_NORMAL ||
+            filter == NotificationManager.INTERRUPTION_FILTER_PRIORITY ||
+            filter == NotificationManager.INTERRUPTION_FILTER_ALARMS ||
+            filter == NotificationManager.INTERRUPTION_FILTER_NONE
+    }
+
+    private fun rememberSilent(c: Context, silent: Boolean) {
+        state(c).edit().putBoolean("silent", silent).apply()
+    }
+
     /** Varsayılan ağın bu türden olması koşulu. VPN arkasında da çalışsın diye NOT_VPN kaldırılır. */
     private fun network(transport: Int): NetworkRequest = NetworkRequest.Builder()
         .addTransportType(transport)
@@ -211,6 +247,16 @@ object TriggerScheduler {
                     next > 0 -> mapOf("wait" to "alarm", "at" to next)
                     else -> mapOf("wait" to "noAlarm")
                 }
+            }
+            mode == Mode.EVENING && kind == "silenced" -> when {
+                !pending(JOB_SILENCE) -> mapOf("wait" to "none")
+                isSilent(c) -> mapOf("wait" to "alreadySilent")
+                else -> mapOf("wait" to "silence")
+            }
+            mode == Mode.MORNING && kind == "unsilenced" -> when {
+                !pending(JOB_SILENCE) -> mapOf("wait" to "none")
+                isSilent(c) -> mapOf("wait" to "unsilence")
+                else -> mapOf("wait" to "notSilent")
             }
             mode == Mode.MORNING && kind == "leftHomeWifi" -> when {
                 pending(JOB_WIFI_LEFT) -> mapOf("wait" to "leaving")
@@ -271,6 +317,25 @@ object TriggerScheduler {
                 ) {
                     recordOutcome(c, Mode.MORNING, Thresholds.notifyIfDue(c, Mode.MORNING, Reason.TRIGGER))
                 }
+            }
+            JOB_SILENCE -> {
+                val before = state(c).getBoolean("silent", false)
+                val silent = isSilent(c)
+                rememberSilent(c, silent)
+                // Sessize alındı: akşam eşiği. Sessizden çıkarıldı: sabah eşiği.
+                val mode = when {
+                    !before && silent -> Mode.EVENING
+                    before && !silent -> Mode.MORNING
+                    else -> null
+                }
+                val wanted = if (mode == Mode.EVENING) "silenced" else "unsilenced"
+                if (mode != null) {
+                    val config = EsikData.config(c, mode)
+                    if (config.kind == wanted && Window.of(config).contains(now.toLocalTime())) {
+                        recordOutcome(c, mode, Thresholds.notifyIfDue(c, mode, Reason.TRIGGER))
+                    }
+                }
+                later { scheduleSilence(c) }
             }
             JOB_WIFI_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)

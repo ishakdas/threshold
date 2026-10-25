@@ -41,6 +41,10 @@ enum EsikIcon {
   clock('M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3.5 2'),
   alarm('M4 13a8 8 0 1 0 16 0a8 8 0 1 0-16 0zM12 9v4l2.5 2M4 4L2 6M20 4l2 2'),
   bell('M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4'),
+  bellOff('M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4M4 4l16 16'),
+  bellRing(
+    'M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4M3 9a9 9 0 0 1 2.5-5M21 9a9 9 0 0 0-2.5-5',
+  ),
   list('M10 6h10M10 12h10M10 18h10M4.5 6h.01M4.5 12h.01M4.5 18h.01'),
   history('M12 3a9 9 0 1 0 9 9M12 7v5l3 2M21 3v5h-5'),
   sliders('M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4'),

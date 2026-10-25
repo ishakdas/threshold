@@ -73,8 +73,20 @@ void main() {
     expect(c.read(todayProgressProvider)[DayMode.evening]!.checked, isEmpty);
   });
 
+  test('çalışan tetikleyiciler önce, sessiz mod ikisi de çalışır', () {
+    expect(TriggerKind.forMode(DayMode.evening).take(2), [
+      TriggerKind.charging,
+      TriggerKind.silenced,
+    ]);
+    expect(TriggerKind.forMode(DayMode.morning).take(2), [
+      TriggerKind.alarmStopped,
+      TriggerKind.unsilenced,
+    ]);
+    expect(TriggerKind.forMode(DayMode.morning).last.supported, isFalse);
+  });
+
   test('her mod yalnızca kendi tetikleyicilerini sunar', () {
-    expect(TriggerKind.forMode(DayMode.evening), hasLength(4));
+    expect(TriggerKind.forMode(DayMode.evening), hasLength(5));
     expect(
       TriggerKind.forMode(DayMode.morning)
           .every((k) => k.mode == DayMode.morning),

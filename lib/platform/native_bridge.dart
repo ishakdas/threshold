@@ -165,6 +165,18 @@ enum TriggerWait {
   /// Wi‑Fi'dan kopup mobil veriye geçmeyi bekliyor.
   leaving,
 
+  /// Sessize alınmayı bekliyor.
+  silence,
+
+  /// Telefon zaten sessizde; önce zil açılmalı.
+  alreadySilent,
+
+  /// Sessizden çıkarılmayı bekliyor.
+  unsilence,
+
+  /// Telefon sessizde değil; önce sessize alınmalı.
+  notSilent,
+
   /// İş kurulu değil; olmaması gerekir.
   none,
 }

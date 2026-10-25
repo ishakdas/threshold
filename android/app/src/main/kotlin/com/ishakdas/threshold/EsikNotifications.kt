@@ -39,6 +39,8 @@ object EsikNotifications {
     /** Tetikleyicinin geçmiş zamanlı hâli: "Şarja taktın". */
     private val triggerPast = mapOf(
         "charging" to "Şarja taktın",
+        "silenced" to "Telefonu sessize aldın",
+        "unsilenced" to "Telefonu sessizden çıkardın",
         "appClosed" to "Instagram’ı kapattın",
         "sleepMode" to "Uyku modu açıldı",
         "airplaneMode" to "Uçak modunu açtın",

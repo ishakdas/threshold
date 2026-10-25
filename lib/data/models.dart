@@ -57,6 +57,13 @@ enum TriggerKind {
     'Telefonu şarja taktığında',
     EsikIcon.plug,
   ),
+  silenced(
+    DayMode.evening,
+    'Sessize alınca',
+    'Titreşim de olur',
+    'Telefonu sessize aldığında',
+    EsikIcon.bellOff,
+  ),
   appClosed(
     DayMode.evening,
     'Uygulama kapanınca',
@@ -84,6 +91,13 @@ enum TriggerKind {
     'Sabah alarmı',
     'Alarmı durdurduğunda',
     EsikIcon.alarm,
+  ),
+  unsilenced(
+    DayMode.morning,
+    'Sessizden çıkarınca',
+    'Zil açılınca',
+    'Telefonu sessizden çıkardığında',
+    EsikIcon.bellRing,
   ),
   unplugged(
     DayMode.morning,
@@ -120,12 +134,20 @@ enum TriggerKind {
   /// Android'de çalışan tetikleyiciler (android/.../Triggers.kt). Diğerleri
   /// listede "Yakında" olarak görünür; o güne kadar yedek saat devrede.
   bool get supported => switch (this) {
-    charging || alarmStopped || leftHomeWifi || nfcTag => true,
+    charging ||
+    silenced ||
+    alarmStopped ||
+    unsilenced ||
+    leftHomeWifi ||
+    nfcTag => true,
     appClosed || sleepMode || airplaneMode || unplugged => false,
   };
 
-  static List<TriggerKind> forMode(DayMode mode) =>
-      values.where((k) => k.mode == mode).toList();
+  /// Önce çalışanlar, "Yakında" olanlar sonda.
+  static List<TriggerKind> forMode(DayMode mode) => [
+    ...values.where((k) => k.mode == mode && k.supported),
+    ...values.where((k) => k.mode == mode && !k.supported),
+  ];
 }
 
 /// Bir modun eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
