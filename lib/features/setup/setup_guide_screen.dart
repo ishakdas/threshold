@@ -46,8 +46,8 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
   const battery = SetupStep(
     kind: SetupStepKind.battery,
     title: 'Arka planda çalışmasına izin ver',
-    detail: 'Samsung pil tasarrufu Eşik’i uyutabilir. Açılan sayfada Pil’e dokun ve “Kısıtlamasız”ı seç.',
-    action: 'Pil ayarını aç',
+    detail: 'Samsung pil tasarrufu Eşik’i uyutabilir. Açılan pencerede “İzin ver”e dokun. Pencere yerine ayarlar açılırsa Pil’e dokun ve “Kısıtlamasız”ı seç.',
+    action: 'İzin ver',
     icon: EsikIcon.battery,
   );
   final specific = switch (kind) {

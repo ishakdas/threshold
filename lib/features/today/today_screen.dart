@@ -438,6 +438,7 @@ class _SetupCard extends ConsumerWidget {
       excludeSemantics: true,
       child: SurfaceCard(
         highlighted: true,
+        tint: p.warning,
         radius: 24,
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         onTap: () => context.push(
@@ -445,7 +446,12 @@ class _SetupCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            IconCircle(icon: icon, size: 40, active: true),
+            IconCircle(
+              icon: icon,
+              size: 40,
+              active: true,
+              gradient: p.warningGradient,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

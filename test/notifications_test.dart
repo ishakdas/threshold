@@ -215,7 +215,7 @@ void main() {
       await openSetup(tester);
       await tester.tap(find.text('İzin ver'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Pil ayarını aç'));
+      await tester.tap(find.text('İzin ver'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Deneme bildirimi gönder'));
@@ -230,11 +230,7 @@ void main() {
     ) async {
       final calls = fakeNative(tester);
       await openSetup(tester);
-      for (final label in [
-        'İzin ver',
-        'Pil ayarını aç',
-        'Deneme bildirimi gönder',
-      ]) {
+      for (final label in ['İzin ver', 'İzin ver', 'Deneme bildirimi gönder']) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
       }
@@ -266,7 +262,7 @@ void main() {
           );
       GoRouter.of(element).push('/kurulum?mod=sabah');
       await tester.pumpAndSettle();
-      for (final label in ['İzin ver', 'Pil ayarını aç']) {
+      for (final label in ['İzin ver', 'İzin ver']) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
       }
@@ -353,7 +349,7 @@ void main() {
 
         // Bildirimler zaten açık: rehber pil adımında açılır.
         expect(find.text('Adım 2 / 3'), findsOneWidget);
-        await tester.tap(find.text('Pil ayarını aç'));
+        await tester.tap(find.text('İzin ver'));
         await tester.pumpAndSettle();
         expect(calls.map((c) => c.method), contains('openBatterySettings'));
         // Ayar değişmeden dönüldü: adımda kalır, atlanabilir.

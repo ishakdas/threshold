@@ -53,6 +53,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final t = Theme.of(context).textTheme;
     final evening = _mode == DayMode.evening;
     final c = ref.watch(triggerConfigProvider)[_mode]!;
+    final issueCount = ref.watch(setupIssuesProvider)?[_mode]?.length ?? 0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -196,10 +197,11 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const _SilentAlertCard(),
               const SizedBox(height: 16),
               PrimaryPillButton(
-                label: switch (ref.watch(setupIssuesProvider)?[_mode]?.length) {
-                  null || 0 => 'Kurulumu kontrol et',
+                label: switch (issueCount) {
+                  0 => 'Kurulumu kontrol et',
                   final n => 'Kurulumu tamamla · $n eksik',
                 },
+                warning: issueCount > 0,
                 trailingIcon: EsikIcon.arrowRight,
                 expand: true,
                 onPressed: _openSetup,

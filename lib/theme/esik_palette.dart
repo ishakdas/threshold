@@ -17,6 +17,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
     required this.chipBorder,
     required this.accent,
     required this.accentGradient,
+    required this.warning,
+    required this.warningGradient,
     required this.primaryButton,
     required this.onPrimaryButton,
     required this.glassFill,
@@ -39,6 +41,10 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
   final Color chipBorder;
   final Color accent;
   final List<Color> accentGradient;
+
+  /// Dikkat isteyen durumlar (eksik kurulum): amberin kızıla kaçan komşusu.
+  final Color warning;
+  final List<Color> warningGradient;
   final Color primaryButton;
   final Color onPrimaryButton;
   final Color glassFill;
@@ -70,6 +76,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
     chipBorder: Color(0x2EFFFFFF),
     accent: Color(0xFFFFB25C),
     accentGradient: [Color(0xFFFFB86A), Color(0xFFEF8636)],
+    warning: Color(0xFFFF7A62),
+    warningGradient: [Color(0xFFFF9472), Color(0xFFE5483B)],
     primaryButton: Color(0xFFFFFFFF),
     onPrimaryButton: Color(0xFF0B1029),
     glassFill: Color(0x801C2246),
@@ -102,6 +110,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
     chipBorder: Color(0xD9FFFFFF),
     accent: Color(0xFFE8822E),
     accentGradient: [Color(0xFFFFB86A), Color(0xFFEF8636)],
+    warning: Color(0xFFD9443A),
+    warningGradient: [Color(0xFFFF9472), Color(0xFFE5483B)],
     primaryButton: Color(0xFF2B1D12),
     onPrimaryButton: Color(0xFFFBF5EC),
     glassFill: Color(0x80FFFFFF),
@@ -135,6 +145,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
       chipBorder: c(chipBorder, other.chipBorder),
       accent: c(accent, other.accent),
       accentGradient: l(accentGradient, other.accentGradient),
+      warning: c(warning, other.warning),
+      warningGradient: l(warningGradient, other.warningGradient),
       primaryButton: c(primaryButton, other.primaryButton),
       onPrimaryButton: c(onPrimaryButton, other.onPrimaryButton),
       glassFill: c(glassFill, other.glassFill),

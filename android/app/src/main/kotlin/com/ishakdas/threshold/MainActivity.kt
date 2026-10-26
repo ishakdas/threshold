@@ -14,6 +14,7 @@ import android.os.Looper
 import android.os.PowerManager
 import android.provider.AlarmClock
 import android.provider.Settings
+import android.widget.Toast
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -58,9 +59,8 @@ class MainActivity : FlutterActivity() {
                     result.success(pm.isIgnoringBatteryOptimizations(packageName))
                 }
                 "setupHealth" -> result.success(setupHealth())
-                // Samsung'da en kısa yol: Uygulama bilgileri → Pil → Kısıtlamasız.
                 "openBatterySettings" -> {
-                    openSettings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, withPackage = true)
+                    openBatterySettings()
                     result.success(null)
                 }
                 "openClock" -> {
@@ -179,6 +179,20 @@ class MainActivity : FlutterActivity() {
         val granted = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
         permissionResult?.success(granted)
         permissionResult = null
+    }
+
+    /**
+     * Önce Android'in "Arka planda çalışmaya izin verilsin mi?" penceresi: tek
+     * dokunuşla Samsung'daki "Kısıtlamasız" ile aynı sonuç. Açılamazsa uygulama
+     * bilgileri ve ne yapılacağını söyleyen bir ipucu.
+     */
+    private fun openBatterySettings() {
+        val pm = getSystemService(PowerManager::class.java)
+        if (pm.isIgnoringBatteryOptimizations(packageName)) return
+        val ask = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))
+        if (startActivitySafely(ask)) return
+        openSettings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, withPackage = true)
+        Toast.makeText(this, "Pil’e dokun ve “Kısıtlamasız”ı seç", Toast.LENGTH_LONG).show()
     }
 
     /** Kurulum rehberi için gerçek durum. Adlar Dart'taki SetupHealth.parse ile aynıdır. */

@@ -14,6 +14,7 @@ class SurfaceCard extends StatelessWidget {
     this.padding = const EdgeInsets.fromLTRB(20, 16, 20, 18),
     this.onTap,
     this.highlighted = false,
+    this.tint,
   });
 
   final Widget child;
@@ -24,13 +25,17 @@ class SurfaceCard extends StatelessWidget {
   /// Seçili/aktif durum: amber tonlu zemin ve kenar.
   final bool highlighted;
 
+  /// Vurgu rengi; verilmezse amber. Uyarılarda [EsikPalette.warning].
+  final Color? tint;
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final accent = tint ?? p.accent;
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radius),
       side: BorderSide(
-        color: highlighted ? p.accent.withValues(alpha: 0.55) : p.surfaceBorder,
+        color: highlighted ? accent.withValues(alpha: 0.55) : p.surfaceBorder,
       ),
     );
     return AnimatedContainer(
@@ -42,10 +47,7 @@ class SurfaceCard extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: highlighted
-              ? [
-                  p.accent.withValues(alpha: 0.26),
-                  p.accent.withValues(alpha: 0.10),
-                ]
+              ? [accent.withValues(alpha: 0.26), accent.withValues(alpha: 0.10)]
               : [p.surfaceTop, p.surfaceBottom],
         ),
       ),
@@ -72,6 +74,7 @@ class PrimaryPillButton extends StatelessWidget {
     required this.onPressed,
     this.height = 54,
     this.expand = false,
+    this.warning = false,
   });
 
   final String label;
@@ -81,10 +84,15 @@ class PrimaryPillButton extends StatelessWidget {
   final double height;
   final bool expand;
 
+  /// Eksik bir şeyi tamamlatan buton: uyarı renginde, beyaz yazı.
+  final bool warning;
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
+    final background = warning ? p.warning : p.primaryButton;
+    final foreground = warning ? Colors.white : p.onPrimaryButton;
     final button = FilledButton(
       onPressed: onPressed == null
           ? null
@@ -93,8 +101,8 @@ class PrimaryPillButton extends StatelessWidget {
               onPressed!();
             },
       style: FilledButton.styleFrom(
-        backgroundColor: p.primaryButton,
-        foregroundColor: p.onPrimaryButton,
+        backgroundColor: background,
+        foregroundColor: foreground,
         minimumSize: Size(0, height),
         padding: const EdgeInsets.symmetric(horizontal: 22),
         shape: const StadiumBorder(),
@@ -104,12 +112,7 @@ class PrimaryPillButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            EsikIconView(
-              icon!,
-              size: 16,
-              color: p.onPrimaryButton,
-              strokeWidth: 2.4,
-            ),
+            EsikIconView(icon!, size: 16, color: foreground, strokeWidth: 2.4),
             const SizedBox(width: 8),
           ],
           Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
@@ -118,7 +121,7 @@ class PrimaryPillButton extends StatelessWidget {
             EsikIconView(
               trailingIcon!,
               size: 16,
-              color: p.onPrimaryButton,
+              color: foreground,
               strokeWidth: 2,
             ),
           ],
@@ -532,11 +535,15 @@ class IconCircle extends StatelessWidget {
     this.active = false,
     this.iconColor,
     this.strokeWidth = 1.5,
+    this.gradient,
   });
 
   final EsikIcon icon;
   final double size;
   final bool active;
+
+  /// Aktifken zemin; verilmezse amber.
+  final List<Color>? gradient;
   final Color? iconColor;
   final double strokeWidth;
 
@@ -554,7 +561,7 @@ class IconCircle extends StatelessWidget {
             ? LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: p.accentGradient,
+                colors: gradient ?? p.accentGradient,
               )
             : null,
       ),
