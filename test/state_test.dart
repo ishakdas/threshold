@@ -105,6 +105,8 @@ void main() {
     expect(steps(TriggerKind.appClosed), contains('Kullanım erişimi ver'));
     expect(steps(TriggerKind.leftHomeWifi), contains('Mobil veri açık kalsın'));
     expect(steps(TriggerKind.nfcTag), contains('Etiketi hazırla'));
+    expect(steps(TriggerKind.silenced), contains('Ek izin gerekmez'));
+    expect(steps(TriggerKind.unsilenced), hasLength(4));
   });
 
   test('geçmiş 14 gün, dünle biter', () {

@@ -60,7 +60,7 @@ enum TriggerKind {
   silenced(
     DayMode.evening,
     'Sessize alınca',
-    'Titreşim de olur',
+    'Sesi kısınca',
     'Telefonu sessize aldığında',
     EsikIcon.bellOff,
   ),
@@ -95,7 +95,7 @@ enum TriggerKind {
   unsilenced(
     DayMode.morning,
     'Sessizden çıkarınca',
-    'Zil açılınca',
+    'Sesi açınca',
     'Telefonu sessizden çıkardığında',
     EsikIcon.bellRing,
   ),

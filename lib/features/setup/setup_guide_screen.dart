@@ -58,6 +58,15 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
       action: 'Kullanım erişimini aç',
       icon: EsikIcon.app,
     ),
+    TriggerKind.silenced || TriggerKind.unsilenced => SetupStep(
+      kind: SetupStepKind.trigger,
+      title: 'Ek izin gerekmez',
+      detail: kind == TriggerKind.silenced
+          ? 'Akşam aralığında telefonun sesini bir kademe kısınca (sesliden titreşime, titreşimden sessize) ya da Rahatsız Etmeyin açılınca Eşik bunu fark eder.'
+          : 'Sabah aralığında telefonun sesini bir kademe açınca (sessizden titreşime, titreşimden sesliye) ya da Rahatsız Etmeyin kapanınca Eşik bunu fark eder.',
+      action: 'Anladım',
+      icon: kind.icon,
+    ),
     TriggerKind.sleepMode => const SetupStep(
       kind: SetupStepKind.trigger,
       title: 'Bildirim erişimi ver',
@@ -95,6 +104,8 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
       TriggerKind.charging => 'Önce deneme bildirimi. Gerçeği, seçtiğin saat aralığında telefonu şarja taktıktan sonra birkaç dakika içinde gelir.',
       TriggerKind.leftHomeWifi => 'Önce deneme bildirimi. Gerçeği, sabah aralığında Wi‑Fi’ı kapatıp mobil veriye geçince gelir.',
       TriggerKind.alarmStopped => 'Önce deneme bildirimi. Gerçeği, sabah aralığında çalan bir alarmı kapattıktan sonra gelir.',
+      TriggerKind.silenced => 'Önce deneme bildirimi. Gerçeği, akşam aralığında telefonun sesini kıstığında birkaç saniye içinde gelir.',
+      TriggerKind.unsilenced => 'Önce deneme bildirimi. Gerçeği, sabah aralığında telefonun sesini açtığında birkaç saniye içinde gelir.',
       TriggerKind.nfcTag => 'Uygulamadan çık, kilidi açık telefonu etikete dokundur. Kontrol ekranı açılmalı.',
       _ => 'Deneme bildirimi gönderelim; gerçek tetikleyici de aynı şekilde gelecek.',
     },

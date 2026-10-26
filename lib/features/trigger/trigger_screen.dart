@@ -380,12 +380,12 @@ class _StatusLine extends ConsumerWidget {
       TriggerWait.alarm => 'sıradaki alarm ${_when(at!, now)}',
       TriggerWait.alarmSettling => 'alarm çaldı, kapanması bekleniyor',
       TriggerWait.noAlarm => 'kurulu alarm yok',
-      TriggerWait.silence => 'sessize alınması bekleniyor',
+      TriggerWait.silence => 'sesin kısılması bekleniyor',
       TriggerWait.alreadySilent =>
-        'telefon zaten sessizde; zili açıp yeniden sessize al',
-      TriggerWait.unsilence => 'sessizden çıkarılması bekleniyor',
+        'telefon zaten tamamen sessizde; önce sesi biraz aç',
+      TriggerWait.unsilence => 'sesin açılması bekleniyor',
       TriggerWait.notSilent =>
-        'telefon sessizde değil; gece sessize alırsan sabah çalışır',
+        'zil zaten açık; gece sesi kısarsan sabah çalışır',
       TriggerWait.none => 'kurulu değil',
     };
     return text == null ? null : 'Durum: $text';
@@ -398,10 +398,8 @@ class _StatusLine extends ConsumerWidget {
       'Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.',
     TriggerKind.leftHomeWifi =>
       'Wi‑Fi’dan kopup mobil veriye geçince gelir; mobil veri açık olmalı.',
-    TriggerKind.silenced =>
-      'Sessize, titreşime alınca ya da Rahatsız Etmeyin açılınca gelir.',
-    TriggerKind.unsilenced =>
-      'Zil yeniden açılınca ya da Rahatsız Etmeyin kapanınca gelir.',
+    TriggerKind.silenced => 'Ses bir kademe kısılınca gelir: sesliden titreşime, titreşimden sessize ya da Rahatsız Etmeyin açılınca.',
+    TriggerKind.unsilenced => 'Ses bir kademe açılınca gelir: sessizden titreşime, titreşimden sesliye ya da Rahatsız Etmeyin kapanınca.',
     TriggerKind.nfcTag => 'Etikete dokununca kontrol ekranı açılır.',
     _ => 'Bu tetikleyici yakında. O zamana kadar yedek saat hatırlatır.',
   };

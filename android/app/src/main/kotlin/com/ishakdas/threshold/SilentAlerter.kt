@@ -48,10 +48,9 @@ object SilentAlerter {
         }
     }
 
-    /** Varsayılan bildirim sesi, alarm ses düzeyinde, bir kez. */
+    /** Eşik'in sesi, alarm ses düzeyinde, bir kez. */
     private fun ring(c: Context) {
-        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION) ?: return
-        val ringtone = RingtoneManager.getRingtone(c, uri) ?: return
+        val ringtone = RingtoneManager.getRingtone(c, EsikNotifications.chimeUri(c)) ?: return
         ringtone.audioAttributes = alarm
         ringtone.play()
         Handler(Looper.getMainLooper()).postDelayed({ ringtone.stop() }, RING_MS)

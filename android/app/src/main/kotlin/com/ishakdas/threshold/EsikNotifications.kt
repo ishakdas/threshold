@@ -9,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Icon
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 
 /** Bildirimin neden gönderildiği. Kayıtta "source" olarak saklanır. */
@@ -19,7 +21,9 @@ enum class Reason(val source: String) {
 }
 
 object EsikNotifications {
-    const val CHANNEL_ID = "esik_thresholds"
+    /** Kanalın sesi sonradan değişmez; ses değişince kimlik de değişir. */
+    const val CHANNEL_ID = "esik_thresholds_v2"
+    private val OLD_CHANNELS = listOf("esik_thresholds")
     const val ACTION_ALL_DONE = "com.ishakdas.threshold.ALL_DONE"
     const val EXTRA_MODE = "mode"
     const val EXTRA_SOURCE = "source"
@@ -53,11 +57,21 @@ object EsikNotifications {
     fun ensureChannel(c: Context) {
         val nm = c.getSystemService(NotificationManager::class.java)
         if (nm.getNotificationChannel(CHANNEL_ID) != null) return
+        OLD_CHANNELS.forEach { nm.deleteNotificationChannel(it) }
+        val sound = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, "Eşik kontrolleri", NotificationManager.IMPORTANCE_HIGH)
-                .apply { description = "Akşam ve sabah kontrol listesi hatırlatmaları" },
+            NotificationChannel(CHANNEL_ID, "Eşik kontrolleri", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Akşam ve sabah kontrol listesi hatırlatmaları"
+                setSound(chimeUri(c), sound)
+            },
         )
     }
+
+    /** Eşik'in kendi sesi (res/raw/esik_chime.ogg, tool/esik_chime.py ile üretilir). */
+    fun chimeUri(c: Context): Uri = Uri.parse("android.resource://${c.packageName}/${R.raw.esik_chime}")
 
     fun hasPermission(c: Context): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||

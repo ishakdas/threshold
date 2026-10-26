@@ -90,6 +90,9 @@ object Thresholds {
  *   mobil veriye geçince bildirir. Wi‑Fi adı okunmadığı için konum izni gerekmez.
  * - Sessize alınca / sessizden çıkarınca: zil modu ve Rahatsız Etmeyin ayarı
  *   değişince JobScheduler uyandırır (TriggerContentUri); ek izin gerekmez.
+ *   Ses üç kademedir (sesli → titreşim → sessiz); bir kademe kısılması
+ *   akşamı, bir kademe açılması sabahı tetikler. Böylece gün içinde titreşimde
+ *   duran telefonun gece sessize alınması da sayılır.
  * - Kapıdaki etiket: etiket uygulamayı doğrudan açar (MainActivity), iş yok.
  */
 object TriggerScheduler {
@@ -141,7 +144,7 @@ object TriggerScheduler {
         val morning = EsikData.config(c, Mode.MORNING)
         if (evening.kind == "silenced" || morning.kind == "unsilenced") {
             // İş zaten bekliyorsa son bilinen durum onun; yeniden kurarken ezme.
-            if (jobs(c).getPendingJob(JOB_SILENCE) == null) rememberSilent(c, isSilent(c))
+            if (jobs(c).getPendingJob(JOB_SILENCE) == null) rememberLevel(c, soundLevel(c))
             scheduleSilence(c)
         } else {
             jobs(c).cancel(JOB_SILENCE)
@@ -201,18 +204,31 @@ object TriggerScheduler {
         jobs(c).schedule(b.setTriggerContentUpdateDelay(500).setTriggerContentMaxDelay(3_000).build())
     }
 
-    /** Sessiz: zil normal değil (sessiz ya da titreşim) veya Rahatsız Etmeyin açık. */
-    fun isSilent(c: Context): Boolean {
-        val ringer = c.getSystemService(AudioManager::class.java).ringerMode
+    const val LEVEL_SILENT = 0
+    const val LEVEL_VIBRATE = 1
+    const val LEVEL_SOUND = 2
+
+    /** Sesin kademesi. Rahatsız Etmeyin açıksa sessiz sayılır. */
+    fun soundLevel(c: Context): Int {
         val filter = c.getSystemService(NotificationManager::class.java).currentInterruptionFilter
-        return ringer != AudioManager.RINGER_MODE_NORMAL ||
-            filter == NotificationManager.INTERRUPTION_FILTER_PRIORITY ||
+        if (filter == NotificationManager.INTERRUPTION_FILTER_PRIORITY ||
             filter == NotificationManager.INTERRUPTION_FILTER_ALARMS ||
             filter == NotificationManager.INTERRUPTION_FILTER_NONE
+        ) {
+            return LEVEL_SILENT
+        }
+        return when (c.getSystemService(AudioManager::class.java).ringerMode) {
+            AudioManager.RINGER_MODE_NORMAL -> LEVEL_SOUND
+            AudioManager.RINGER_MODE_VIBRATE -> LEVEL_VIBRATE
+            else -> LEVEL_SILENT
+        }
     }
 
-    private fun rememberSilent(c: Context, silent: Boolean) {
-        state(c).edit().putBoolean("silent", silent).apply()
+    /** Bildirim sesi çıkmaz: titreşim, sessiz ya da Rahatsız Etmeyin. */
+    fun isSilent(c: Context): Boolean = soundLevel(c) < LEVEL_SOUND
+
+    private fun rememberLevel(c: Context, level: Int) {
+        state(c).edit().putInt("level", level).apply()
     }
 
     /** Varsayılan ağın bu türden olması koşulu. VPN arkasında da çalışsın diye NOT_VPN kaldırılır. */
@@ -250,13 +266,13 @@ object TriggerScheduler {
             }
             mode == Mode.EVENING && kind == "silenced" -> when {
                 !pending(JOB_SILENCE) -> mapOf("wait" to "none")
-                isSilent(c) -> mapOf("wait" to "alreadySilent")
+                soundLevel(c) == LEVEL_SILENT -> mapOf("wait" to "alreadySilent")
                 else -> mapOf("wait" to "silence")
             }
             mode == Mode.MORNING && kind == "unsilenced" -> when {
                 !pending(JOB_SILENCE) -> mapOf("wait" to "none")
-                isSilent(c) -> mapOf("wait" to "unsilence")
-                else -> mapOf("wait" to "notSilent")
+                soundLevel(c) == LEVEL_SOUND -> mapOf("wait" to "notSilent")
+                else -> mapOf("wait" to "unsilence")
             }
             mode == Mode.MORNING && kind == "leftHomeWifi" -> when {
                 pending(JOB_WIFI_LEFT) -> mapOf("wait" to "leaving")
@@ -319,14 +335,15 @@ object TriggerScheduler {
                 }
             }
             JOB_SILENCE -> {
-                val before = state(c).getBoolean("silent", false)
-                val silent = isSilent(c)
-                rememberSilent(c, silent)
-                // Sessize alındı: akşam eşiği. Sessizden çıkarıldı: sabah eşiği.
+                // -1: önceki kademe bilinmiyor (ilk kurulum); yalnızca kaydet.
+                val before = state(c).getInt("level", -1)
+                val level = soundLevel(c)
+                rememberLevel(c, level)
+                // Bir kademe kısıldı: akşam eşiği. Bir kademe açıldı: sabah eşiği.
                 val mode = when {
-                    !before && silent -> Mode.EVENING
-                    before && !silent -> Mode.MORNING
-                    else -> null
+                    before < 0 || level == before -> null
+                    level < before -> Mode.EVENING
+                    else -> Mode.MORNING
                 }
                 val wanted = if (mode == Mode.EVENING) "silenced" else "unsilenced"
                 if (mode != null) {
