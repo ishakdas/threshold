@@ -48,7 +48,7 @@ EŞİK PLUS
 İlk 15 gün her şey açık. Sonra şarj ve alarm tetikleyicileriyle ücretsiz devam edebilir ya da tek seferlik ödemeyle Eşik Plus'ı alabilirsin: birden fazla tetikleyici; sessiz mod, Wi‑Fi ve NFC; gün seçimi; sessizde titreşim ve geçmiş. Abonelik yok.
 
 GİZLİLİK
-Eşik'in internet izni yok. Listelerin, ayarların ve geçmişin yalnızca telefonunda durur; hiçbir veri toplanmaz, gönderilmez, paylaşılmaz. Reklam yok, hesap yok.
+İnternet yalnızca Google Play satın alma doğrulaması için kullanılır. Listelerin, ayarların ve geçmişin yalnızca telefonunda durur; hiçbir veri toplanmaz, gönderilmez, paylaşılmaz. Reklam yok, hesap yok.
 ```
 
 ## Kategori ve etiketler

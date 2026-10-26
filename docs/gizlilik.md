@@ -9,7 +9,8 @@ anlatır.
 ## Kısaca
 
 - Eşik **hiçbir kişisel veri toplamaz, göndermez ya da paylaşmaz.**
-- Uygulamanın **internet izni yoktur**; telefonundan dışarı veri çıkamaz.
+- İnternet yalnızca Google Play satın alma doğrulaması için kullanılır;
+  Eşik hiçbir veri toplamaz ve kendi sunucusu yoktur.
 - Hesap, reklam, analitik ya da üçüncü taraf takip aracı yoktur.
 - Eşik Plus satın alımı Google Play üzerinden yapılır; ödeme bilgilerin
   Eşik'e hiç ulaşmaz. Eşik yalnızca Play'den Plus'ın satın alınıp
@@ -49,7 +50,7 @@ Bu politika değişirse güncel hâli bu sayfada yayımlanır.
 
 ## İletişim
 
-Sorular için: İLETİŞİM_E_POSTASI
+Sorular için: developerishak@gmail.com
 
 ---
 
@@ -60,7 +61,8 @@ Sorular için: İLETİŞİM_E_POSTASI
 Eşik reminds you of your evening and morning checklists at the right moment.
 
 - Eşik **does not collect, transmit or share any personal data.**
-- The app has **no internet permission**; no data can leave your phone.
+- The internet is used only for Google Play purchase verification; Eşik
+  collects no data and has no servers of its own.
 - There are no accounts, ads, analytics or third‑party trackers.
 - Eşik Plus is purchased through Google Play; your payment details never
   reach Eşik. The app only asks Google Play whether Plus was purchased and
@@ -80,4 +82,4 @@ so triggers are not missed while the phone sleeps), NFC (optional, to write
 and read the door tag), vibration (for the "when silent, vibrate / ring"
 option).
 
-Contact: İLETİŞİM_E_POSTASI
+Contact: developerishak@gmail.com

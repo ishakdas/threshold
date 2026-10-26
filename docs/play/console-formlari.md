@@ -67,11 +67,11 @@ cihazda saklar; bu bilgi uygulamadan dışarı çıkmaz. Bunun "Satın alma
 geçmişi" beyanı gerektirip gerektirmediği, formu doldururken Play Console'daki
 güncel açıklamaya göre kontrol edilmeli.
 
-CI her derlemede APK'nın izin listesini yazdırır ("APK izinleri" adımı);
-internet izni girerse uyarı verir.
+CI her derlemede APK'nın izin listesini yazdırır ("APK izinleri" adımı).
 
-Gerekçe: Sürüm APK'sında `INTERNET` izni yok (yalnızca debug/profile
-manifest'lerinde var). Listeler, ayarlar ve geçmiş yalnızca cihazda,
+Gerekçe: Sürüm APK'sındaki `INTERNET` izni Google Play ödeme kütüphanesinden
+geliyor ve yalnızca Play satın alma doğrulaması için kullanılıyor; Eşik'in
+kendi sunucusu ya da ağ isteği yok. Listeler, ayarlar ve geçmiş yalnızca cihazda,
 uygulamanın özel depolamasında (SharedPreferences) tutuluyor. Şarj, ses
 kademesi, sıradaki alarm ve ağ türü yalnızca o an karar için okunuyor,
 saklanmıyor ve cihazdan çıkmıyor.

@@ -81,14 +81,12 @@ jobs:
       # Derlenen Dart kodundaki adlar karıştırılır; hata raporlarını çözmek
       # için gereken eşleme dosyaları ayrı bir artifact olarak saklanır.
       - run: .github/scripts/build.sh apk --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
-      # Play'in veri güvenliği formu bu listeye dayanıyor; değişirse fark edilsin.
+      # Play'in veri güvenliği formu bu listeye dayanıyor; değişirse
+      # docs/play/console-formlari.md ve gizlilik politikası güncellenmeli.
       - name: APK izinleri
         run: |
           AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
           "$AAPT2" dump permissions build/app/outputs/flutter-apk/app-release.apk | tee permissions.txt
-          if grep -q "android.permission.INTERNET" permissions.txt; then
-            echo "::warning::APK internet izni içeriyor; docs/play/console-formlari.md ve gizlilik politikası güncellenmeli."
-          fi
       - uses: actions/upload-artifact@v4
         with:
           name: esik-${{ github.run_number }}-apk
