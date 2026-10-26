@@ -373,6 +373,90 @@ class ModeSegment extends StatelessWidget {
   }
 }
 
+/// Yan yana seçenek hapları: biri seçili. ModeSegment ile aynı görünüm.
+class ChoicePills<T> extends StatelessWidget {
+  const ChoicePills({
+    super.key,
+    required this.values,
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.onChanged,
+  });
+
+  final List<T> values;
+  final T value;
+  final String Function(T) label;
+  final EsikIcon Function(T) icon;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+
+    Widget pill(T v) {
+      final selected = v == value;
+      return Semantics(
+        selected: selected,
+        button: true,
+        label: label(v),
+        excludeSemantics: true,
+        child: GestureDetector(
+          onTap: () {
+            if (!selected) HapticFeedback.selectionClick();
+            onChanged(v);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: selected ? p.primaryButton : p.chip.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(19),
+              border: Border.all(
+                color: selected ? p.primaryButton : p.chipBorder,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                EsikIconView(
+                  icon(v),
+                  size: 14,
+                  strokeWidth: 2,
+                  color: selected ? p.onPrimaryButton : p.text,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    label(v),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: t.labelMedium?.copyWith(
+                      color: selected ? p.onPrimaryButton : p.text,
+                      fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        for (var i = 0; i < values.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(child: pill(values[i])),
+        ],
+      ],
+    );
+  }
+}
+
 /// Amber geçişli anahtar.
 class EsikSwitch extends StatelessWidget {
   const EsikSwitch({

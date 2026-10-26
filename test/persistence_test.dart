@@ -33,6 +33,20 @@ void main() {
   // Yazmalar beklenmeden yapılır; mikro görevlerin bitmesini bekle.
   Future<void> flush() => Future<void>.delayed(Duration.zero);
 
+  test(
+    'sessizdeyken bildirim ayarı Android’in okuyacağı adla saklanır',
+    () async {
+      expect(open().read(silentAlertProvider), SilentAlert.quiet);
+      open().read(silentAlertProvider.notifier).set(SilentAlert.ring);
+      await flush();
+      expect(prefs.getString(EsikStore.silentAlertKey), 'ring');
+      expect(open().read(silentAlertProvider), SilentAlert.ring);
+
+      await prefs.setString(EsikStore.silentAlertKey, 'bozuk');
+      expect(open().read(silentAlertProvider), SilentAlert.quiet);
+    },
+  );
+
   group('eşik günü', () {
     test('04:00 öncesi bir önceki güne sayılır', () {
       expect(

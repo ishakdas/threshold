@@ -150,6 +150,23 @@ enum TriggerKind {
   ];
 }
 
+/// Telefon sessizdeyken (sessiz, titreşim ya da Rahatsız Etmeyin) Eşik
+/// bildirimi nasıl duyurur. Android tarafı (EsikNotifications.kt) aynı adları okur.
+enum SilentAlert {
+  /// Telefonun ayarına uyar.
+  quiet('Kapalı', EsikIcon.bellOff),
+
+  /// Sessizde de titreşir.
+  vibrate('Titret', EsikIcon.vibrate),
+
+  /// Sessizde de çalar ve titreşir (alarm sesi düzeyinde).
+  ring('Çal', EsikIcon.bellRing);
+
+  const SilentAlert(this.label, this.icon);
+  final String label;
+  final EsikIcon icon;
+}
+
 /// Bir modun eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
 class TriggerConfig {
   const TriggerConfig({

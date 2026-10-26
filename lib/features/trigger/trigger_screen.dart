@@ -191,6 +191,8 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 ),
               ),
               _StatusLine(mode: _mode),
+              const SizedBox(height: 10),
+              const _SilentAlertCard(),
               const SizedBox(height: 16),
               PrimaryPillButton(
                 label: 'Kurulumu kontrol et',
@@ -285,6 +287,58 @@ class _TriggerTile extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Telefon sessizdeyken bildirim titresin ya da çalsın mı? İki mod için ortak.
+class _SilentAlertCard extends ConsumerWidget {
+  const _SilentAlertCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final value = ref.watch(silentAlertProvider);
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              EsikIconView(EsikIcon.vibrate, size: 18, color: p.text),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('Telefon sessizdeyken', style: t.bodyMedium),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ChoicePills<SilentAlert>(
+            values: SilentAlert.values,
+            value: value,
+            label: (a) => a.label,
+            icon: (a) => a.icon,
+            onChanged: ref.read(silentAlertProvider.notifier).set,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            switch (value) {
+              SilentAlert.quiet => 'Bildirim telefonun ses ayarına uyar.',
+              SilentAlert.vibrate =>
+                'Sessizde ya da Rahatsız Etmeyin açıkken de titreşir.',
+              SilentAlert.ring =>
+                'Sessizde de alarm sesi düzeyinde çalar ve titreşir.',
+            },
+            style: t.labelMedium?.copyWith(
+              fontWeight: FontWeight.w300,
+              color: p.textMuted,
+            ),
+          ),
+        ],
       ),
     );
   }

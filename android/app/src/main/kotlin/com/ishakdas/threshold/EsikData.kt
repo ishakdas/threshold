@@ -99,6 +99,9 @@ object EsikData {
         )
     }
 
+    /** Sessizdeyken bildirim: "quiet", "vibrate" ya da "ring" (Dart'taki SilentAlert). */
+    fun silentAlert(c: Context): String = prefs(c).getString(PREFIX + "silent_alert", null) ?: "quiet"
+
     fun isComplete(c: Context, day: LocalDate, mode: Mode): Boolean =
         readJson(c, LOG)?.optJSONObject(day.toString())?.optJSONObject(mode.key)
             ?.has("completedAt") == true

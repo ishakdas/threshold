@@ -3,6 +3,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Yeniden başlatmadan sonra yedek saat alarmlarını kurmak için. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Sessizdeyken de titreşmek için (Ayarlar → Telefon sessizdeyken). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Kapıdaki etikete Eşik'in bağlantısını yazmak için. NFC'siz telefonlara da kurulur. -->
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />

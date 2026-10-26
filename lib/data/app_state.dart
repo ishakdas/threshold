@@ -31,6 +31,28 @@ class OnboardingNotifier extends Notifier<bool> {
 }
 
 /// Kullanıcı onboarding'i bitirdi mi?
+class SilentAlertNotifier extends Notifier<SilentAlert> {
+  @override
+  SilentAlert build() {
+    final saved = ref.watch(storeProvider).readString(EsikStore.silentAlertKey);
+    return SilentAlert.values.where((a) => a.name == saved).firstOrNull ??
+        SilentAlert.quiet;
+  }
+
+  void set(SilentAlert value) {
+    state = value;
+    unawaited(
+      ref.read(storeProvider).writeString(EsikStore.silentAlertKey, value.name),
+    );
+  }
+}
+
+/// Sessizdeyken bildirim titresin ya da çalsın mı? Android bildirimi
+/// gönderirken diskten okur.
+final silentAlertProvider = NotifierProvider<SilentAlertNotifier, SilentAlert>(
+  SilentAlertNotifier.new,
+);
+
 final onboardingSeenProvider = NotifierProvider<OnboardingNotifier, bool>(
   OnboardingNotifier.new,
 );

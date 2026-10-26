@@ -128,6 +128,7 @@ object EsikNotifications {
         builder.addAction(Notification.Action.Builder(icon, "Tek tek bak", open).build())
 
         c.getSystemService(NotificationManager::class.java).notify(notificationId(mode), builder.build())
+        SilentAlerter.alertIfSilent(c)
         if (reason != Reason.TEST) EsikData.markNotified(c, EsikData.thresholdDay(), mode)
         return true
     }
