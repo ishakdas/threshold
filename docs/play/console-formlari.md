@@ -12,7 +12,7 @@ Play Console → **Para kazanma → Ürünler → Uygulama içi ürünler → Ü
 |---|---|
 | Ürün kimliği | `esik_plus` (uygulamadaki `plusProductId` ile aynı olmalı, sonradan değişmez) |
 | Ad | Eşik Plus |
-| Açıklama | Birden fazla tetikleyici, Wi‑Fi ve NFC, gün seçimi, sessizde titret/çal, geçmiş. Tek seferlik. |
+| Açıklama | Birden fazla tetikleyici; sessiz mod, Wi‑Fi ve NFC tetikleyicileri; gün seçimi; sessizde titret/çal; geçmiş. Tek seferlik. |
 | Fiyat | Türkiye: **49 TL**. Diğer ülkeler için Play'in otomatik çevirisi ya da elle (ör. 2,99 $) |
 | Tür | Tek seferlik, tüketilmeyen (non-consumable) |
 

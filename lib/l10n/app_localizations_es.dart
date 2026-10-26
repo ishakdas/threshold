@@ -1083,7 +1083,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get plusFeatureMulti => 'Varios disparadores a la vez';
 
   @override
-  String get plusFeatureWifiNfc => 'Wi‑Fi y la etiqueta NFC de la puerta';
+  String get plusFeatureWifiNfc => 'Modo silencio, Wi‑Fi y etiqueta NFC';
 
   @override
   String get plusFeatureDays => 'Elegir qué días funciona';
@@ -1142,7 +1142,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get plusMultiHint =>
-      'Varios disparadores, Wi‑Fi y NFC vienen con Plus.';
+      'Modo silencio, Wi‑Fi, NFC y varios disparadores vienen con Plus.';
 
   @override
   String plusTrialEnding(int days) {

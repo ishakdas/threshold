@@ -1063,7 +1063,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get plusFeatureMulti => 'Birden fazla tetikleyici';
 
   @override
-  String get plusFeatureWifiNfc => 'Wi‑Fi ve kapıdaki NFC etiketi';
+  String get plusFeatureWifiNfc => 'Sessiz mod, Wi‑Fi ve NFC etiketi';
 
   @override
   String get plusFeatureDays => 'Çalışacağı günleri seçme';
@@ -1116,7 +1116,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get plusMultiHint =>
-      'Birden fazla tetikleyici ve Wi‑Fi, NFC Plus ile.';
+      'Sessiz mod, Wi‑Fi, NFC ve birden fazla tetikleyici Plus ile.';
 
   @override
   String plusTrialEnding(int days) {

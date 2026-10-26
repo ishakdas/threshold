@@ -228,23 +228,36 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Text(
-                  !plus
-                      ? l10n.plusMultiHint
-                      : c.kinds.length > 1
-                      ? l10n.firstOneWins
-                      : l10n.pickSeveral,
-                  style: t.labelSmall?.copyWith(
-                    fontSize: 12,
-                    color: p.textFaint,
-                  ),
+                child: Row(
+                  children: [
+                    // Birden fazla tetikleyici de Plus özelliği.
+                    PlusBadge(owned: plus, compact: true),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        !plus
+                            ? l10n.plusMultiHint
+                            : c.kinds.length > 1
+                            ? l10n.firstOneWins
+                            : l10n.pickSeveral,
+                        style: t.labelSmall?.copyWith(
+                          fontSize: 12,
+                          color: p.textFaint,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: DotLabel(
-                  plus ? l10n.whichDays : '${l10n.whichDays} · Plus',
+                child: Row(
+                  children: [
+                    Flexible(child: DotLabel(l10n.whichDays)),
+                    const SizedBox(width: 8),
+                    PlusBadge(owned: plus),
+                  ],
                 ),
               ),
               const SizedBox(height: 10),
@@ -413,50 +426,63 @@ class _TriggerTile extends StatelessWidget {
       excludeSemantics: true,
       child: Opacity(
         opacity: soon && !selected ? 0.45 : 1,
-        child: SurfaceCard(
-          radius: 26,
-          highlighted: selected,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          onTap: onTap,
-          child: Row(
-            children: [
-              IconCircle(icon: kind.icon, size: 40, active: selected),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: SurfaceCard(
+                radius: 26,
+                highlighted: selected,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                onTap: onTap,
+                child: Row(
                   children: [
-                    Text(
-                      kind.title(l10n),
-                      style: t.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w400,
+                    IconCircle(icon: kind.icon, size: 40, active: selected),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            kind.title(l10n),
+                            style: t.labelLarge?.copyWith(
+                              fontWeight: FontWeight.w400,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            soon
+                                ? l10n.comingSoon
+                                : selected
+                                ? l10n.selected
+                                : kind.subtitle(l10n),
+                            style: t.labelSmall?.copyWith(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w300,
+                              color: p.textMuted,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      soon
-                          ? l10n.comingSoon
-                          : locked
-                          ? 'Plus'
-                          : selected
-                          ? l10n.selected
-                          : kind.subtitle(l10n),
-                      style: t.labelSmall?.copyWith(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w300,
-                        color: p.textMuted,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            // Plus'a özel tetikleyici: Plus olsun olmasın görünür.
+            if (kind.plusOnly)
+              Positioned(
+                top: 8,
+                right: 10,
+                child: IgnorePointer(
+                  child: PlusBadge(owned: !locked, compact: true),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -545,7 +571,9 @@ class _PlusCard extends ConsumerWidget {
       child: Row(
         children: [
           IconCircle(
-            icon: plus.owned ? EsikIcon.check : EsikIcon.door,
+            icon: EsikIcon.sparkle,
+            gradient: PlusBadge.gold,
+            iconColor: const Color(0xFF3A2306),
             size: 36,
             active: true,
           ),
@@ -643,6 +671,7 @@ class _SilentAlertCard extends ConsumerWidget {
               EsikIconView(EsikIcon.vibrate, size: 18, color: p.text),
               const SizedBox(width: 10),
               Expanded(child: Text(l10n.whenSilent, style: t.bodyMedium)),
+              PlusBadge(owned: plus),
             ],
           ),
           const SizedBox(height: 12),

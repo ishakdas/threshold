@@ -68,9 +68,14 @@ class HistoryScreen extends ConsumerWidget {
             children: [
               ScreenHeader(
                 title: l10n.historyTitle,
-                trailing: InfoChip(
-                  label: l10n.historyLast14,
-                  icon: EsikIcon.history,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Geçmiş bir Plus özelliği.
+                    const PlusBadge(owned: true),
+                    const SizedBox(width: 8),
+                    InfoChip(label: l10n.historyLast14, icon: EsikIcon.history),
+                  ],
                 ),
               ),
               const SizedBox(height: 18),

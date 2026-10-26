@@ -689,7 +689,7 @@
   "plusName": "Eşik Plus",
   "plusTagline": "Eşiklerini tam sana göre kur.",
   "plusFeatureMulti": "Birden fazla tetikleyici",
-  "plusFeatureWifiNfc": "Wi‑Fi ve kapıdaki NFC etiketi",
+  "plusFeatureWifiNfc": "Sessiz mod, Wi‑Fi ve NFC etiketi",
   "plusFeatureDays": "Çalışacağı günleri seçme",
   "plusFeatureSilent": "Sessizdeyken titret ya da çal",
   "plusFeatureHistory": "Geçmiş ve istatistikler",
@@ -725,7 +725,7 @@
       }
     }
   },
-  "plusMultiHint": "Birden fazla tetikleyici ve Wi‑Fi, NFC Plus ile.",
+  "plusMultiHint": "Sessiz mod, Wi‑Fi, NFC ve birden fazla tetikleyici Plus ile.",
   "plusTrialEnding": "Plus denemesinin son {days} günü",
   "@plusTrialEnding": {
     "placeholders": {

@@ -607,3 +607,61 @@ class IconCircle extends StatelessWidget {
     );
   }
 }
+
+/// Eşik Plus özelliklerini gösteren rozet. Plus yokken dolu ve altın tonlu
+/// (kilitli olduğu belli olsun), Plus varken ince çerçeveli ve sakin.
+class PlusBadge extends StatelessWidget {
+  const PlusBadge({super.key, required this.owned, this.compact = false});
+
+  /// Plus açık mı (satın alındı ya da deneme sürüyor).
+  final bool owned;
+
+  /// Yalnızca ikon (dar yerler için).
+  final bool compact;
+
+  static const gold = [Color(0xFFFFD27A), Color(0xFFF0A23A)];
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final fg = owned ? p.accent : const Color(0xFF3A2306);
+    return Semantics(
+      label: 'Plus',
+      excludeSemantics: true,
+      child: Container(
+        height: 20,
+        padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 7),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: owned ? null : const LinearGradient(colors: gold),
+          border: owned
+              ? Border.all(color: p.accent.withValues(alpha: 0.6))
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            EsikIconView(
+              EsikIcon.sparkle,
+              size: 12,
+              color: fg,
+              strokeWidth: 1.8,
+            ),
+            if (!compact) ...[
+              const SizedBox(width: 3),
+              Text(
+                'Plus',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: fg,
+                  height: 1,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}

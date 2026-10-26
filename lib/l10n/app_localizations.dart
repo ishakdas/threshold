@@ -1945,7 +1945,7 @@ abstract class AppLocalizations {
   /// No description provided for @plusFeatureWifiNfc.
   ///
   /// In tr, this message translates to:
-  /// **'Wi‑Fi ve kapıdaki NFC etiketi'**
+  /// **'Sessiz mod, Wi‑Fi ve NFC etiketi'**
   String get plusFeatureWifiNfc;
 
   /// No description provided for @plusFeatureDays.
@@ -2035,7 +2035,7 @@ abstract class AppLocalizations {
   /// No description provided for @plusMultiHint.
   ///
   /// In tr, this message translates to:
-  /// **'Birden fazla tetikleyici ve Wi‑Fi, NFC Plus ile.'**
+  /// **'Sessiz mod, Wi‑Fi, NFC ve birden fazla tetikleyici Plus ile.'**
   String get plusMultiHint;
 
   /// No description provided for @plusTrialEnding.

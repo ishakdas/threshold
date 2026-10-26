@@ -1079,7 +1079,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plusFeatureMulti => 'Several triggers at once';
 
   @override
-  String get plusFeatureWifiNfc => 'Wi‑Fi and the NFC door tag';
+  String get plusFeatureWifiNfc => 'Silent mode, Wi‑Fi and the NFC tag';
 
   @override
   String get plusFeatureDays => 'Choose which days it works';
@@ -1137,7 +1137,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get plusMultiHint => 'Several triggers, Wi‑Fi and NFC come with Plus.';
+  String get plusMultiHint =>
+      'Silent mode, Wi‑Fi, NFC and several triggers come with Plus.';
 
   @override
   String plusTrialEnding(int days) {

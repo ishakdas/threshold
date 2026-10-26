@@ -96,7 +96,7 @@ object EsikData {
     }
 
     /** Plus olmadan kullanılabilen tetikleyiciler (Dart'taki TriggerKind.free). */
-    private val FREE_KINDS = setOf("charging", "silenced", "alarmStopped", "unsilenced")
+    private val FREE_KINDS = setOf("charging", "alarmStopped")
 
     /** İlk açılıştan itibaren Plus'ın açık olduğu gün sayısı (Dart'taki plusTrialDays). */
     private const val TRIAL_DAYS = 15L

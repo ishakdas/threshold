@@ -68,7 +68,8 @@ void main() {
       backupTime: TimeOfDay(hour: 8, minute: 15),
     );
     final free = morning.effective(plus: false);
-    expect(free.kinds, [TriggerKind.unsilenced]);
+    // Sessiz mod ve Wi‑Fi Plus'a özel: modun ücretsiz varsayılanı.
+    expect(free.kinds, [TriggerKind.alarmStopped]);
     expect(free.days, allWeekdays);
     expect(morning.effective(plus: true), same(morning));
     // Hiç ücretsiz tetikleyici seçili değilse modun varsayılanı.
@@ -105,19 +106,18 @@ void main() {
       },
     );
 
-    testWidgets('ücretsiz sürümde başka tetikleyiciye dokununca o seçilir', (
-      tester,
-    ) async {
+    testWidgets('sessiz mod da Plus’a özel', (tester) async {
       await pumpApp(tester, prefs: expired);
       await tester.tap(find.bySemanticsLabel('Ayarlar'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sessize alınca'));
       await tester.pumpAndSettle();
+      expect(find.text('Birden fazla tetikleyici'), findsOneWidget);
       final c = ProviderScope.containerOf(
         tester.element(find.text('Eşiklerim')),
       );
       expect(c.read(triggerConfigProvider)[DayMode.evening]!.kinds, [
-        TriggerKind.silenced,
+        TriggerKind.charging,
       ]);
     });
 

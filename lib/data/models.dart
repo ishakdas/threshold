@@ -80,10 +80,10 @@ enum TriggerKind {
   };
 
   /// Eşik Plus olmadan da kullanılabilir. Diğer çalışan tetikleyiciler
-  /// (Wi‑Fi, NFC) Plus'a özel. Android tarafı (EsikData.FREE_KINDS) aynı listeyi
+  /// (sessiz mod, Wi‑Fi, NFC) Plus'a özel. Android tarafı (EsikData.FREE_KINDS) aynı listeyi
   /// kullanır.
   bool get free => switch (this) {
-    charging || silenced || alarmStopped || unsilenced => true,
+    charging || alarmStopped => true,
     _ => false,
   };
 
