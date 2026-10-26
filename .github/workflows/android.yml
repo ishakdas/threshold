@@ -53,11 +53,42 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
       - run: flutter pub get
-      # Şimdilik debug anahtarıyla imzalanır; Play Store'a çıkmadan önce
-      # yükleme anahtarı GitHub Secrets'a eklenecek.
+      # Play Store yükleme anahtarı GitHub Secrets'ta varsa sürüm onunla
+      # imzalanır ve Play'e yüklenecek AAB de üretilir. Yoksa (ör. dışarıdan
+      # gelen PR) debug anahtarıyla yalnızca APK.
+      - name: Yükleme anahtarı
+        id: key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Yükleme anahtarı yok; APK debug anahtarıyla imzalanıyor."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          {
+            echo "storeFile=$RUNNER_TEMP/upload.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+          echo "signed=true" >> "$GITHUB_OUTPUT"
       - run: flutter build apk --release --build-number=${{ github.run_number }}
       - uses: actions/upload-artifact@v4
         with:
           name: esik-${{ github.run_number }}-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+      - name: Play Store paketi (AAB)
+        if: steps.key.outputs.signed == 'true'
+        run: flutter build appbundle --release --build-number=${{ github.run_number }}
+      - uses: actions/upload-artifact@v4
+        if: steps.key.outputs.signed == 'true'
+        with:
+          name: esik-${{ github.run_number }}-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 90
