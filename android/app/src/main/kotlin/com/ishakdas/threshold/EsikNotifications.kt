@@ -78,7 +78,8 @@ object EsikNotifications {
             c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     /** Bildirim gönderilebildiyse true. */
-    fun show(c: Context, mode: Mode, reason: Reason): Boolean {
+    /** [kind]: bildirimi gönderen tetikleyici (yalnızca [Reason.TRIGGER] için). */
+    fun show(c: Context, mode: Mode, reason: Reason, kind: String? = null): Boolean {
         if (!hasPermission(c)) return false
         ensureChannel(c)
         val items = EsikData.items(c, mode)
@@ -91,7 +92,7 @@ object EsikNotifications {
             else -> "${items.size} madde: ${labels.joinToString(", ")}."
         }
         val text = when (reason) {
-            Reason.TRIGGER -> "${triggerPast[config.kind] ?: "Eşik geldi"}. $summary"
+            Reason.TRIGGER -> "${triggerPast[kind ?: config.kinds.first()] ?: "Eşik geldi"}. $summary"
             Reason.BACKUP -> "Kontrol saati. $summary"
             Reason.TEST -> "Deneme bildirimi. $summary"
         }

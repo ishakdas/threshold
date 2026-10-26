@@ -189,13 +189,13 @@ final checklistProvider =
 
 const defaultTriggerConfigs = <DayMode, TriggerConfig>{
   DayMode.evening: TriggerConfig(
-    kind: TriggerKind.charging,
+    kinds: [TriggerKind.charging],
     windowStart: TimeOfDay(hour: 22, minute: 0),
     windowEnd: TimeOfDay(hour: 2, minute: 0),
     backupTime: TimeOfDay(hour: 22, minute: 30),
   ),
   DayMode.morning: TriggerConfig(
-    kind: TriggerKind.alarmStopped,
+    kinds: [TriggerKind.alarmStopped],
     windowStart: TimeOfDay(hour: 6, minute: 0),
     windowEnd: TimeOfDay(hour: 10, minute: 0),
     backupTime: TimeOfDay(hour: 8, minute: 15),
@@ -370,11 +370,16 @@ final historyProvider = Provider<List<DayLog>>((ref) {
   final today = ref.watch(todayProvider);
   final installed = ref.watch(installDayProvider);
   final log = ref.watch(checkLogProvider);
+  final configs = ref.watch(triggerConfigProvider);
 
   (CheckOutcome, TimeOfDay?) outcome(DateTime day, DayMode mode) {
     if (day.isBefore(installed)) return (CheckOutcome.notTracked, null);
     final s = log[dayKey(day)]?[mode];
-    if (s == null || !s.isComplete) return (CheckOutcome.missed, null);
+    if (s == null || !s.isComplete) {
+      // Günler bugünkü ayardan okunur; geçmiş ayarlar saklanmıyor.
+      final off = !configs[mode]!.activeOn(day);
+      return (off ? CheckOutcome.off : CheckOutcome.missed, null);
+    }
     return (
       s.viaBackup ? CheckOutcome.viaBackup : CheckOutcome.done,
       TimeOfDay.fromDateTime(s.completedAt!),

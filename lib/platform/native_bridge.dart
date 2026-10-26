@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/day_mode.dart';
+import '../data/models.dart';
 
 /// Android tarafıyla (android/app/src/main/kotlin/.../MainActivity.kt) konuşur:
 /// bildirim izni, deneme bildirimi, yedek saat alarmları, bildirimden gelen
@@ -99,8 +100,8 @@ class ThresholdStatus {
     this.lastOutcome,
     this.triggerAt,
     this.triggerOutcome,
-    this.wait,
-    this.waitAt,
+    this.triggerKind,
+    this.waits = const [],
   });
 
   /// Sıradaki yedek alarm; yedek kapalıysa null.
@@ -114,17 +115,27 @@ class ThresholdStatus {
   final DateTime? triggerAt;
   final NotifyOutcome? triggerOutcome;
 
-  /// Tetikleyicinin şu an beklediği şey; NFC ve henüz desteklenmeyenlerde null.
-  final TriggerWait? wait;
+  /// Son çalışan tetikleyici.
+  final TriggerKind? triggerKind;
 
-  /// Beklemeyle ilgili an: sıradaki alarm ya da beklemenin başladığı an.
-  final DateTime? waitAt;
+  /// Seçili her tetikleyicinin şu an beklediği şey (NFC hariç).
+  final List<TriggerWaiting> waits;
 
   static DateTime? _time(Object? ms) =>
       ms is int ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
 
   static NotifyOutcome? _outcome(Object? name) =>
       NotifyOutcome.values.where((o) => o.name == name).firstOrNull;
+
+  static List<TriggerWaiting> _waits(Object? raw) => [
+    if (raw is List)
+      for (final w in raw.whereType<Map>())
+        if (TriggerKind.values.where((k) => k.name == w['kind']).firstOrNull
+            case final kind?)
+          if (TriggerWait.values.where((v) => v.name == w['wait']).firstOrNull
+              case final wait?)
+            TriggerWaiting(kind, wait, _time(w['at'])),
+  ];
 
   static Map<DayMode, ThresholdStatus>? parse(Object? raw) {
     if (raw is! Map) return null;
@@ -137,35 +148,37 @@ class ThresholdStatus {
             lastOutcome: _outcome(m['lastOutcome']),
             triggerAt: _time(m['triggerAt']),
             triggerOutcome: _outcome(m['triggerOutcome']),
-            wait: switch (m['triggerWait']) {
-              final Map w =>
-                TriggerWait.values
-                    .where((v) => v.name == w['wait'])
-                    .firstOrNull,
-              _ => null,
-            },
-            waitAt: switch (m['triggerWait']) {
-              final Map w => _time(w['at']),
-              _ => null,
-            },
+            triggerKind: TriggerKind.values
+                .where((k) => k.name == m['triggerKind'])
+                .firstOrNull,
+            waits: _waits(m['triggerWaits']),
           ),
     };
   }
 }
 
+/// Bir tetikleyicinin beklediği şey ve ilgili an: sıradaki alarm ya da
+/// beklemenin başladığı an.
+class TriggerWaiting {
+  const TriggerWaiting(this.kind, this.wait, this.at);
+  final TriggerKind kind;
+  final TriggerWait wait;
+  final DateTime? at;
+}
+
 /// Tetikleyicinin şu an beklediği şey (Android'deki TriggerScheduler.waiting).
 enum TriggerWait {
-  /// Şarja takılmasını bekliyor ([ThresholdStatus.waitAt]'ten itibaren).
+  /// Şarja takılmasını bekliyor ([TriggerWaiting.at]'ten itibaren).
   charging,
 
-  /// Sıradaki alarm [ThresholdStatus.waitAt]'te.
+  /// Sıradaki alarm [TriggerWaiting.at]'te.
   alarm,
 
   /// Alarm az önce çaldı; kapatılmasına ya da ertelenmesine bakılacak.
   alarmSettling,
   noAlarm,
 
-  /// Wi‑Fi'a bağlanmayı bekliyor ([ThresholdStatus.waitAt]'ten itibaren).
+  /// Wi‑Fi'a bağlanmayı bekliyor ([TriggerWaiting.at]'ten itibaren).
   wifi,
 
   /// Wi‑Fi'dan kopup mobil veriye geçmeyi bekliyor.
@@ -263,7 +276,8 @@ enum NotifyOutcome {
   alreadyDone('atlandı: kontrol zaten yapılmıştı'),
   alreadyNotified('atlandı: o gün bildirim zaten gelmişti'),
   noPermission('gönderilemedi: bildirim izni kapalı'),
-  disabled('atlandı: yedek kapalı');
+  disabled('atlandı: yedek kapalı'),
+  offDay('atlandı: izin günü');
 
   const NotifyOutcome(this.description);
   final String description;

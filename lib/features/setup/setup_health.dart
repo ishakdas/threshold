@@ -25,11 +25,11 @@ List<SetupIssue> triggerIssues(SetupHealth h, TriggerKind kind) => [
     SetupIssue.noAlarm,
 ];
 
-/// Bir modun bütün eksikleri: ortak olanlar ve tetikleyiciye özel olanlar.
-List<SetupIssue> setupIssues(SetupHealth h, TriggerKind kind) => [
+/// Bir modun bütün eksikleri: ortak olanlar ve seçili tetikleyicilere özel olanlar.
+List<SetupIssue> setupIssues(SetupHealth h, List<TriggerKind> kinds) => [
   if (!h.notifications) SetupIssue.notifications,
   if (!h.battery) SetupIssue.battery,
-  ...triggerIssues(h, kind),
+  for (final kind in kinds) ...triggerIssues(h, kind),
 ];
 
 /// Her mod için eksikler. Android kanalı yoksa (testler) null.
@@ -39,6 +39,6 @@ final setupIssuesProvider = Provider<Map<DayMode, List<SetupIssue>>?>((ref) {
   final configs = ref.watch(triggerConfigProvider);
   return {
     for (final mode in DayMode.values)
-      mode: setupIssues(health, configs[mode]!.kind),
+      mode: setupIssues(health, configs[mode]!.kinds),
   };
 });

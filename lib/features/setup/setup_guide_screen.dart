@@ -22,20 +22,34 @@ class SetupStep {
     required this.detail,
     required this.action,
     required this.icon,
+    this.trigger,
   });
 
   final SetupStepKind kind;
+
+  /// Tetikleyiciye özel adımda hangi tetikleyici için olduğu.
+  final TriggerKind? trigger;
   final String title;
   final String detail;
 
   /// Ana butonun etiketi.
   final String action;
   final EsikIcon icon;
+
+  SetupStep _forTrigger(TriggerKind k) => SetupStep(
+    kind: kind,
+    title: title,
+    detail: detail,
+    action: action,
+    icon: icon,
+    trigger: k,
+  );
 }
 
-/// Seçilen tetikleyicinin Android'de çalışması için gereken adımlar.
-/// Kısayollar'ın olmadığı Android'de iOS'taki kurulum rehberinin karşılığıdır.
-List<SetupStep> setupStepsFor(TriggerKind kind) {
+/// Seçilen tetikleyicilerin Android'de çalışması için gereken adımlar: ortak
+/// izinler, her tetikleyicinin kendi adımı, sonda deneme. Kısayollar'ın
+/// olmadığı Android'de iOS'taki kurulum rehberinin karşılığıdır.
+List<SetupStep> setupStepsFor(List<TriggerKind> kinds) {
   const notifications = SetupStep(
     kind: SetupStepKind.notifications,
     title: 'Bildirimlere izin ver',
@@ -50,7 +64,7 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
     action: 'İzin ver',
     icon: EsikIcon.battery,
   );
-  final specific = switch (kind) {
+  SetupStep? specific(TriggerKind kind) => switch (kind) {
     TriggerKind.appClosed => const SetupStep(
       kind: SetupStepKind.trigger,
       title: 'Kullanım erişimi ver',
@@ -96,33 +110,35 @@ List<SetupStep> setupStepsFor(TriggerKind kind) {
       icon: EsikIcon.alarm,
     ),
     _ => null,
-  };
+  }?._forTrigger(kind);
+  final only = kinds.length == 1 ? kinds.single : null;
   final test = SetupStep(
     kind: SetupStepKind.test,
     title: 'Dene',
-    detail: switch (kind) {
+    detail: switch (only) {
       TriggerKind.charging => 'Önce deneme bildirimi. Gerçeği, seçtiğin saat aralığında telefonu şarja taktıktan sonra birkaç dakika içinde gelir.',
       TriggerKind.leftHomeWifi => 'Önce deneme bildirimi. Gerçeği, sabah aralığında Wi‑Fi’ı kapatıp mobil veriye geçince gelir.',
       TriggerKind.alarmStopped => 'Önce deneme bildirimi. Gerçeği, sabah aralığında çalan bir alarmı kapattıktan sonra gelir.',
       TriggerKind.silenced => 'Önce deneme bildirimi. Gerçeği, akşam aralığında telefonun sesini kıstığında birkaç saniye içinde gelir.',
       TriggerKind.unsilenced => 'Önce deneme bildirimi. Gerçeği, sabah aralığında telefonun sesini açtığında birkaç saniye içinde gelir.',
       TriggerKind.nfcTag => 'Uygulamadan çık, kilidi açık telefonu etikete dokundur. Kontrol ekranı açılmalı.',
+      null => 'Deneme bildirimi gönderelim. Gerçeğini, seçtiğin davranışlardan o gün ilk olanı gönderir.',
       _ => 'Deneme bildirimi gönderelim; gerçek tetikleyici de aynı şekilde gelecek.',
     },
-    action: kind == TriggerKind.nfcTag ? 'Bitir' : 'Deneme bildirimi gönder',
-    icon: kind.icon,
+    action: only == TriggerKind.nfcTag ? 'Bitir' : 'Deneme bildirimi gönder',
+    icon: kinds.first.icon,
   );
-  return [notifications, battery, ?specific, test];
+  return [notifications, battery, for (final k in kinds) ?specific(k), test];
 }
 
 /// Adım telefonda gerçekten tamam mı? Denetlenemeyen adımlarda (bilgi,
 /// deneme) ya da Android kanalı yoksa null.
-bool? stepDone(SetupStep step, SetupHealth? h, TriggerKind kind) {
+bool? stepDone(SetupStep step, SetupHealth? h) {
   if (h == null) return null;
   return switch (step.kind) {
     SetupStepKind.notifications => h.notifications,
     SetupStepKind.battery => h.battery,
-    SetupStepKind.trigger => switch (kind) {
+    SetupStepKind.trigger => switch (step.trigger) {
       TriggerKind.nfcTag => h.nfc == NfcState.on && h.nfcTagWritten,
       TriggerKind.alarmStopped => h.nextAlarm != null,
       _ => null,
@@ -186,7 +202,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
       }
     }
 
-    if (stepDone(step, health, kind) == true) {
+    if (stepDone(step, health) == true) {
       // Zaten tamam: yalnızca ilerle.
     } else {
       switch (step.kind) {
@@ -233,14 +249,14 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   }
 
   /// Durumu bilinen ilk eksik adım; hepsi tamamsa son adım.
-  int _firstOpen(List<SetupStep> steps, SetupHealth h, TriggerKind kind) {
-    final i = steps.indexWhere((s) => stepDone(s, h, kind) != true);
+  int _firstOpen(List<SetupStep> steps, SetupHealth h) {
+    final i = steps.indexWhere((s) => stepDone(s, h) != true);
     return i < 0 ? steps.length - 1 : i;
   }
 
   /// Ana butonun etiketi: adımın gerçek durumuna göre.
   String _actionLabel(SetupStep step, SetupHealth? h, TriggerKind kind) {
-    if (stepDone(step, h, kind) == true) return 'Devam';
+    if (stepDone(step, h) == true) return 'Devam';
     return switch (step.kind) {
       SetupStepKind.notifications
           when _permissionDenied || h?.notificationPermission == true =>
@@ -344,24 +360,28 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   @override
   Widget build(BuildContext context) {
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
-    final kind = ref.watch(triggerConfigProvider)[mode]!.kind;
-    final steps = setupStepsFor(kind);
+    final kinds = ref.watch(triggerConfigProvider)[mode]!.kinds;
+    final steps = setupStepsFor(kinds);
     final health = ref.watch(setupHealthProvider).value;
     if (health != null && !_positioned) {
       _positioned = true;
-      _current = _firstOpen(steps, health, kind);
+      _current = _firstOpen(steps, health);
     }
     // Ayarlardan dönüldü ve adım artık tamam: kendiliğinden ilerle.
     ref.listen(setupHealthProvider, (_, next) {
       final h = next.value;
       if (h == null || !_awaitingSettings) return;
-      if (stepDone(steps[_current], h, kind) == true) {
+      if (stepDone(steps[_current], h) == true) {
         _awaitingSettings = false;
         _advance(steps.length);
       }
     });
+    // Ayar değişip adım sayısı azaldıysa sınırda kal.
+    _current = _current.clamp(0, steps.length - 1);
     final step = steps[_current];
-    final done = stepDone(step, health, kind);
+    // Adımın tetikleyicisi; ortak adımlarda ilk seçili tetikleyici.
+    final kind = step.trigger ?? kinds.first;
+    final done = stepDone(step, health);
     final skippable = _attempted.contains(_current) && done != true;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
@@ -413,7 +433,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                           step: steps[i],
                           state: i == _current
                               ? _StepState.current
-                              : switch (stepDone(steps[i], health, kind)) {
+                              : switch (stepDone(steps[i], health)) {
                                   true => _StepState.done,
                                   false => _StepState.upcoming,
                                   null =>

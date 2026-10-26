@@ -106,6 +106,7 @@ class _ThresholdCard extends ConsumerWidget {
     final evening = mode == DayMode.evening;
     final done = session.checked.length.clamp(0, items.length);
     final remaining = items.length - done;
+    final offToday = !config.activeOn(ref.watch(todayProvider));
 
     final String buttonLabel;
     if (session.isComplete) {
@@ -144,13 +145,15 @@ class _ThresholdCard extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              config.kind.title,
+              config.title,
               textAlign: TextAlign.center,
               style: t.headlineMedium,
             ),
             const SizedBox(height: 6),
             Text(
-              '${config.kind.when} ${items.length} maddelik kontrolün önüne gelir.',
+              offToday
+                  ? 'Bugün izin günü; Eşik hatırlatmaz. İstersen yine de kontrol edebilirsin.'
+                  : '${config.when} ${items.length} maddelik kontrolün önüne gelir.',
               textAlign: TextAlign.center,
               style: t.bodyMedium?.copyWith(color: p.textMuted),
             ),
@@ -246,6 +249,7 @@ class _SummaryCard extends ConsumerWidget {
         ),
         CheckOutcome.missed => ('0/$n', 'Dün akşam atlandı'),
         CheckOutcome.notTracked => ('–', 'Dün akşam kayıt yok'),
+        CheckOutcome.off => ('–', 'Dün akşam izin günüydü'),
       };
     }
 
@@ -267,7 +271,7 @@ class _SummaryCard extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${evening ? 'Akşam' : 'Sabah'} eşiği · ${lowerFirst(config.kind.title)}',
+                    '${evening ? 'Akşam' : 'Sabah'} eşiği · ${lowerFirst(config.title)}',
                     style: t.bodyLarge?.copyWith(
                       fontSize: 15,
                       color: p.text.withValues(alpha: 0.85),
@@ -373,7 +377,7 @@ class _MiniBars extends StatelessWidget {
     CheckOutcome.done => 34,
     CheckOutcome.viaBackup => 18,
     CheckOutcome.missed => 8,
-    CheckOutcome.notTracked => 4,
+    CheckOutcome.notTracked || CheckOutcome.off => 4,
   };
 }
 

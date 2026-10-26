@@ -91,7 +91,8 @@ class PrimaryPillButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final background = warning ? p.warning : p.primaryButton;
+    // Beyaz yazı okunsun diye uyarı renginin koyu ucu.
+    final background = warning ? p.warningGradient.last : p.primaryButton;
     final foreground = warning ? Colors.white : p.onPrimaryButton;
     final button = FilledButton(
       onPressed: onPressed == null

@@ -22,13 +22,20 @@ enum class Mode(val key: String, val routeParam: String, val title: String) {
 data class CheckItem(val id: String, val title: String, val icon: String)
 
 data class TriggerConfig(
-    val kind: String,
+    /** Seçili tetikleyiciler (Dart'taki TriggerKind adları). */
+    val kinds: List<String>,
+    /** Çalıştığı günler: 1 = Pazartesi … 7 = Pazar. */
+    val days: Set<Int>,
     val windowStart: LocalTime,
     val windowEnd: LocalTime,
     val windowEnabled: Boolean,
     val backupEnabled: Boolean,
     val backupTime: LocalTime,
-)
+) {
+    fun has(kind: String): Boolean = kind in kinds
+
+    fun activeOn(day: LocalDate): Boolean = day.dayOfWeek.value in days
+}
 
 /**
  * Dart tarafının shared_preferences ile yazdığı veriye Android'den erişim.
@@ -44,14 +51,16 @@ object EsikData {
     private const val TRIGGERS = "triggers.v1"
     private const val LOG = "log.v1"
 
+    private val ALL_DAYS = (1..7).toSet()
+
     private val isoLocal: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
     private val defaultConfigs = mapOf(
         Mode.EVENING to TriggerConfig(
-            "charging", LocalTime.of(22, 0), LocalTime.of(2, 0), true, true, LocalTime.of(22, 30),
+            listOf("charging"), ALL_DAYS, LocalTime.of(22, 0), LocalTime.of(2, 0), true, true, LocalTime.of(22, 30),
         ),
         Mode.MORNING to TriggerConfig(
-            "alarmStopped", LocalTime.of(6, 0), LocalTime.of(10, 0), true, true, LocalTime.of(8, 15),
+            listOf("alarmStopped"), ALL_DAYS, LocalTime.of(6, 0), LocalTime.of(10, 0), true, true, LocalTime.of(8, 15),
         ),
     )
 
@@ -89,8 +98,13 @@ object EsikData {
     fun config(c: Context, mode: Mode): TriggerConfig {
         val d = defaultConfigs.getValue(mode)
         val o = readJson(c, TRIGGERS)?.optJSONObject(mode.key) ?: return d
+        // Eski kayıtlarda tek "kind" alanı vardı.
+        val kinds = o.optJSONArray("kinds")?.let { a -> (0 until a.length()).map { a.optString(it) } }
+            ?: o.optString("kind", "").takeIf { it.isNotEmpty() }?.let { listOf(it) }
+        val days = o.optJSONArray("days")?.let { a -> (0 until a.length()).map { a.optInt(it) }.filter { it in 1..7 }.toSet() }
         return TriggerConfig(
-            kind = o.optString("kind", d.kind),
+            kinds = kinds?.filter { it.isNotEmpty() }?.takeIf { it.isNotEmpty() } ?: d.kinds,
+            days = days?.takeIf { it.isNotEmpty() } ?: d.days,
             windowStart = time(o.optString("windowStart", ""), d.windowStart),
             windowEnd = time(o.optString("windowEnd", ""), d.windowEnd),
             windowEnabled = o.optBoolean("windowEnabled", d.windowEnabled),

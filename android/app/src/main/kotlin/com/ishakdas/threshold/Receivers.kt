@@ -70,7 +70,8 @@ object BackupScheduler {
                 "lastOutcome" to p.getString("last.$k.outcome", null),
                 "triggerAt" to TriggerScheduler.lastAt(c, mode),
                 "triggerOutcome" to TriggerScheduler.lastOutcome(c, mode),
-                "triggerWait" to TriggerScheduler.waiting(c, mode),
+                "triggerKind" to TriggerScheduler.lastKind(c, mode),
+                "triggerWaits" to TriggerScheduler.waiting(c, mode),
             )
         }
     }

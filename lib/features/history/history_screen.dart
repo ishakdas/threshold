@@ -27,10 +27,11 @@ class HistoryScreen extends ConsumerWidget {
     ];
     final total = outcomes.where((o) => o.tracked).length;
     final done = outcomes.where((o) => o.completed).length;
-    final anyUntracked = outcomes.any((o) => !o.tracked);
+    final anyUntracked = outcomes.contains(CheckOutcome.notTracked);
+    final anyOff = outcomes.contains(CheckOutcome.off);
     final from = logs.first.date, to = logs.last.date;
     final eveningTimes = [for (final l in logs) ?l.eveningAt];
-    final kind = ref.watch(triggerConfigProvider)[DayMode.evening]!.kind;
+    final evening = ref.watch(triggerConfigProvider)[DayMode.evening]!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -90,7 +91,7 @@ class HistoryScreen extends ConsumerWidget {
                     const SizedBox(height: 14),
                     _PillGrid(logs: logs),
                     const SizedBox(height: 12),
-                    _Legend(showUntracked: anyUntracked),
+                    _Legend(showUntracked: anyUntracked, showOff: anyOff),
                   ],
                 ),
               ),
@@ -99,7 +100,7 @@ class HistoryScreen extends ConsumerWidget {
                 SurfaceCard(
                   child: _AverageCard(
                     times: eveningTimes,
-                    triggerTitle: kind.title,
+                    triggerTitle: evening.title,
                   ),
                 ),
             ],
@@ -375,6 +376,15 @@ class _Pill extends StatelessWidget {
           color: p.text.withValues(alpha: 0.14),
         ),
       ),
+      // Eşiğin çalışmadığı gün: çok soluk dolgu, ince çerçeve.
+      CheckOutcome.off => Container(
+        height: 22,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(11),
+          color: p.text.withValues(alpha: 0.05),
+          border: Border.all(color: p.text.withValues(alpha: 0.10)),
+        ),
+      ),
       // Uygulama o gün kurulu değildi: içi boş, ince çerçeve.
       CheckOutcome.notTracked => Container(
         height: 22,
@@ -414,8 +424,9 @@ class _DashedPillPainter extends CustomPainter {
 }
 
 class _Legend extends StatelessWidget {
-  const _Legend({required this.showUntracked});
+  const _Legend({required this.showUntracked, required this.showOff});
   final bool showUntracked;
+  final bool showOff;
 
   @override
   Widget build(BuildContext context) {
@@ -438,6 +449,7 @@ class _Legend extends StatelessWidget {
         item(const _Pill(outcome: CheckOutcome.missed), 'Atlandı'),
         if (showUntracked)
           item(const _Pill(outcome: CheckOutcome.notTracked), 'Kayıt yok'),
+        if (showOff) item(const _Pill(outcome: CheckOutcome.off), 'İzin günü'),
       ],
     );
   }

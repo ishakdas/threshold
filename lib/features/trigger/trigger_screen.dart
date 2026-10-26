@@ -34,6 +34,17 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     '/kurulum?mod=${_mode == DayMode.evening ? 'aksam' : 'sabah'}',
   );
 
+  void _toggleKind(TriggerConfig c, TriggerKind kind) {
+    final next = c.toggle(kind);
+    if (identical(next, c)) {
+      // Son tetikleyici kaldırılamaz.
+      HapticFeedback.heavyImpact();
+      return;
+    }
+    HapticFeedback.selectionClick();
+    _update(next);
+  }
+
   Future<void> _pickBackup() async {
     final picked = await showTimePicker(
       context: context,
@@ -132,6 +143,8 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
+                // Verilmezse GridView güvenli alan boşluğunu kendisi ekler.
+                padding: EdgeInsets.zero,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 10,
                 crossAxisSpacing: 10,
@@ -140,17 +153,43 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                   for (final kind in TriggerKind.forMode(_mode))
                     _TriggerTile(
                       kind: kind,
-                      selected: kind == c.kind,
-                      onTap: kind.supported
-                          ? () {
-                              HapticFeedback.selectionClick();
-                              _update(c.copyWith(kind: kind));
-                            }
-                          : null,
+                      selected: c.kinds.contains(kind),
+                      onTap: kind.supported ? () => _toggleKind(c, kind) : null,
                     ),
                 ],
               ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  c.kinds.length > 1
+                      ? 'Hangisi önce olursa o gün o hatırlatır.'
+                      : 'Birden fazla seçebilirsin; hangisi önce olursa o hatırlatır.',
+                  style: t.labelSmall?.copyWith(
+                    fontSize: 12,
+                    color: p.textFaint,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+                child: DotLabel('Hangi günler?'),
+              ),
               const SizedBox(height: 10),
+              _DayPicker(
+                days: c.days,
+                onToggle: (d) {
+                  final next = c.toggleDay(d);
+                  if (identical(next, c)) {
+                    HapticFeedback.heavyImpact();
+                  } else {
+                    HapticFeedback.selectionClick();
+                    _update(next);
+                  }
+                },
+              ),
+              const SizedBox(height: 14),
               SurfaceCard(
                 radius: 30,
                 padding: const EdgeInsets.fromLTRB(18, 10, 10, 10),
@@ -298,6 +337,58 @@ class _TriggerTile extends StatelessWidget {
   }
 }
 
+/// Haftanın günleri: eşiğin hangi günler çalışacağı. En az bir gün seçili kalır.
+class _DayPicker extends StatelessWidget {
+  const _DayPicker({required this.days, required this.onToggle});
+  final Set<int> days;
+  final ValueChanged<int> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (var d = 1; d <= 7; d++)
+          Semantics(
+            button: true,
+            toggled: days.contains(d),
+            label: weekdayNames[d - 1],
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: () => onToggle(d),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: days.contains(d)
+                      ? p.primaryButton
+                      : p.chip.withValues(alpha: 0.4),
+                  border: Border.all(
+                    color: days.contains(d) ? p.primaryButton : p.chipBorder,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  weekdayLetters[d - 1],
+                  style: t.labelLarge?.copyWith(
+                    color: days.contains(d) ? p.onPrimaryButton : p.textMuted,
+                    fontWeight: days.contains(d)
+                        ? FontWeight.w500
+                        : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 /// Telefon sessizdeyken bildirim titresin ya da çalsın mı? İki mod için ortak.
 class _SilentAlertCard extends ConsumerWidget {
   const _SilentAlertCard();
@@ -361,14 +452,13 @@ class _StatusLine extends ConsumerWidget {
   final DayMode mode;
 
   /// "Durum: şarj bekleniyor". Tetikleyicinin gerçekten kurulu olduğunu gösterir.
-  static String? _waiting(ThresholdStatus status, DateTime now) {
-    final at = status.waitAt;
+  static String _waiting(TriggerWaiting w, DateTime now, {required bool many}) {
+    final at = w.at;
     // Bekleme henüz başlamadıysa ne zaman başlayacağı.
     final later = at != null && at.isAfter(now.add(const Duration(minutes: 1)))
         ? '${formatWhen(at, now)} itibarıyla '
         : '';
-    final text = switch (status.wait) {
-      null => null,
+    final text = switch (w.wait) {
       TriggerWait.charging =>
         '$later'
             'şarja takılması bekleniyor',
@@ -385,7 +475,7 @@ class _StatusLine extends ConsumerWidget {
         'zil zaten açık; gece sesi kısarsan sabah çalışır',
       TriggerWait.none => 'kurulu değil',
     };
-    return text == null ? null : 'Durum: $text';
+    return many ? '${w.kind.title}: $text' : 'Durum: $text';
   }
 
   /// Tetikleyicinin çalışması için bilinmesi gereken tek şey.
@@ -405,7 +495,7 @@ class _StatusLine extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final status = ref.watch(thresholdStatusProvider).value?[mode];
-    final kind = ref.watch(triggerConfigProvider)[mode]!.kind;
+    final kinds = ref.watch(triggerConfigProvider)[mode]!.kinds;
     // Android kanalı yoksa (testler) satır gösterilmez.
     if (status == null) return const SizedBox.shrink();
     final now = ref.watch(clockProvider)();
@@ -416,9 +506,11 @@ class _StatusLine extends ConsumerWidget {
       if (status.lastAt != null && status.lastOutcome != null)
         'Son yedek: ${formatWhen(status.lastAt!, now)} ${status.lastOutcome!.description}',
       if (status.triggerAt != null && status.triggerOutcome != null)
-        '${kind.title}: ${formatWhen(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
-      ?_waiting(status, now),
-      ?_hint(kind),
+        'Son tetik${status.triggerKind == null ? '' : ' (${lowerFirst(status.triggerKind!.title)})'}: '
+            '${formatWhen(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
+      for (final w in status.waits) _waiting(w, now, many: kinds.length > 1),
+      // Tek tetikleyicide ne yapılacağını söyle; çoğunda satırlar yeter.
+      if (kinds.length == 1) ?_hint(kinds.single),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),

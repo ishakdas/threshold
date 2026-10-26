@@ -81,23 +81,38 @@ void main() {
     expect(status[DayMode.morning]!.triggerOutcome, NotifyOutcome.shown);
     expect(status[DayMode.morning]!.next, isNull);
     expect(status[DayMode.evening]!.triggerOutcome, isNull);
-    expect(status[DayMode.evening]!.wait, isNull);
+    expect(status[DayMode.evening]!.waits, isEmpty);
   });
 
   test('durum: tetikleyicinin beklediği şey okunur', () {
     final at = DateTime(2026, 10, 24, 7, 0);
     final status = ThresholdStatus.parse({
       'morning': {
-        'triggerWait': {'wait': 'alarm', 'at': at.millisecondsSinceEpoch},
+        'triggerKind': 'alarmStopped',
+        'triggerWaits': [
+          {
+            'kind': 'alarmStopped',
+            'wait': 'alarm',
+            'at': at.millisecondsSinceEpoch,
+          },
+          {'kind': 'unsilenced', 'wait': 'unsilence', 'at': null},
+          {'kind': 'bilinmeyen', 'wait': 'alarm'},
+        ],
       },
       'evening': {
-        'triggerWait': {'wait': 'charging', 'at': null},
+        'triggerWaits': [
+          {'kind': 'charging', 'wait': 'charging', 'at': null},
+        ],
       },
     })!;
-    expect(status[DayMode.morning]!.wait, TriggerWait.alarm);
-    expect(status[DayMode.morning]!.waitAt, at);
-    expect(status[DayMode.evening]!.wait, TriggerWait.charging);
-    expect(status[DayMode.evening]!.waitAt, isNull);
+    final morning = status[DayMode.morning]!;
+    expect(morning.triggerKind, TriggerKind.alarmStopped);
+    expect(morning.waits.map((w) => (w.kind, w.wait)), [
+      (TriggerKind.alarmStopped, TriggerWait.alarm),
+      (TriggerKind.unsilenced, TriggerWait.unsilence),
+    ]);
+    expect(morning.waits.first.at, at);
+    expect(status[DayMode.evening]!.waits.single.wait, TriggerWait.charging);
   });
 
   testWidgets('ayar değişince Android işleri yeniden kurulur', (tester) async {
@@ -111,7 +126,7 @@ void main() {
           DayMode.morning,
           c
               .read(triggerConfigProvider)[DayMode.morning]!
-              .copyWith(kind: TriggerKind.leftHomeWifi),
+              .toggle(TriggerKind.leftHomeWifi),
         );
     await tester.pumpAndSettle();
     expect(calls.map((c) => c.method), contains('reschedule'));
@@ -258,7 +273,7 @@ void main() {
             DayMode.morning,
             c
                 .read(triggerConfigProvider)[DayMode.morning]!
-                .copyWith(kind: TriggerKind.nfcTag),
+                .copyWith(kinds: [TriggerKind.nfcTag]),
           );
       GoRouter.of(element).push('/kurulum?mod=sabah');
       await tester.pumpAndSettle();
@@ -313,15 +328,19 @@ void main() {
 
     test('eksikler tetikleyiciye göre hesaplanır', () {
       final h = SetupHealth.parse({...healthy(), 'nextAlarm': null})!;
-      expect(setupIssues(h, TriggerKind.charging), isEmpty);
-      expect(setupIssues(h, TriggerKind.alarmStopped), [SetupIssue.noAlarm]);
-      expect(setupIssues(h, TriggerKind.nfcTag), [SetupIssue.nfcTag]);
+      expect(setupIssues(h, [TriggerKind.charging]), isEmpty);
+      expect(setupIssues(h, [TriggerKind.alarmStopped]), [SetupIssue.noAlarm]);
+      expect(setupIssues(h, [TriggerKind.nfcTag]), [SetupIssue.nfcTag]);
+      expect(setupIssues(h, [TriggerKind.alarmStopped, TriggerKind.nfcTag]), [
+        SetupIssue.noAlarm,
+        SetupIssue.nfcTag,
+      ]);
       final off = SetupHealth.parse({
         ...healthy(battery: false),
         'notificationsEnabled': false,
         'nfc': 'off',
       })!;
-      expect(setupIssues(off, TriggerKind.nfcTag), [
+      expect(setupIssues(off, [TriggerKind.nfcTag]), [
         SetupIssue.notifications,
         SetupIssue.battery,
         SetupIssue.nfcOff,
@@ -376,10 +395,9 @@ void main() {
     await tester.tap(find.text('Uyku modu'));
     await tester.pumpAndSettle();
     final c = ProviderScope.containerOf(element);
-    expect(
-      c.read(triggerConfigProvider)[DayMode.evening]!.kind,
+    expect(c.read(triggerConfigProvider)[DayMode.evening]!.kinds, [
       TriggerKind.charging,
-    );
+    ]);
   });
 
   testWidgets('bildirimden açılış yönlendirmesi hızlı kontrolü açar', (

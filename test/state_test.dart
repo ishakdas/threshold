@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,7 +97,7 @@ void main() {
 
   test('kurulum adımları tetikleyiciye göre değişir', () {
     List<String> steps(TriggerKind k) =>
-        setupStepsFor(k).map((s) => s.title).toList();
+        setupStepsFor([k]).map((s) => s.title).toList();
     expect(steps(TriggerKind.charging), [
       'Bildirimlere izin ver',
       'Arka planda çalışmasına izin ver',
@@ -114,6 +115,84 @@ void main() {
     final logs = c.read(historyProvider);
     expect(logs, hasLength(14));
     expect(logs.last.date, DateTime(2026, 10, 19));
+  });
+
+  group('birden fazla tetikleyici ve günler', () {
+    const base = TriggerConfig(
+      kinds: [TriggerKind.alarmStopped],
+      windowStart: TimeOfDay(hour: 6, minute: 0),
+      windowEnd: TimeOfDay(hour: 10, minute: 0),
+      backupTime: TimeOfDay(hour: 8, minute: 15),
+    );
+
+    test('tetikleyiciler sıralı eklenir, sonuncusu çıkarılamaz', () {
+      final two = base
+          .toggle(TriggerKind.nfcTag)
+          .toggle(TriggerKind.unsilenced);
+      expect(two.kinds, [
+        TriggerKind.alarmStopped,
+        TriggerKind.unsilenced,
+        TriggerKind.nfcTag,
+      ]);
+      expect(base.toggle(TriggerKind.alarmStopped), same(base));
+      expect(two.title, 'Alarmı durdurunca +2');
+      final pair = base.toggle(TriggerKind.unsilenced);
+      expect(pair.title, 'Alarmı durdurunca ya da sessizden çıkarınca');
+      expect(
+        pair.when,
+        'Alarmı durdurduğunda ya da telefonu sessizden çıkardığında',
+      );
+    });
+
+    test('son gün çıkarılamaz', () {
+      var c = base;
+      for (var d = 1; d <= 6; d++) {
+        c = c.toggleDay(d);
+      }
+      expect(c.days, {7});
+      expect(c.toggleDay(7), same(c));
+    });
+
+    test('eski kayıttaki tek tetikleyici okunur', () {
+      final c = TriggerConfig.fromJson({'kind': 'nfcTag'}, base);
+      expect(c.kinds, [TriggerKind.nfcTag]);
+      expect(c.days, allWeekdays);
+    });
+
+    test('izin günü geçmişte atlandı sayılmaz', () async {
+      SharedPreferences.setMockInitialValues({'installed_on': '2026-10-01'});
+      prefs = await SharedPreferences.getInstance();
+      final c = container();
+      c
+          .read(triggerConfigProvider.notifier)
+          .update(
+            DayMode.evening,
+            c
+                .read(triggerConfigProvider)[DayMode.evening]!
+                .copyWith(days: {1, 2, 3, 4, 5}),
+          );
+      final logs = c.read(historyProvider);
+      final sunday = logs.firstWhere((l) => l.date == DateTime(2026, 10, 18));
+      final monday = logs.firstWhere((l) => l.date == DateTime(2026, 10, 19));
+      expect(sunday.evening, CheckOutcome.off);
+      expect(sunday.morning, CheckOutcome.missed);
+      expect(monday.evening, CheckOutcome.missed);
+    });
+
+    test('kurulum her tetikleyicinin adımını içerir', () {
+      final titles = setupStepsFor([
+        TriggerKind.alarmStopped,
+        TriggerKind.nfcTag,
+      ]).map((s) => s.title);
+      expect(
+        titles,
+        containsAllInOrder([
+          'Sabah alarmın kurulu olsun',
+          'Etiketi hazırla',
+          'Dene',
+        ]),
+      );
+    });
   });
 
   test('lowerFirst Türkçe harfleri doğru küçültür', () {

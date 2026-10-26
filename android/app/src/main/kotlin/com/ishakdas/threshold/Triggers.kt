@@ -58,24 +58,27 @@ enum class NotifyOutcome(val key: String) {
     ALREADY_NOTIFIED("alreadyNotified"),
     NO_PERMISSION("noPermission"),
     DISABLED("disabled"),
+    OFF_DAY("offDay"),
 }
 
 object Thresholds {
     /** O gün kontrol yapılmadıysa ve bildirim gelmediyse bildirim gönderir. */
-    fun notifyIfDue(c: Context, mode: Mode, reason: Reason): NotifyOutcome {
+    fun notifyIfDue(c: Context, mode: Mode, reason: Reason, kind: String? = null): NotifyOutcome {
         val day = EsikData.thresholdDay()
         return when {
+            !EsikData.config(c, mode).activeOn(day) -> NotifyOutcome.OFF_DAY
             EsikData.isComplete(c, day, mode) -> NotifyOutcome.ALREADY_DONE
             EsikData.wasNotified(c, day, mode) -> NotifyOutcome.ALREADY_NOTIFIED
-            EsikNotifications.show(c, mode, reason) -> NotifyOutcome.SHOWN
+            EsikNotifications.show(c, mode, reason, kind) -> NotifyOutcome.SHOWN
             else -> NotifyOutcome.NO_PERMISSION
         }
     }
 
-    /** Bugünkü eşik zaten kapandı mı (kontrol yapıldı ya da bildirim geldi)? */
+    /** Bugünkü eşik zaten kapandı mı (izin günü, kontrol yapıldı ya da bildirim geldi)? */
     fun handledToday(c: Context, mode: Mode): Boolean {
         val day = EsikData.thresholdDay()
-        return EsikData.isComplete(c, day, mode) || EsikData.wasNotified(c, day, mode)
+        return !EsikData.config(c, mode).activeOn(day) ||
+            EsikData.isComplete(c, day, mode) || EsikData.wasNotified(c, day, mode)
     }
 }
 
@@ -115,12 +118,18 @@ object TriggerScheduler {
     private fun job(c: Context, id: Int) =
         JobInfo.Builder(id, ComponentName(c, TriggerJobService::class.java))
 
-    fun recordOutcome(c: Context, mode: Mode, outcome: NotifyOutcome) {
+    /** [kind] tetikleyicisi oldu: bildirimi gönder (gerekiyorsa) ve sonucu kaydet. */
+    private fun fire(c: Context, mode: Mode, kind: String) {
+        val outcome = Thresholds.notifyIfDue(c, mode, Reason.TRIGGER, kind)
         state(c).edit()
             .putLong("last.${mode.key}.at", System.currentTimeMillis())
             .putString("last.${mode.key}.outcome", outcome.key)
+            .putString("last.${mode.key}.kind", kind)
             .apply()
     }
+
+    fun lastKind(c: Context, mode: Mode): String? =
+        state(c).getString("last.${mode.key}.kind", null)
 
     fun lastAt(c: Context, mode: Mode): Long? =
         state(c).getLong("last.${mode.key}.at", 0L).takeIf { it > 0 }
@@ -134,7 +143,7 @@ object TriggerScheduler {
         rememberNextAlarm(c)
 
         val evening = EsikData.config(c, Mode.EVENING)
-        if (evening.kind == "charging") {
+        if (evening.has("charging")) {
             val skip = Thresholds.handledToday(c, Mode.EVENING)
             scheduleCharging(c, Window.of(evening).delayUntilOpen(now, skip))
         } else {
@@ -142,15 +151,15 @@ object TriggerScheduler {
         }
 
         val morning = EsikData.config(c, Mode.MORNING)
-        if (evening.kind == "silenced" || morning.kind == "unsilenced") {
+        if (evening.has("silenced") || morning.has("unsilenced")) {
             // İş zaten bekliyorsa son bilinen durum onun; yeniden kurarken ezme.
             if (jobs(c).getPendingJob(JOB_SILENCE) == null) rememberLevel(c, soundLevel(c))
             scheduleSilence(c)
         } else {
             jobs(c).cancel(JOB_SILENCE)
         }
-        if (morning.kind != "alarmStopped") jobs(c).cancel(JOB_ALARM)
-        if (morning.kind == "leftHomeWifi") {
+        if (!morning.has("alarmStopped")) jobs(c).cancel(JOB_ALARM)
+        if (morning.has("leftHomeWifi")) {
             val window = Window.of(morning)
             val skip = Thresholds.handledToday(c, Mode.MORNING)
             if (!skip && window.contains(now.toLocalTime()) && armedToday(c)) {
@@ -247,39 +256,41 @@ object TriggerScheduler {
         state(c).getLong("from.$job", 0L).takeIf { it > 0 }
 
     /**
-     * Dart'a: tetikleyici şu an neyi bekliyor. "wait" adları Dart'taki
+     * Dart'a: seçili her tetikleyici şu an neyi bekliyor. "wait" adları Dart'taki
      * TriggerWait ile aynıdır; "at" o beklemeyle ilgili an (ms).
      */
-    fun waiting(c: Context, mode: Mode): Map<String, Any?>? {
-        val kind = EsikData.config(c, mode).kind
+    fun waiting(c: Context, mode: Mode): List<Map<String, Any?>> {
         val pending = { id: Int -> jobs(c).getPendingJob(id) != null }
-        return when {
-            mode == Mode.EVENING && kind == "charging" ->
-                if (pending(JOB_CHARGING)) mapOf("wait" to "charging", "at" to from(c, JOB_CHARGING)) else mapOf("wait" to "none")
-            mode == Mode.MORNING && kind == "alarmStopped" -> {
-                val next = nextAlarm(c)
-                when {
-                    pending(JOB_ALARM) -> mapOf("wait" to "alarmSettling")
-                    next > 0 -> mapOf("wait" to "alarm", "at" to next)
-                    else -> mapOf("wait" to "noAlarm")
+        return EsikData.config(c, mode).kinds.mapNotNull { kind ->
+            val w: Pair<String, Long?>? = when {
+                mode == Mode.EVENING && kind == "charging" ->
+                    if (pending(JOB_CHARGING)) "charging" to from(c, JOB_CHARGING) else "none" to null
+                mode == Mode.MORNING && kind == "alarmStopped" -> {
+                    val next = nextAlarm(c)
+                    when {
+                        pending(JOB_ALARM) -> "alarmSettling" to null
+                        next > 0 -> "alarm" to next
+                        else -> "noAlarm" to null
+                    }
                 }
+                mode == Mode.EVENING && kind == "silenced" -> when {
+                    !pending(JOB_SILENCE) -> "none" to null
+                    soundLevel(c) == LEVEL_SILENT -> "alreadySilent" to null
+                    else -> "silence" to null
+                }
+                mode == Mode.MORNING && kind == "unsilenced" -> when {
+                    !pending(JOB_SILENCE) -> "none" to null
+                    soundLevel(c) == LEVEL_SOUND -> "notSilent" to null
+                    else -> "unsilence" to null
+                }
+                mode == Mode.MORNING && kind == "leftHomeWifi" -> when {
+                    pending(JOB_WIFI_LEFT) -> "leaving" to null
+                    pending(JOB_WIFI_ARM) -> "wifi" to from(c, JOB_WIFI_ARM)
+                    else -> "none" to null
+                }
+                else -> null
             }
-            mode == Mode.EVENING && kind == "silenced" -> when {
-                !pending(JOB_SILENCE) -> mapOf("wait" to "none")
-                soundLevel(c) == LEVEL_SILENT -> mapOf("wait" to "alreadySilent")
-                else -> mapOf("wait" to "silence")
-            }
-            mode == Mode.MORNING && kind == "unsilenced" -> when {
-                !pending(JOB_SILENCE) -> mapOf("wait" to "none")
-                soundLevel(c) == LEVEL_SOUND -> mapOf("wait" to "notSilent")
-                else -> mapOf("wait" to "unsilence")
-            }
-            mode == Mode.MORNING && kind == "leftHomeWifi" -> when {
-                pending(JOB_WIFI_LEFT) -> mapOf("wait" to "leaving")
-                pending(JOB_WIFI_ARM) -> mapOf("wait" to "wifi", "at" to from(c, JOB_WIFI_ARM))
-                else -> mapOf("wait" to "none")
-            }
-            else -> null
+            w?.let { (wait, at) -> mapOf("kind" to kind, "wait" to wait, "at" to at) }
         }
     }
 
@@ -309,7 +320,7 @@ object TriggerScheduler {
     fun onNextAlarmChanged(c: Context) {
         val previous = state(c).getLong("alarm.next", 0L)
         rememberNextAlarm(c)
-        if (EsikData.config(c, Mode.MORNING).kind != "alarmStopped") return
+        if (!EsikData.config(c, Mode.MORNING).has("alarmStopped")) return
         val now = System.currentTimeMillis()
         val rang = previous > 0 && previous <= now + 60_000 && now - previous < 3 * 3_600_000L
         if (!rang) return
@@ -323,21 +334,21 @@ object TriggerScheduler {
             JOB_CHARGING -> {
                 val config = EsikData.config(c, Mode.EVENING)
                 val window = Window.of(config)
-                if (config.kind == "charging" && window.contains(now.toLocalTime())) {
-                    recordOutcome(c, Mode.EVENING, Thresholds.notifyIfDue(c, Mode.EVENING, Reason.TRIGGER))
+                if (config.has("charging") && window.contains(now.toLocalTime())) {
+                    fire(c, Mode.EVENING, "charging")
                 }
                 // Hâlâ şarjdayken hemen yeniden çalışmasın: bir sonraki aralığı bekle.
-                later { if (config.kind == "charging") scheduleCharging(c, window.delayUntilOpen(now, true)) }
+                later { if (config.has("charging")) scheduleCharging(c, window.delayUntilOpen(now, true)) }
             }
             JOB_ALARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val next = nextAlarm(c)
                 val snoozed = next > 0 && next - System.currentTimeMillis() < SNOOZE_MS
                 // Ertelendiyse sıradaki çalışta yeniden bakılır.
-                if (config.kind == "alarmStopped" && !snoozed &&
+                if (config.has("alarmStopped") && !snoozed &&
                     Window.of(config).contains(now.toLocalTime())
                 ) {
-                    recordOutcome(c, Mode.MORNING, Thresholds.notifyIfDue(c, Mode.MORNING, Reason.TRIGGER))
+                    fire(c, Mode.MORNING, "alarmStopped")
                 }
             }
             JOB_SILENCE -> {
@@ -354,8 +365,8 @@ object TriggerScheduler {
                 val wanted = if (mode == Mode.EVENING) "silenced" else "unsilenced"
                 if (mode != null) {
                     val config = EsikData.config(c, mode)
-                    if (config.kind == wanted && Window.of(config).contains(now.toLocalTime())) {
-                        recordOutcome(c, mode, Thresholds.notifyIfDue(c, mode, Reason.TRIGGER))
+                    if (config.has(wanted) && Window.of(config).contains(now.toLocalTime())) {
+                        fire(c, mode, wanted)
                     }
                 }
                 later { scheduleSilence(c) }
@@ -363,7 +374,7 @@ object TriggerScheduler {
             JOB_WIFI_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val window = Window.of(config)
-                if (config.kind != "leftHomeWifi") return
+                if (!config.has("leftHomeWifi")) return
                 if (window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)) {
                     setArmed(c, true)
                     later { scheduleWifiLeft(c) }
@@ -374,9 +385,9 @@ object TriggerScheduler {
             JOB_WIFI_LEFT -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val window = Window.of(config)
-                if (config.kind != "leftHomeWifi") return
+                if (!config.has("leftHomeWifi")) return
                 if (window.contains(now.toLocalTime()) && armedToday(c)) {
-                    recordOutcome(c, Mode.MORNING, Thresholds.notifyIfDue(c, Mode.MORNING, Reason.TRIGGER))
+                    fire(c, Mode.MORNING, "leftHomeWifi")
                 }
                 setArmed(c, false)
                 later { scheduleWifiArm(c, window.delayUntilOpen(now, true)) }

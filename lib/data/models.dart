@@ -167,10 +167,26 @@ enum SilentAlert {
   final EsikIcon icon;
 }
 
-/// Bir modun eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
+/// Haftanın bütün günleri (DateTime.monday = 1 … DateTime.sunday = 7).
+const allWeekdays = {1, 2, 3, 4, 5, 6, 7};
+
+/// Pazartesiden başlayarak günlerin tek harfi.
+const weekdayLetters = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'];
+const weekdayNames = [
+  'Pazartesi',
+  'Salı',
+  'Çarşamba',
+  'Perşembe',
+  'Cuma',
+  'Cumartesi',
+  'Pazar',
+];
+
+/// Bir modun eşik ayarı: hangi davranışlar, hangi günler ve saatlerde, yedek saat.
 class TriggerConfig {
   const TriggerConfig({
-    required this.kind,
+    required this.kinds,
+    this.days = allWeekdays,
     required this.windowStart,
     required this.windowEnd,
     this.windowEnabled = true,
@@ -178,22 +194,65 @@ class TriggerConfig {
     required this.backupTime,
   });
 
-  final TriggerKind kind;
+  /// Seçili tetikleyiciler; en az biri. Hangisi önce olursa o gün o bildirir.
+  final List<TriggerKind> kinds;
+
+  /// Eşiğin çalıştığı günler (eşik günü, 04:00'te başlar). Diğer günlerde
+  /// ne tetikleyici ne yedek saat hatırlatır.
+  final Set<int> days;
   final TimeOfDay windowStart;
   final TimeOfDay windowEnd;
   final bool windowEnabled;
   final bool backupEnabled;
   final TimeOfDay backupTime;
 
+  bool activeOn(DateTime day) => days.contains(day.weekday);
+
+  /// Başlık: "Şarja takınca", "Şarja takınca ya da sessize alınca",
+  /// "Alarmı durdurunca +2".
+  String get title => switch (kinds) {
+    [final k] => k.title,
+    [final a, final b] => '${a.title} ya da ${lowerFirst(b.title)}',
+    [final a, ...final rest] => '${a.title} +${rest.length}',
+    [] => 'Yalnızca yedek saat',
+  };
+
+  /// Cümle içinde: "Telefonu şarja taktığında ya da sessize aldığında".
+  String get when => switch (kinds) {
+    [final k] => k.when,
+    [final a, final b] => '${a.when} ya da ${lowerFirst(b.when)}',
+    _ => 'Seçtiğin ${kinds.length} davranıştan biri olduğunda',
+  };
+
+  /// Tetikleyiciyi ekler ya da çıkarır; sonuncusu çıkarılamaz.
+  /// Sıra her zaman [TriggerKind.values] sırasıdır.
+  TriggerConfig toggle(TriggerKind kind) {
+    final next = kinds.contains(kind)
+        ? kinds.where((k) => k != kind).toList()
+        : [...kinds, kind];
+    if (next.isEmpty) return this;
+    next.sort((a, b) => a.index.compareTo(b.index));
+    return copyWith(kinds: next);
+  }
+
+  /// Günü ekler ya da çıkarır; son gün çıkarılamaz.
+  TriggerConfig toggleDay(int weekday) {
+    final next = {...days};
+    if (!next.remove(weekday)) next.add(weekday);
+    return next.isEmpty ? this : copyWith(days: next);
+  }
+
   TriggerConfig copyWith({
-    TriggerKind? kind,
+    List<TriggerKind>? kinds,
+    Set<int>? days,
     TimeOfDay? windowStart,
     TimeOfDay? windowEnd,
     bool? windowEnabled,
     bool? backupEnabled,
     TimeOfDay? backupTime,
   }) => TriggerConfig(
-    kind: kind ?? this.kind,
+    kinds: kinds ?? this.kinds,
+    days: days ?? this.days,
     windowStart: windowStart ?? this.windowStart,
     windowEnd: windowEnd ?? this.windowEnd,
     windowEnabled: windowEnabled ?? this.windowEnabled,
@@ -202,7 +261,8 @@ class TriggerConfig {
   );
 
   Map<String, Object?> toJson() => {
-    'kind': kind.name,
+    'kinds': [for (final k in kinds) k.name],
+    'days': days.toList()..sort(),
     'windowStart': _timeToJson(windowStart),
     'windowEnd': _timeToJson(windowEnd),
     'windowEnabled': windowEnabled,
@@ -210,15 +270,31 @@ class TriggerConfig {
     'backupTime': _timeToJson(backupTime),
   };
 
-  /// [fallback], eksik ya da bozuk alanlar için kullanılır.
+  /// [fallback], eksik ya da bozuk alanlar için kullanılır. Eski kayıtlardaki
+  /// tek "kind" alanı da okunur.
   factory TriggerConfig.fromJson(
     Map<String, Object?> json,
     TriggerConfig fallback,
   ) {
-    final kind = _byName(TriggerKind.values, json['kind'], fallback.kind);
+    final mode = fallback.kinds.first.mode;
+    final names = switch (json['kinds']) {
+      final List<Object?> list => list,
+      _ => [json['kind']],
+    };
+    // Başka bir moda ait ya da bilinmeyen tetikleyiciler atılır.
+    final kinds = TriggerKind.values
+        .where((k) => k.mode == mode && names.contains(k.name))
+        .toList();
+    final days = switch (json['days']) {
+      final List<Object?> list => {
+        for (final d in list)
+          if (d is int && d >= 1 && d <= 7) d,
+      },
+      _ => fallback.days,
+    };
     return TriggerConfig(
-      // Başka bir moda ait tetikleyici kaydedilmişse varsayılana dön.
-      kind: kind.mode == fallback.kind.mode ? kind : fallback.kind,
+      kinds: kinds.isEmpty ? fallback.kinds : kinds,
+      days: days.isEmpty ? fallback.days : days,
       windowStart: _timeFromJson(json['windowStart'], fallback.windowStart),
       windowEnd: _timeFromJson(json['windowEnd'], fallback.windowEnd),
       windowEnabled: json['windowEnabled'] as bool? ?? fallback.windowEnabled,
@@ -272,10 +348,13 @@ enum CheckOutcome {
   missed,
 
   /// O gün uygulama henüz kurulu değildi; ne tamam ne atlandı sayılır.
-  notTracked;
+  notTracked,
+
+  /// Eşiğin çalışmadığı gün (Ayarlar → günler); atlandı sayılmaz.
+  off;
 
   bool get completed => this == done || this == viaBackup;
-  bool get tracked => this != notTracked;
+  bool get tracked => this != notTracked && this != off;
 }
 
 class DayLog {
