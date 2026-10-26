@@ -271,7 +271,7 @@ class _SummaryCard extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${evening ? 'Akşam' : 'Sabah'} eşiği · ${lowerFirst(config.title)}',
+                    '${evening ? 'Akşam' : 'Sabah'} eşiği · ${lowerFirst(config.shortTitle)}',
                     style: t.bodyLarge?.copyWith(
                       fontSize: 15,
                       color: p.text.withValues(alpha: 0.85),

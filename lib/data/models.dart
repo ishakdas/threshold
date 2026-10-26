@@ -217,6 +217,10 @@ class TriggerConfig {
     [] => 'Yalnızca yedek saat',
   };
 
+  /// Dar yerler için: "Şarja takınca", "Şarja takınca +1".
+  String get shortTitle =>
+      kinds.length <= 1 ? title : '${kinds.first.title} +${kinds.length - 1}';
+
   /// Cümle içinde: "Telefonu şarja taktığında ya da sessize aldığında".
   String get when => switch (kinds) {
     [final k] => k.when,

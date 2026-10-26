@@ -100,7 +100,7 @@ class HistoryScreen extends ConsumerWidget {
                 SurfaceCard(
                   child: _AverageCard(
                     times: eveningTimes,
-                    triggerTitle: evening.title,
+                    triggerTitle: evening.shortTitle,
                   ),
                 ),
             ],

@@ -108,7 +108,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                           title: evening ? 'Akşam kontrolü' : 'Sabah kontrolü',
                           onBack: _close,
                           trailing: InfoChip(
-                            label: config.title,
+                            label: config.shortTitle,
                             icon: config.kinds.first.icon,
                             iconColor: context.palette.accent,
                           ),
