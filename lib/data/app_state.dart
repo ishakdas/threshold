@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'dart:ui' show Locale, PlatformDispatcher;
+
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/day_mode.dart';
+import '../l10n/app_localizations.dart';
 import '../ui/esik_icons.dart';
 import 'models.dart';
 import 'store.dart';
@@ -16,6 +19,54 @@ final sharedPreferencesProvider = Provider<SharedPreferences>(
 
 final storeProvider = Provider<EsikStore>(
   (ref) => EsikStore(ref.watch(sharedPreferencesProvider)),
+);
+
+// ---------------------------------------------------------------------------
+// Dil
+
+/// Uygulamanın dili. [system] telefonun dilini izler; desteklenmiyorsa İngilizce.
+/// Android tarafı (EsikData.language) bildirim metinleri için aynı kaydı okur.
+enum AppLanguage { system, tr, en, es }
+
+class LanguageNotifier extends Notifier<AppLanguage> {
+  @override
+  AppLanguage build() {
+    final saved = ref.watch(storeProvider).readString(EsikStore.languageKey);
+    return AppLanguage.values.where((l) => l.name == saved).firstOrNull ??
+        AppLanguage.system;
+  }
+
+  void set(AppLanguage value) {
+    state = value;
+    unawaited(
+      ref.read(storeProvider).writeString(EsikStore.languageKey, value.name),
+    );
+  }
+}
+
+final languageProvider = NotifierProvider<LanguageNotifier, AppLanguage>(
+  LanguageNotifier.new,
+);
+
+/// Telefonun dili; testlerde override edilir.
+final deviceLocaleProvider = Provider<Locale>(
+  (ref) => PlatformDispatcher.instance.locale,
+);
+
+/// Gösterilecek dil: seçilen ya da telefonunki (desteklenmiyorsa İngilizce).
+final localeProvider = Provider<Locale>((ref) {
+  final language = ref.watch(languageProvider);
+  if (language != AppLanguage.system) return Locale(language.name);
+  final device = ref.watch(deviceLocaleProvider).languageCode;
+  final supported = AppLocalizations.supportedLocales.any(
+    (l) => l.languageCode == device,
+  );
+  return Locale(supported ? device : 'en');
+});
+
+/// Widget dışında (varsayılan liste, Android'e giden metinler) çeviriler.
+final l10nProvider = Provider<AppLocalizations>(
+  (ref) => lookupAppLocalizations(ref.watch(localeProvider)),
 );
 
 class OnboardingNotifier extends Notifier<bool> {
@@ -71,32 +122,17 @@ final installDayProvider = Provider<DateTime>((ref) {
 // ---------------------------------------------------------------------------
 // Kontrol listesi
 
-const defaultChecklist = <DayMode, List<CheckItem>>{
+/// İlk açılıştaki örnek liste, uygulamanın o anki dilinde.
+Map<DayMode, List<CheckItem>> defaultChecklistFor(AppLocalizations l) => {
   DayMode.evening: [
-    CheckItem(id: 'e1', title: 'Ütünün fişini çektim mi?', icon: EsikIcon.iron),
-    CheckItem(
-      id: 'e2',
-      title: 'Yapılacaklar listemi tikledim mi?',
-      icon: EsikIcon.checklist,
-    ),
-    CheckItem(id: 'e3', title: 'Kapıyı kilitledim mi?', icon: EsikIcon.lock),
+    CheckItem(id: 'e1', title: l.defaultEveningIron, icon: EsikIcon.iron),
+    CheckItem(id: 'e2', title: l.defaultEveningTodo, icon: EsikIcon.checklist),
+    CheckItem(id: 'e3', title: l.defaultEveningLock, icon: EsikIcon.lock),
   ],
   DayMode.morning: [
-    CheckItem(
-      id: 'm1',
-      title: 'Çantama şarj aletini koydum mu?',
-      icon: EsikIcon.bag,
-    ),
-    CheckItem(
-      id: 'm2',
-      title: 'Akşamdan aldığım notlara baktım mı?',
-      icon: EsikIcon.notes,
-    ),
-    CheckItem(
-      id: 'm3',
-      title: 'Anahtar ve cüzdan yanımda mı?',
-      icon: EsikIcon.key,
-    ),
+    CheckItem(id: 'm1', title: l.defaultMorningCharger, icon: EsikIcon.bag),
+    CheckItem(id: 'm2', title: l.defaultMorningNotes, icon: EsikIcon.notes),
+    CheckItem(id: 'm3', title: l.defaultMorningKeys, icon: EsikIcon.key),
   ],
 };
 
@@ -108,10 +144,11 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
   @override
   Map<DayMode, List<CheckItem>> build() {
     final json = ref.watch(storeProvider).readJson(EsikStore.checklistKey);
+    final defaults = defaultChecklistFor(ref.read(l10nProvider));
     if (json == null) {
       // Android tarafı (bildirim metni) listeyi diskten okur; varsayılanı da yaz.
-      _persist(defaultChecklist);
-      return defaultChecklist;
+      _persist(defaults);
+      return defaults;
     }
     try {
       return {
@@ -124,7 +161,7 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
     } on Object {
       // Beklenmedik biçimde kayıt: kullanıcıyı boş listeyle bırakmaktansa
       // varsayılan listeye dön.
-      return defaultChecklist;
+      return defaults;
     }
   }
 

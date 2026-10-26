@@ -50,85 +50,21 @@ TimeOfDay _timeFromJson(Object? v, TimeOfDay fallback) {
 
 /// Bir eşiği başlatan davranış. Her tetikleyici yalnızca bir moda aittir.
 enum TriggerKind {
-  charging(
-    DayMode.evening,
-    'Şarja takınca',
-    'Yatağın yanında',
-    'Telefonu şarja taktığında',
-    EsikIcon.plug,
-  ),
-  silenced(
-    DayMode.evening,
-    'Sessize alınca',
-    'Sesi kısınca',
-    'Telefonu sessize aldığında',
-    EsikIcon.bellOff,
-  ),
-  appClosed(
-    DayMode.evening,
-    'Uygulama kapanınca',
-    'Instagram',
-    'Instagram’ı kapattığında',
-    EsikIcon.app,
-  ),
-  sleepMode(
-    DayMode.evening,
-    'Uyku modu',
-    'Açılınca',
-    'Uyku modu açıldığında',
-    EsikIcon.bed,
-  ),
-  airplaneMode(
-    DayMode.evening,
-    'Uçak modu',
-    'Açılınca',
-    'Uçak modunu açtığında',
-    EsikIcon.airplane,
-  ),
-  alarmStopped(
-    DayMode.morning,
-    'Alarmı durdurunca',
-    'Sabah alarmı',
-    'Alarmı durdurduğunda',
-    EsikIcon.alarm,
-  ),
-  unsilenced(
-    DayMode.morning,
-    'Sessizden çıkarınca',
-    'Sesi açınca',
-    'Telefonu sessizden çıkardığında',
-    EsikIcon.bellRing,
-  ),
-  unplugged(
-    DayMode.morning,
-    'Şarjdan çıkarınca',
-    'Telefonu alınca',
-    'Telefonu şarjdan çıkardığında',
-    EsikIcon.plug,
-  ),
-  leftHomeWifi(
-    DayMode.morning,
-    'Ev Wi‑Fi’ından çıkınca',
-    'Evden ayrılınca',
-    'Ev Wi‑Fi’ından ayrıldığında',
-    EsikIcon.wifi,
-  ),
-  nfcTag(
-    DayMode.morning,
-    'Kapıdaki etikete dokununca',
-    'NFC etiketi',
-    'Kapıdaki etikete dokunduğunda',
-    EsikIcon.nfc,
-  );
+  charging(DayMode.evening, EsikIcon.plug),
+  silenced(DayMode.evening, EsikIcon.bellOff),
+  appClosed(DayMode.evening, EsikIcon.app),
+  sleepMode(DayMode.evening, EsikIcon.bed),
+  airplaneMode(DayMode.evening, EsikIcon.airplane),
+  alarmStopped(DayMode.morning, EsikIcon.alarm),
+  unsilenced(DayMode.morning, EsikIcon.bellRing),
+  unplugged(DayMode.morning, EsikIcon.plug),
+  leftHomeWifi(DayMode.morning, EsikIcon.wifi),
+  nfcTag(DayMode.morning, EsikIcon.nfc);
 
-  const TriggerKind(this.mode, this.title, this.subtitle, this.when, this.icon);
+  const TriggerKind(this.mode, this.icon);
 
+  // Adları ve cümle içindeki hâlleri: lib/l10n/texts.dart.
   final DayMode mode;
-  final String title;
-  final String subtitle;
-
-  /// Cümle içinde kullanılan hâli: "Telefonu şarja taktığında ...".
-  final String when;
   final EsikIcon icon;
 
   /// Android'de çalışan tetikleyiciler (android/.../Triggers.kt). Diğerleri
@@ -154,33 +90,20 @@ enum TriggerKind {
 /// bildirimi nasıl duyurur. Android tarafı (EsikNotifications.kt) aynı adları okur.
 enum SilentAlert {
   /// Telefonun ayarına uyar.
-  quiet('Kapalı', EsikIcon.bellOff),
+  quiet(EsikIcon.bellOff),
 
   /// Sessizde de titreşir.
-  vibrate('Titret', EsikIcon.vibrate),
+  vibrate(EsikIcon.vibrate),
 
   /// Sessizde de çalar ve titreşir (alarm sesi düzeyinde).
-  ring('Çal', EsikIcon.bellRing);
+  ring(EsikIcon.bellRing);
 
-  const SilentAlert(this.label, this.icon);
-  final String label;
+  const SilentAlert(this.icon);
   final EsikIcon icon;
 }
 
 /// Haftanın bütün günleri (DateTime.monday = 1 … DateTime.sunday = 7).
 const allWeekdays = {1, 2, 3, 4, 5, 6, 7};
-
-/// Pazartesiden başlayarak günlerin tek harfi.
-const weekdayLetters = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'];
-const weekdayNames = [
-  'Pazartesi',
-  'Salı',
-  'Çarşamba',
-  'Perşembe',
-  'Cuma',
-  'Cumartesi',
-  'Pazar',
-];
 
 /// Bir modun eşik ayarı: hangi davranışlar, hangi günler ve saatlerde, yedek saat.
 class TriggerConfig {
@@ -207,26 +130,6 @@ class TriggerConfig {
   final TimeOfDay backupTime;
 
   bool activeOn(DateTime day) => days.contains(day.weekday);
-
-  /// Başlık: "Şarja takınca", "Şarja takınca ya da sessize alınca",
-  /// "Alarmı durdurunca +2".
-  String get title => switch (kinds) {
-    [final k] => k.title,
-    [final a, final b] => '${a.title} ya da ${lowerFirst(b.title)}',
-    [final a, ...final rest] => '${a.title} +${rest.length}',
-    [] => 'Yalnızca yedek saat',
-  };
-
-  /// Dar yerler için: "Şarja takınca", "Şarja takınca +1".
-  String get shortTitle =>
-      kinds.length <= 1 ? title : '${kinds.first.title} +${kinds.length - 1}';
-
-  /// Cümle içinde: "Telefonu şarja taktığında ya da sessize aldığında".
-  String get when => switch (kinds) {
-    [final k] => k.when,
-    [final a, final b] => '${a.when} ya da ${lowerFirst(b.when)}',
-    _ => 'Seçtiğin ${kinds.length} davranıştan biri olduğunda',
-  };
 
   /// Tetikleyiciyi ekler ya da çıkarır; sonuncusu çıkarılamaz.
   /// Sıra her zaman [TriggerKind.values] sırasıdır.
@@ -383,19 +286,6 @@ class DayLog {
 String formatTime(TimeOfDay t) =>
     '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
-/// Bir anı bugüne göre yazar: "bugün 14:05", "yarın 07:30", "dün 22:41".
-String formatWhen(DateTime at, DateTime now) {
-  final d = DateTime(at.year, at.month, at.day);
-  final today = DateTime(now.year, now.month, now.day);
-  final day = switch (d.difference(today).inDays) {
-    0 => 'bugün',
-    1 => 'yarın',
-    -1 => 'dün',
-    _ => '${at.day}.${at.month}',
-  };
-  return '$day ${formatTime(TimeOfDay.fromDateTime(at))}';
-}
-
 /// Saati bulunma ekiyle yazar: "22:30’da", "08:15’te", "23:08’de".
 /// Ek, saatin okunuşundaki son sayıya göre seçilir (dakika 00 ise saate göre).
 String timeAt(TimeOfDay t) {
@@ -408,12 +298,12 @@ String timeAt(TimeOfDay t) {
   return '${formatTime(t)}’$suffix';
 }
 
-/// Türkçe kurallarına uygun ilk harfi küçültme ("İ" → "i", "I" → "ı").
-String lowerFirst(String s) {
+/// İlk harfi küçültür; Türkçede "İ" → "i", "I" → "ı".
+String lowerFirst(String s, {bool turkish = true}) {
   if (s.isEmpty) return s;
   final first = switch (s[0]) {
-    'İ' => 'i',
-    'I' => 'ı',
+    'İ' when turkish => 'i',
+    'I' when turkish => 'ı',
     final c => c.toLowerCase(),
   };
   return first + s.substring(1);

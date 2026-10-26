@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/day_mode.dart';
 import '../data/models.dart';
+import '../l10n/app_localizations.dart';
 
 /// Android tarafıyla (android/app/src/main/kotlin/.../MainActivity.kt) konuşur:
 /// bildirim izni, deneme bildirimi, yedek saat alarmları, bildirimden gelen
@@ -272,15 +273,21 @@ enum NfcWriteResult {
 
 /// Android'deki NotifyOutcome ile aynı adlar.
 enum NotifyOutcome {
-  shown('gönderildi'),
-  alreadyDone('atlandı: kontrol zaten yapılmıştı'),
-  alreadyNotified('atlandı: o gün bildirim zaten gelmişti'),
-  noPermission('gönderilemedi: bildirim izni kapalı'),
-  disabled('atlandı: yedek kapalı'),
-  offDay('atlandı: izin günü');
+  shown,
+  alreadyDone,
+  alreadyNotified,
+  noPermission,
+  disabled,
+  offDay;
 
-  const NotifyOutcome(this.description);
-  final String description;
+  String description(AppLocalizations l) => switch (this) {
+    shown => l.outcomeShown,
+    alreadyDone => l.outcomeAlreadyDone,
+    alreadyNotified => l.outcomeAlreadyNotified,
+    noPermission => l.outcomeNoPermission,
+    disabled => l.outcomeDisabled,
+    offDay => l.outcomeOffDay,
+  };
 }
 
 /// Ayarlar ekranındaki durum satırı için. Ön plana dönünce yenilenir;

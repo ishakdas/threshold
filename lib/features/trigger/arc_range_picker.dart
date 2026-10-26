@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../data/models.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/esik_icons.dart';
+import '../../l10n/texts.dart';
 
 /// Yarım daire üzerinde iki tutamaçlı saat aralığı seçici.
 /// Yayın solu [arcStart], sağı [arcStart] + [spanMinutes]'tır.
@@ -167,6 +168,7 @@ class _ArcRangePickerState extends State<ArcRangePicker> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return LayoutBuilder(
       builder: (context, c) {
@@ -178,8 +180,10 @@ class _ArcRangePickerState extends State<ArcRangePicker> {
         final endPos = _point(g, fe);
 
         return Semantics(
-          label:
-              'Saat aralığı ${formatTime(widget.start)} ile ${formatTime(widget.end)} arası',
+          label: l10n.rangeA11y(
+            formatTime(widget.start),
+            formatTime(widget.end),
+          ),
           child: RawGestureDetector(
             gestures: {
               _GrabDragRecognizer:

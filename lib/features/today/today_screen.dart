@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,6 +14,7 @@ import '../../ui/esik_icons.dart';
 import '../../ui/esik_logo.dart';
 import '../../ui/threshold_door.dart';
 import 'day_strip.dart';
+import '../../l10n/texts.dart';
 
 /// Tek ana ekran: üstte gün şeridi, ortada şu anki eşiğin büyük kartı,
 /// altta diğer eşiğin özeti.
@@ -21,6 +23,7 @@ class TodayScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final mode = ref.watch(dayModeProvider);
     final other = mode == DayMode.evening ? DayMode.morning : DayMode.evening;
     final p = context.palette;
@@ -38,7 +41,7 @@ class TodayScreen extends ConsumerWidget {
                 children: [
                   EsikLogo(archColor: p.text, lightColor: p.accent),
                   const SizedBox(width: 9),
-                  Text('Eşik', style: t.titleLarge),
+                  Text(l10n.appName, style: t.titleLarge),
                   const Spacer(),
                   _ModeChip(
                     evening: mode == DayMode.evening,
@@ -48,7 +51,7 @@ class TodayScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 14),
-            DayStrip(entries: _stripEntries(ref)),
+            DayStrip(entries: _stripEntries(ref, l10n)),
             const SizedBox(height: 10),
             // Eksik bir izin ya da ayar varsa eşik haber veremeyebilir.
             if (_SetupCard.issueMode(ref, mode) case final issueMode?) ...[
@@ -64,7 +67,7 @@ class TodayScreen extends ConsumerWidget {
     );
   }
 
-  List<DayStripEntry> _stripEntries(WidgetRef ref) {
+  List<DayStripEntry> _stripEntries(WidgetRef ref, AppLocalizations l10n) {
     final today = ref.watch(todayProvider);
     final history = ref.watch(historyProvider);
     final progress = ref.watch(todayProgressProvider);
@@ -80,7 +83,7 @@ class TodayScreen extends ConsumerWidget {
           final d = DateTime(today.year, today.month, today.day + offset);
           return DayStripEntry(
             day: d.day,
-            weekday: turkishWeekdays[d.weekday - 1],
+            weekday: DateFormat.E(l10n.localeName).format(d),
             isToday: offset == 0,
             isFuture: offset > 0,
             progress: offset == 0
@@ -98,6 +101,7 @@ class _ThresholdCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final config = ref.watch(triggerConfigProvider)[mode]!;
@@ -111,11 +115,11 @@ class _ThresholdCard extends ConsumerWidget {
     final String buttonLabel;
     if (session.isComplete) {
       final at = TimeOfDay.fromDateTime(session.completedAt!);
-      buttonLabel = 'Tamamlandı · ${formatTime(at)}';
+      buttonLabel = l10n.todayDoneAt(formatTime(at));
     } else if (done > 0) {
-      buttonLabel = 'Devam et · $remaining madde kaldı';
+      buttonLabel = l10n.todayContinue(remaining);
     } else {
-      buttonLabel = 'Şimdi kontrol et';
+      buttonLabel = l10n.todayCheckNow;
     }
 
     return DecoratedBox(
@@ -140,20 +144,20 @@ class _ThresholdCard extends ConsumerWidget {
             const ThresholdDoor(),
             const SizedBox(height: 22),
             DotLabel(
-              evening ? 'Bu akşamki eşiğin' : 'Bu sabahki eşiğin',
+              evening ? l10n.todayThresholdEvening : l10n.todayThresholdMorning,
               center: true,
             ),
             const SizedBox(height: 4),
             Text(
-              config.title,
+              config.title(l10n),
               textAlign: TextAlign.center,
               style: t.headlineMedium,
             ),
             const SizedBox(height: 6),
             Text(
               offToday
-                  ? 'Bugün izin günü; Eşik hatırlatmaz. İstersen yine de kontrol edebilirsin.'
-                  : '${config.when} ${items.length} maddelik kontrolün önüne gelir.',
+                  ? l10n.todayOffDay
+                  : l10n.todayCardBody(config.when(l10n), items.length),
               textAlign: TextAlign.center,
               style: t.bodyMedium?.copyWith(color: p.textMuted),
             ),
@@ -164,7 +168,7 @@ class _ThresholdCard extends ConsumerWidget {
               children: [
                 _Meta(
                   icon: EsikIcon.list,
-                  text: '${items.length} madde · $done/${items.length}',
+                  text: l10n.todayItemsProgress(items.length, done),
                 ),
                 if (config.windowEnabled)
                   _Meta(
@@ -218,6 +222,7 @@ class _SummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = mode == DayMode.evening;
@@ -234,28 +239,32 @@ class _SummaryCard extends ConsumerWidget {
     final String status;
     if (session.isComplete) {
       count = '$n/$n';
-      final at = timeAt(TimeOfDay.fromDateTime(session.completedAt!));
-      status = evening ? 'Bu akşam $at tamam' : 'Bu sabah $at tamam';
+      final at = l10n.at(TimeOfDay.fromDateTime(session.completedAt!));
+      status = evening
+          ? l10n.summaryEveningDoneAt(at)
+          : l10n.summaryMorningDoneAt(at);
     } else if (!evening) {
       final done = session.checked.length.clamp(0, n);
       count = done == 0 ? '–' : '$done/$n';
-      status = done == 0 ? 'Bu sabah yapılmadı' : 'Bu sabah yarım kaldı';
+      status = done == 0
+          ? l10n.summaryMorningNotDone
+          : l10n.summaryMorningPartial;
     } else {
       final y = history.last;
       (count, status) = switch (y.evening) {
         CheckOutcome.done || CheckOutcome.viaBackup => (
           '$n/$n',
-          'Dün akşam ${timeAt(y.eveningAt!)} tamam',
+          l10n.summaryLastNightDoneAt(l10n.at(y.eveningAt!)),
         ),
-        CheckOutcome.missed => ('0/$n', 'Dün akşam atlandı'),
-        CheckOutcome.notTracked => ('–', 'Dün akşam kayıt yok'),
-        CheckOutcome.off => ('–', 'Dün akşam izin günüydü'),
+        CheckOutcome.missed => ('0/$n', l10n.summaryLastNightMissed),
+        CheckOutcome.notTracked => ('–', l10n.summaryLastNightNoRecord),
+        CheckOutcome.off => ('–', l10n.summaryLastNightOff),
       };
     }
 
     return Semantics(
       button: true,
-      label: '${evening ? 'Akşam' : 'Sabah'} eşiğine geç',
+      label: evening ? l10n.summaryGoToEvening : l10n.summaryGoToMorning,
       child: SurfaceCard(
         onTap: () => ref.read(dayModeProvider.notifier).set(mode),
         child: Column(
@@ -271,7 +280,13 @@ class _SummaryCard extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${evening ? 'Akşam' : 'Sabah'} eşiği · ${lowerFirst(config.shortTitle)}',
+                    evening
+                        ? l10n.summaryEveningLine(
+                            l10n.lower(config.shortTitle(l10n)),
+                          )
+                        : l10n.summaryMorningLine(
+                            l10n.lower(config.shortTitle(l10n)),
+                          ),
                     style: t.bodyLarge?.copyWith(
                       fontSize: 15,
                       color: p.text.withValues(alpha: 0.85),
@@ -323,10 +338,11 @@ class _MiniBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final done = logs.where((l) => l.outcome(mode).completed).length;
     return Semantics(
-      label: 'Son 7 gün: $done tamamlandı',
+      label: l10n.summaryLast7A11y(done),
       excludeSemantics: true,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -360,7 +376,7 @@ class _MiniBars extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  turkishWeekdayInitials[logs[i].date.weekday - 1],
+                  l10n.weekdayLetterList[logs[i].date.weekday - 1],
                   style: TextStyle(fontSize: 11, color: p.textFaint),
                 ),
               ],
@@ -388,14 +404,15 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Semantics(
       button: true,
-      label: evening ? 'Akşam modu. Sabaha geç' : 'Sabah modu. Akşama geç',
+      label: evening ? l10n.modeEveningSwitch : l10n.modeMorningSwitch,
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
         child: InfoChip(
-          label: evening ? 'Akşam modu' : 'Sabah modu',
+          label: evening ? l10n.modeEvening : l10n.modeMorning,
           icon: evening ? EsikIcon.moon : EsikIcon.sun,
         ),
       ),
@@ -421,6 +438,7 @@ class _SetupCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final all = ref.watch(setupIssuesProvider)!;
@@ -428,8 +446,8 @@ class _SetupCard extends ConsumerWidget {
     // Ortak eksikler iki modda da sayılır; bir kez göster.
     final total = {...all[DayMode.evening]!, ...all[DayMode.morning]!}.length;
     final detail = total > 1
-        ? '${issues.first.label} · $total eksik'
-        : issues.first.label;
+        ? l10n.setupCardMore(issues.first.label(l10n), total)
+        : issues.first.label(l10n);
     final icon = switch (issues.first) {
       SetupIssue.notifications => EsikIcon.bell,
       SetupIssue.battery => EsikIcon.battery,
@@ -438,7 +456,7 @@ class _SetupCard extends ConsumerWidget {
     };
     return Semantics(
       button: true,
-      label: '$detail. Kurulumu tamamla',
+      label: l10n.setupCardA11y(detail),
       excludeSemantics: true,
       child: SurfaceCard(
         highlighted: true,
@@ -461,7 +479,7 @@ class _SetupCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Kurulumu tamamla', style: t.labelLarge),
+                  Text(l10n.setupFinish, style: t.labelLarge),
                   const SizedBox(height: 2),
                   Text(
                     detail,

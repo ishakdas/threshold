@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android tarafındaki metinler (bildirimler). Uygulama içi çeviriler: lib/l10n/*.arb. -->
+<resources>
+    <string name="mode_evening">Evening threshold</string>
+    <string name="mode_morning">Morning threshold</string>
+    <string name="channel_name">Eşik checks</string>
+    <string name="channel_description">Evening and morning checklist reminders</string>
+    <string name="icon_iron">Iron</string>
+    <string name="icon_plug">Plug</string>
+    <string name="icon_flame">Stove</string>
+    <string name="icon_lock">Lock</string>
+    <string name="icon_key">Keys</string>
+    <string name="icon_bag">Bag</string>
+    <string name="icon_wallet">Wallet</string>
+    <string name="icon_bulb">Lamp</string>
+    <string name="icon_pill">Medicine</string>
+    <string name="icon_notes">Notes</string>
+    <string name="icon_checklist">List</string>
+    <string name="past_charging">You plugged in</string>
+    <string name="past_silenced">You silenced your phone</string>
+    <string name="past_unsilenced">You turned the sound back on</string>
+    <string name="past_appClosed">You closed Instagram</string>
+    <string name="past_sleepMode">Sleep mode is on</string>
+    <string name="past_airplaneMode">You turned on airplane mode</string>
+    <string name="past_alarmStopped">You stopped your alarm</string>
+    <string name="past_unplugged">You unplugged your phone</string>
+    <string name="past_leftHomeWifi">You left home</string>
+    <string name="past_nfcTag">You tapped the door tag</string>
+    <string name="past_default">Threshold time</string>
+    <string name="reason_backup">Time to check</string>
+    <string name="reason_test">Test reminder</string>
+    <string name="summary_empty">Your checklist is empty. Tap to add items.</string>
+    <string name="action_all_done">All done</string>
+    <string name="action_one_by_one">Go one by one</string>
+    <string name="battery_hint">Tap Battery and choose “Unrestricted”</string>
+    <plurals name="summary_ready">
+        <item quantity="one">Your 1-item check is ready.</item>
+        <item quantity="other">Your %1$d-item check is ready.</item>
+    </plurals>
+    <plurals name="summary_labels">
+        <item quantity="one">1 item: %2$s.</item>
+        <item quantity="other">%1$d items: %2$s.</item>
+    </plurals>
+</resources>

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../ui/esik_icons.dart';
 import '../../ui/glass_tab_bar.dart';
+import '../../l10n/texts.dart';
 
 /// Sekmeli ana iskelet. İçerik cam çubuğun altına kadar uzanır.
 class AppShell extends StatelessWidget {
@@ -10,15 +11,9 @@ class AppShell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  static const tabs = [
-    GlassTab(icon: EsikIcon.door, label: 'Bugün'),
-    GlassTab(icon: EsikIcon.list, label: 'Liste'),
-    GlassTab(icon: EsikIcon.history, label: 'Geçmiş'),
-    GlassTab(icon: EsikIcon.sliders, label: 'Ayarlar'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Scaffold(
       extendBody: true,
@@ -26,7 +21,12 @@ class AppShell extends StatelessWidget {
       bottomNavigationBar: Padding(
         padding: EdgeInsets.fromLTRB(18, 0, 18, bottomInset + 14),
         child: GlassTabBar(
-          tabs: tabs,
+          tabs: [
+            GlassTab(icon: EsikIcon.door, label: l10n.tabToday),
+            GlassTab(icon: EsikIcon.list, label: l10n.tabList),
+            GlassTab(icon: EsikIcon.history, label: l10n.tabHistory),
+            GlassTab(icon: EsikIcon.sliders, label: l10n.tabSettings),
+          ],
           currentIndex: navigationShell.currentIndex,
           onTabSelected: (i) => navigationShell.goBranch(
             i,

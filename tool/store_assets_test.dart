@@ -120,6 +120,7 @@ Future<void> _boot(WidgetTester t, DateTime now) async {
       overrides: [
         clockProvider.overrideWithValue(() => now),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        deviceLocaleProvider.overrideWithValue(const Locale('tr')),
       ],
       child: const EsikApp(),
     ),

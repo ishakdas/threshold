@@ -15,6 +15,7 @@ class EsikStore {
   static const logKey = 'log.v1';
   static const installedOnKey = 'installed_on';
   static const silentAlertKey = 'silent_alert';
+  static const languageKey = 'language';
 
   /// Bozuk ya da eksik belgede null döner; çağıran varsayılana düşer.
   Map<String, Object?>? readJson(String key) {

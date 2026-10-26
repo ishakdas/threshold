@@ -35,36 +35,45 @@ object EsikNotifications {
 
     /** Bildirimde maddenin ikonunun kısa adı (lib/ui/esik_icons.dart ile aynı). */
     private val iconLabels = mapOf(
-        "iron" to "Ütü", "plug" to "Priz", "flame" to "Ocak", "lock" to "Kilit",
-        "key" to "Anahtar", "bag" to "Çanta", "wallet" to "Cüzdan", "bulb" to "Lamba",
-        "pill" to "İlaç", "notes" to "Not", "checklist" to "Liste",
+        "iron" to R.string.icon_iron, "plug" to R.string.icon_plug, "flame" to R.string.icon_flame,
+        "lock" to R.string.icon_lock, "key" to R.string.icon_key, "bag" to R.string.icon_bag,
+        "wallet" to R.string.icon_wallet, "bulb" to R.string.icon_bulb, "pill" to R.string.icon_pill,
+        "notes" to R.string.icon_notes, "checklist" to R.string.icon_checklist,
     )
 
     /** Tetikleyicinin geçmiş zamanlı hâli: "Şarja taktın". */
     private val triggerPast = mapOf(
-        "charging" to "Şarja taktın",
-        "silenced" to "Telefonu sessize aldın",
-        "unsilenced" to "Telefonu sessizden çıkardın",
-        "appClosed" to "Instagram’ı kapattın",
-        "sleepMode" to "Uyku modu açıldı",
-        "airplaneMode" to "Uçak modunu açtın",
-        "alarmStopped" to "Alarmı durdurdun",
-        "unplugged" to "Şarjdan çıkardın",
-        "leftHomeWifi" to "Evden çıktın",
-        "nfcTag" to "Kapıdaki etikete dokundun",
+        "charging" to R.string.past_charging,
+        "silenced" to R.string.past_silenced,
+        "unsilenced" to R.string.past_unsilenced,
+        "appClosed" to R.string.past_appClosed,
+        "sleepMode" to R.string.past_sleepMode,
+        "airplaneMode" to R.string.past_airplaneMode,
+        "alarmStopped" to R.string.past_alarmStopped,
+        "unplugged" to R.string.past_unplugged,
+        "leftHomeWifi" to R.string.past_leftHomeWifi,
+        "nfcTag" to R.string.past_nfcTag,
     )
 
-    fun ensureChannel(c: Context) {
+    fun ensureChannel(context: Context) {
+        val c = Lang.context(context)
         val nm = c.getSystemService(NotificationManager::class.java)
-        if (nm.getNotificationChannel(CHANNEL_ID) != null) return
+        val existing = nm.getNotificationChannel(CHANNEL_ID)
+        if (existing != null) {
+            // Dil değiştiyse kanalın adı da değişsin (ses ve önem değişmez).
+            existing.name = c.getString(R.string.channel_name)
+            existing.description = c.getString(R.string.channel_description)
+            nm.createNotificationChannel(existing)
+            return
+        }
         OLD_CHANNELS.forEach { nm.deleteNotificationChannel(it) }
         val sound = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_NOTIFICATION)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_ID, "Eşik kontrolleri", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Akşam ve sabah kontrol listesi hatırlatmaları"
+            NotificationChannel(CHANNEL_ID, c.getString(R.string.channel_name), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = c.getString(R.string.channel_description)
                 setSound(chimeUri(c), sound)
             },
         )
@@ -85,17 +94,19 @@ object EsikNotifications {
         val items = EsikData.items(c, mode)
         val config = EsikData.config(c, mode)
 
-        val labels = items.mapNotNull { iconLabels[it.icon] }.distinct()
+        val res = Lang.context(c).resources
+        val labels = items.mapNotNull { iconLabels[it.icon]?.let(res::getString) }.distinct()
         val summary = when {
-            items.isEmpty() -> "Kontrol listen boş. Madde eklemek için dokun."
-            labels.isEmpty() -> "${items.size} maddelik kontrolün hazır."
-            else -> "${items.size} madde: ${labels.joinToString(", ")}."
+            items.isEmpty() -> res.getString(R.string.summary_empty)
+            labels.isEmpty() -> res.getQuantityString(R.plurals.summary_ready, items.size, items.size)
+            else -> res.getQuantityString(R.plurals.summary_labels, items.size, items.size, labels.joinToString(", "))
         }
-        val text = when (reason) {
-            Reason.TRIGGER -> "${triggerPast[kind ?: config.kinds.first()] ?: "Eşik geldi"}. $summary"
-            Reason.BACKUP -> "Kontrol saati. $summary"
-            Reason.TEST -> "Deneme bildirimi. $summary"
+        val lead = when (reason) {
+            Reason.TRIGGER -> res.getString(triggerPast[kind ?: config.kinds.first()] ?: R.string.past_default)
+            Reason.BACKUP -> res.getString(R.string.reason_backup)
+            Reason.TEST -> res.getString(R.string.reason_test)
         }
+        val text = "$lead. $summary"
         val big = buildString {
             append(text)
             items.forEach { append("\n• ").append(it.title) }
@@ -130,7 +141,7 @@ object EsikNotifications {
         val builder = Notification.Builder(c, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_esik)
             .setColor(ACCENT)
-            .setContentTitle(mode.title)
+            .setContentTitle(res.getString(if (mode == Mode.EVENING) R.string.mode_evening else R.string.mode_morning))
             .setContentText(text)
             .setStyle(Notification.BigTextStyle().bigText(big))
             .setCategory(Notification.CATEGORY_REMINDER)
@@ -138,9 +149,9 @@ object EsikNotifications {
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
         if (items.isNotEmpty()) {
-            builder.addAction(Notification.Action.Builder(icon, "Hepsi tamam", allDone).build())
+            builder.addAction(Notification.Action.Builder(icon, res.getString(R.string.action_all_done), allDone).build())
         }
-        builder.addAction(Notification.Action.Builder(icon, "Tek tek bak", open).build())
+        builder.addAction(Notification.Action.Builder(icon, res.getString(R.string.action_one_by_one), open).build())
 
         c.getSystemService(NotificationManager::class.java).notify(notificationId(mode), builder.build())
         SilentAlerter.alertIfSilent(c)

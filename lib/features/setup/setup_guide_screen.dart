@@ -11,6 +11,7 @@ import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../platform/native_bridge.dart';
+import '../../l10n/texts.dart';
 
 /// Adımın ana butonunun ne yapacağı.
 enum SetupStepKind { notifications, battery, trigger, test }
@@ -49,64 +50,64 @@ class SetupStep {
 /// Seçilen tetikleyicilerin Android'de çalışması için gereken adımlar: ortak
 /// izinler, her tetikleyicinin kendi adımı, sonda deneme. Kısayollar'ın
 /// olmadığı Android'de iOS'taki kurulum rehberinin karşılığıdır.
-List<SetupStep> setupStepsFor(List<TriggerKind> kinds) {
-  const notifications = SetupStep(
+List<SetupStep> setupStepsFor(AppLocalizations l, List<TriggerKind> kinds) {
+  final notifications = SetupStep(
     kind: SetupStepKind.notifications,
-    title: 'Bildirimlere izin ver',
-    detail: 'Eşik yalnızca eşik geldiğinde yazar. Günde en fazla iki bildirim.',
-    action: 'İzin ver',
+    title: l.stepNotifTitle,
+    detail: l.stepNotifDetail,
+    action: l.allow,
     icon: EsikIcon.bell,
   );
-  const battery = SetupStep(
+  final battery = SetupStep(
     kind: SetupStepKind.battery,
-    title: 'Arka planda çalışmasına izin ver',
-    detail: 'Samsung pil tasarrufu Eşik’i uyutabilir. Açılan pencerede “İzin ver”e dokun. Pencere yerine ayarlar açılırsa Pil’e dokun ve “Kısıtlamasız”ı seç.',
-    action: 'İzin ver',
+    title: l.stepBatteryTitle,
+    detail: l.stepBatteryDetail,
+    action: l.allow,
     icon: EsikIcon.battery,
   );
   SetupStep? specific(TriggerKind kind) => switch (kind) {
-    TriggerKind.appClosed => const SetupStep(
+    TriggerKind.appClosed => SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Kullanım erişimi ver',
-      detail: 'Instagram’ın kapandığını anlamak için hangi uygulamanın açık olduğunu görmemiz gerekir.',
-      action: 'Kullanım erişimini aç',
+      title: l.stepUsageTitle,
+      detail: l.stepUsageDetail,
+      action: l.stepUsageAction,
       icon: EsikIcon.app,
     ),
     TriggerKind.silenced || TriggerKind.unsilenced => SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Ek izin gerekmez',
+      title: l.stepNoPermissionTitle,
       detail: kind == TriggerKind.silenced
-          ? 'Akşam aralığında telefonun sesini bir kademe kısınca (sesliden titreşime, titreşimden sessize) ya da Rahatsız Etmeyin açılınca Eşik bunu fark eder.'
-          : 'Sabah aralığında telefonun sesini bir kademe açınca (sessizden titreşime, titreşimden sesliye) ya da Rahatsız Etmeyin kapanınca Eşik bunu fark eder.',
-      action: 'Anladım',
+          ? l.stepSilencedDetail
+          : l.stepUnsilencedDetail,
+      action: l.gotIt,
       icon: kind.icon,
     ),
-    TriggerKind.sleepMode => const SetupStep(
+    TriggerKind.sleepMode => SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Bildirim erişimi ver',
-      detail: 'Uyku modu açıldığında haberimiz olsun diye. Bildirimlerinin içeriği okunmaz.',
-      action: 'Erişimi aç',
+      title: l.stepNotifAccessTitle,
+      detail: l.stepNotifAccessDetail,
+      action: l.stepNotifAccessAction,
       icon: EsikIcon.bed,
     ),
-    TriggerKind.leftHomeWifi => const SetupStep(
+    TriggerKind.leftHomeWifi => SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Mobil veri açık kalsın',
-      detail: 'Sabah aralığında evin Wi‑Fi’ına bağlıyken Eşik hazırda bekler; bağlantı kopup telefon mobil veriye geçince hatırlatır. Wi‑Fi adı okunmaz, konum izni gerekmez.',
-      action: 'Anladım',
+      title: l.stepWifiTitle,
+      detail: l.stepWifiDetail,
+      action: l.gotIt,
       icon: EsikIcon.wifi,
     ),
-    TriggerKind.nfcTag => const SetupStep(
+    TriggerKind.nfcTag => SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Etiketi hazırla',
-      detail: 'Boş bir NFC etiketini telefonun arkasına tut; Eşik etikete kendi bağlantısını yazar.',
-      action: 'Etiketi yaz',
+      title: l.stepNfcTitle,
+      detail: l.stepNfcDetail,
+      action: l.stepNfcAction,
       icon: EsikIcon.nfc,
     ),
-    TriggerKind.alarmStopped => const SetupStep(
+    TriggerKind.alarmStopped => SetupStep(
       kind: SetupStepKind.trigger,
-      title: 'Sabah alarmın kurulu olsun',
-      detail: 'Ek izin gerekmez. Saat uygulamasındaki alarm çalıp kapandığında Eşik bunu fark eder. Ertelersen son çalışı bekler.',
-      action: 'Anladım',
+      title: l.stepAlarmTitle,
+      detail: l.stepAlarmDetail,
+      action: l.gotIt,
       icon: EsikIcon.alarm,
     ),
     _ => null,
@@ -114,18 +115,18 @@ List<SetupStep> setupStepsFor(List<TriggerKind> kinds) {
   final only = kinds.length == 1 ? kinds.single : null;
   final test = SetupStep(
     kind: SetupStepKind.test,
-    title: 'Dene',
+    title: l.stepTestTitle,
     detail: switch (only) {
-      TriggerKind.charging => 'Önce deneme bildirimi. Gerçeği, seçtiğin saat aralığında telefonu şarja taktıktan sonra birkaç dakika içinde gelir.',
-      TriggerKind.leftHomeWifi => 'Önce deneme bildirimi. Gerçeği, sabah aralığında Wi‑Fi’ı kapatıp mobil veriye geçince gelir.',
-      TriggerKind.alarmStopped => 'Önce deneme bildirimi. Gerçeği, sabah aralığında çalan bir alarmı kapattıktan sonra gelir.',
-      TriggerKind.silenced => 'Önce deneme bildirimi. Gerçeği, akşam aralığında telefonun sesini kıstığında birkaç saniye içinde gelir.',
-      TriggerKind.unsilenced => 'Önce deneme bildirimi. Gerçeği, sabah aralığında telefonun sesini açtığında birkaç saniye içinde gelir.',
-      TriggerKind.nfcTag => 'Uygulamadan çık, kilidi açık telefonu etikete dokundur. Kontrol ekranı açılmalı.',
-      null => 'Deneme bildirimi gönderelim. Gerçeğini, seçtiğin davranışlardan o gün ilk olanı gönderir.',
-      _ => 'Deneme bildirimi gönderelim; gerçek tetikleyici de aynı şekilde gelecek.',
+      TriggerKind.charging => l.stepTestCharging,
+      TriggerKind.leftHomeWifi => l.stepTestWifi,
+      TriggerKind.alarmStopped => l.stepTestAlarm,
+      TriggerKind.silenced => l.stepTestSilenced,
+      TriggerKind.unsilenced => l.stepTestUnsilenced,
+      TriggerKind.nfcTag => l.stepTestNfc,
+      null => l.stepTestMany,
+      _ => l.stepTestOther,
     },
-    action: only == TriggerKind.nfcTag ? 'Bitir' : 'Deneme bildirimi gönder',
+    action: only == TriggerKind.nfcTag ? l.finish : l.sendTest,
     icon: kinds.first.icon,
   );
   return [notifications, battery, for (final k in kinds) ?specific(k), test];
@@ -192,6 +193,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
     final bridge = ref.read(nativeBridgeProvider);
     final health = ref.read(setupHealthProvider).value;
     var advance = true;
+    final l10n = context.l10n;
     // Ayar sayfasını aç; Android kanalı varsa dönüşte durum denetlenir.
     Future<void> viaSettings(Future<void> Function() open) async {
       await open();
@@ -215,8 +217,8 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
             _permissionDenied = true;
             _attempted.add(_current);
             _snack(
-              'Bildirim izni verilmedi. İstersen ayarlardan açabilirsin.',
-              actionLabel: 'Ayarlar',
+              l10n.notifDenied,
+              actionLabel: l10n.settings,
               onAction: bridge.openNotificationSettings,
             );
           }
@@ -236,8 +238,8 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
           if (!await bridge.showTestNotification(mode)) {
             advance = false;
             _snack(
-              'Bildirim gönderilemedi: bildirim izni kapalı.',
-              actionLabel: 'Ayarlar',
+              l10n.testNotSent,
+              actionLabel: l10n.settings,
               onAction: bridge.openNotificationSettings,
             );
           }
@@ -256,17 +258,18 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
 
   /// Ana butonun etiketi: adımın gerçek durumuna göre.
   String _actionLabel(SetupStep step, SetupHealth? h, TriggerKind kind) {
-    if (stepDone(step, h) == true) return 'Devam';
+    final l10n = context.l10n;
+    if (stepDone(step, h) == true) return l10n.continueLabel;
     return switch (step.kind) {
       SetupStepKind.notifications
           when _permissionDenied || h?.notificationPermission == true =>
-        'Ayarlardan aç',
+        l10n.openInSettings,
       SetupStepKind.trigger
           when kind == TriggerKind.nfcTag && h?.nfc == NfcState.off =>
-        'NFC’yi aç',
+        l10n.turnOnNfc,
       SetupStepKind.trigger
           when kind == TriggerKind.alarmStopped && h != null =>
-        'Saat uygulamasını aç',
+        l10n.openClock,
       _ => step.action,
     };
   }
@@ -274,26 +277,26 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   /// Adımın açıklaması; telefonun durumu biliniyorsa ona göre.
   String _detail(SetupStep step, SetupHealth? h, TriggerKind kind) {
     if (h == null) return step.detail;
+    final l10n = context.l10n;
     final now = ref.read(clockProvider)();
     return switch (step.kind) {
-      SetupStepKind.notifications when h.notifications =>
-        'Bildirimler açık. Eşik yalnızca eşik geldiğinde yazar.',
-      SetupStepKind.notifications when h.notificationPermission => 'İzin verilmiş ama Eşik bildirimleri telefon ayarlarında kapalı. Açılan sayfada bildirimleri aç.',
-      SetupStepKind.battery when h.battery =>
-        'Eşik pil kısıtlamasından muaf; arka planda uyutulmaz.',
+      SetupStepKind.notifications when h.notifications => l10n.detailNotifOn,
+      SetupStepKind.notifications when h.notificationPermission =>
+        l10n.detailNotifBlocked,
+      SetupStepKind.battery when h.battery => l10n.detailBatteryOk,
       SetupStepKind.trigger when kind == TriggerKind.alarmStopped =>
         h.nextAlarm == null
-            ? 'Saat uygulamasında kurulu alarm yok. Sabah alarmını kur; çalıp kapandığında Eşik bunu fark eder.'
-            : 'Sıradaki alarm ${formatWhen(h.nextAlarm!, now)}. Çalıp kapandığında Eşik bunu fark eder. Ertelersen son çalışı bekler.',
+            ? l10n.detailNoAlarm
+            : l10n.detailNextAlarm(l10n.when(h.nextAlarm!, now)),
       SetupStepKind.trigger
           when kind == TriggerKind.nfcTag && h.nfc == NfcState.unsupported =>
-        'Bu telefonda NFC yok. Başka bir sabah tetikleyicisi seç.',
+        l10n.noNfc,
       SetupStepKind.trigger
           when kind == TriggerKind.nfcTag && h.nfc == NfcState.off =>
-        'NFC kapalı. Etiketi yazmak ve okumak için açık olmalı.',
+        l10n.detailNfcOff,
       SetupStepKind.trigger
           when kind == TriggerKind.nfcTag && h.nfcTagWritten =>
-        'Etiket yazıldı. İstersen yeni bir etikete yeniden yazabilirsin.',
+        l10n.detailTagWritten,
       _ => step.detail,
     };
   }
@@ -307,25 +310,25 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
     switch (result) {
       case NfcWriteResult.written:
         HapticFeedback.heavyImpact();
-        _snack('Etiket hazır. Kapının yanına yapıştırabilirsin.');
+        _snack(context.l10n.tagReady);
         return true;
       case NfcWriteResult.cancelled:
         break;
       case NfcWriteResult.disabled:
         _snack(
-          'NFC kapalı. Açıp tekrar dene.',
-          actionLabel: 'Ayarlar',
+          context.l10n.nfcOffRetry,
+          actionLabel: context.l10n.settings,
           onAction: bridge.openNfcSettings,
         );
       case NfcWriteResult.unsupported:
-        _snack('Bu telefonda NFC yok. Başka bir sabah tetikleyicisi seç.');
+        _snack(context.l10n.noNfc);
       case NfcWriteResult.readOnly:
-        _snack('Bu etiket kilitli, üzerine yazılamıyor. Boş bir etiket dene.');
+        _snack(context.l10n.tagReadOnly);
       case NfcWriteResult.tooSmall:
       case NfcWriteResult.incompatible:
-        _snack('Bu etiket uygun değil. NTAG213 ya da benzeri bir etiket dene.');
+        _snack(context.l10n.tagIncompatible);
       case NfcWriteResult.error:
-        _snack('Yazılamadı. Telefonu etikete biraz daha uzun tut.');
+        _snack(context.l10n.tagError);
     }
     return false;
   }
@@ -359,9 +362,10 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
     final kinds = ref.watch(triggerConfigProvider)[mode]!.kinds;
-    final steps = setupStepsFor(kinds);
+    final steps = setupStepsFor(l10n, kinds);
     final health = ref.watch(setupHealthProvider).value;
     if (health != null && !_positioned) {
       _positioned = true;
@@ -397,10 +401,10 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 ScreenHeader(
-                  title: 'Kurulum',
+                  title: l10n.setupTitle,
                   onBack: _close,
                   trailing: InfoChip(
-                    label: 'Adım ${_current + 1} / ${steps.length}',
+                    label: l10n.stepOf(_current + 1, steps.length),
                   ),
                 ),
                 Expanded(
@@ -412,7 +416,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
-                          _waitingForTag ? 'Etikete yaklaştır' : step.title,
+                          _waitingForTag ? l10n.holdToTag : step.title,
                           style: t.headlineMedium?.copyWith(fontSize: 26),
                         ),
                       ),
@@ -421,7 +425,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Text(
                           _waitingForTag
-                              ? 'Telefonun arkasını etikete değdir ve titreşimi bekle.'
+                              ? l10n.holdToTagDetail
                               : _detail(step, health, kind),
                           style: t.bodyMedium?.copyWith(color: p.textMuted),
                         ),
@@ -453,7 +457,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                       flex: 10,
                       child: skippable
                           ? SecondaryPillButton(
-                              label: 'Atla',
+                              label: l10n.skip,
                               icon: EsikIcon.arrowRight,
                               onPressed: () {
                                 _awaitingSettings = false;
@@ -461,7 +465,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                               },
                             )
                           : SecondaryPillButton(
-                              label: 'Sonra',
+                              label: l10n.later,
                               icon: EsikIcon.clock,
                               onPressed: () => context.go('/bugun'),
                             ),
@@ -471,7 +475,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
                       flex: 16,
                       child: _waitingForTag
                           ? SecondaryPillButton(
-                              label: 'Vazgeç',
+                              label: l10n.cancel,
                               icon: EsikIcon.nfc,
                               onPressed: () =>
                                   ref.read(nativeBridgeProvider).cancelNfcTag(),
@@ -600,6 +604,7 @@ class _TimelineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
 
@@ -660,12 +665,11 @@ class _TimelineRow extends StatelessWidget {
     };
 
     return Semantics(
-      label:
-          '${index + 1}. adım, ${step.title}, ${switch (state) {
-            _StepState.done => 'tamamlandı',
-            _StepState.current => 'şu anki adım',
-            _StepState.upcoming => 'sırada',
-          }}',
+      label: l10n.stepA11y(index + 1, step.title, switch (state) {
+        _StepState.done => l10n.stepStateDone,
+        _StepState.current => l10n.stepStateCurrent,
+        _StepState.upcoming => l10n.stepStateUpcoming,
+      }),
       excludeSemantics: true,
       child: IntrinsicHeight(
         child: Row(

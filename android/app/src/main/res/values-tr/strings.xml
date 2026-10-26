@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android tarafındaki metinler (bildirimler). Uygulama içi çeviriler: lib/l10n/*.arb. -->
+<resources>
+    <string name="mode_evening">Akşam eşiği</string>
+    <string name="mode_morning">Sabah eşiği</string>
+    <string name="channel_name">Eşik kontrolleri</string>
+    <string name="channel_description">Akşam ve sabah kontrol listesi hatırlatmaları</string>
+    <string name="icon_iron">Ütü</string>
+    <string name="icon_plug">Priz</string>
+    <string name="icon_flame">Ocak</string>
+    <string name="icon_lock">Kilit</string>
+    <string name="icon_key">Anahtar</string>
+    <string name="icon_bag">Çanta</string>
+    <string name="icon_wallet">Cüzdan</string>
+    <string name="icon_bulb">Lamba</string>
+    <string name="icon_pill">İlaç</string>
+    <string name="icon_notes">Not</string>
+    <string name="icon_checklist">Liste</string>
+    <string name="past_charging">Şarja taktın</string>
+    <string name="past_silenced">Telefonu sessize aldın</string>
+    <string name="past_unsilenced">Telefonu sessizden çıkardın</string>
+    <string name="past_appClosed">Instagram’ı kapattın</string>
+    <string name="past_sleepMode">Uyku modu açıldı</string>
+    <string name="past_airplaneMode">Uçak modunu açtın</string>
+    <string name="past_alarmStopped">Alarmı durdurdun</string>
+    <string name="past_unplugged">Şarjdan çıkardın</string>
+    <string name="past_leftHomeWifi">Evden çıktın</string>
+    <string name="past_nfcTag">Kapıdaki etikete dokundun</string>
+    <string name="past_default">Eşik geldi</string>
+    <string name="reason_backup">Kontrol saati</string>
+    <string name="reason_test">Deneme bildirimi</string>
+    <string name="summary_empty">Kontrol listen boş. Madde eklemek için dokun.</string>
+    <string name="action_all_done">Hepsi tamam</string>
+    <string name="action_one_by_one">Tek tek bak</string>
+    <string name="battery_hint">Pil’e dokun ve “Kısıtlamasız”ı seç</string>
+    <plurals name="summary_ready">
+        <item quantity="one">%1$d maddelik kontrolün hazır.</item>
+        <item quantity="other">%1$d maddelik kontrolün hazır.</item>
+    </plurals>
+    <plurals name="summary_labels">
+        <item quantity="one">%1$d madde: %2$s.</item>
+        <item quantity="other">%1$d madde: %2$s.</item>
+    </plurals>
+</resources>

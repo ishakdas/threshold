@@ -7,6 +7,11 @@ alınca, alarmı durdurunca, ev Wi‑Fi'ından ayrılınca.
 
 Öncelik Android; iOS aynı Flutter koduyla sonra gelecek.
 
+Diller: Türkçe, İngilizce, İspanyolca. Uygulama telefonun dilini izler
+(desteklenmiyorsa İngilizce); Ayarlar'dan değiştirilebilir. Çeviriler
+`lib/l10n/app_*.arb` (kaynak: `app_tr.arb`), bildirim metinleri
+`android/app/src/main/res/values*/strings.xml`.
+
 ## Telefona kurmak
 
 Her push'ta GitHub Actions bir APK üretir:

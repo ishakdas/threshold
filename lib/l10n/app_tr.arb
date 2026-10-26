@@ -1,0 +1,689 @@
+{
+  "@@locale": "tr",
+  "triggerChargingTitle": "Şarja takınca",
+  "triggerChargingSubtitle": "Yatağın yanında",
+  "triggerChargingWhen": "Telefonu şarja taktığında",
+  "triggerSilencedTitle": "Sessize alınca",
+  "triggerSilencedSubtitle": "Sesi kısınca",
+  "triggerSilencedWhen": "Telefonu sessize aldığında",
+  "triggerAppClosedTitle": "Uygulama kapanınca",
+  "triggerAppClosedSubtitle": "Instagram",
+  "triggerAppClosedWhen": "Instagram’ı kapattığında",
+  "triggerSleepModeTitle": "Uyku modu",
+  "triggerSleepModeSubtitle": "Açılınca",
+  "triggerSleepModeWhen": "Uyku modu açıldığında",
+  "triggerAirplaneModeTitle": "Uçak modu",
+  "triggerAirplaneModeSubtitle": "Açılınca",
+  "triggerAirplaneModeWhen": "Uçak modunu açtığında",
+  "triggerAlarmStoppedTitle": "Alarmı durdurunca",
+  "triggerAlarmStoppedSubtitle": "Sabah alarmı",
+  "triggerAlarmStoppedWhen": "Alarmı durdurduğunda",
+  "triggerUnsilencedTitle": "Sessizden çıkarınca",
+  "triggerUnsilencedSubtitle": "Sesi açınca",
+  "triggerUnsilencedWhen": "Telefonu sessizden çıkardığında",
+  "triggerUnpluggedTitle": "Şarjdan çıkarınca",
+  "triggerUnpluggedSubtitle": "Telefonu alınca",
+  "triggerUnpluggedWhen": "Telefonu şarjdan çıkardığında",
+  "triggerLeftHomeWifiTitle": "Ev Wi‑Fi’ından çıkınca",
+  "triggerLeftHomeWifiSubtitle": "Evden ayrılınca",
+  "triggerLeftHomeWifiWhen": "Ev Wi‑Fi’ından ayrıldığında",
+  "triggerNfcTagTitle": "Kapıdaki etikete dokununca",
+  "triggerNfcTagSubtitle": "NFC etiketi",
+  "triggerNfcTagWhen": "Kapıdaki etikete dokunduğunda",
+  "triggersOr": "{a} ya da {b}",
+  "@triggersOr": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "triggersMore": "{first} +{count}",
+  "@triggersMore": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "triggersAnyOf": "Seçtiğin {count} davranıştan biri olduğunda",
+  "@triggersAnyOf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "triggersBackupOnly": "Yalnızca yedek saat",
+  "silentAlertQuiet": "Kapalı",
+  "silentAlertVibrate": "Titret",
+  "silentAlertRing": "Çal",
+  "weekdayLetters": "P,S,Ç,P,C,C,P",
+  "today": "bugün",
+  "tomorrow": "yarın",
+  "yesterday": "dün",
+  "dayAndTime": "{day} {time}",
+  "@dayAndTime": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "defaultEveningIron": "Ütünün fişini çektim mi?",
+  "defaultEveningTodo": "Yapılacaklar listemi tikledim mi?",
+  "defaultEveningLock": "Kapıyı kilitledim mi?",
+  "defaultMorningCharger": "Çantama şarj aletini koydum mu?",
+  "defaultMorningNotes": "Akşamdan aldığım notlara baktım mı?",
+  "defaultMorningKeys": "Anahtar ve cüzdan yanımda mı?",
+  "checkTitleEvening": "Akşam kontrolü",
+  "checkTitleMorning": "Sabah kontrolü",
+  "checkProgressA11y": "{done} / {total} tamamlandı",
+  "@checkProgressA11y": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "checkDoneLabel": "tamamlandı",
+  "checkTapHint": "Maddeye dokun, tik at",
+  "checkSnooze": "10 dk sonra",
+  "allDone": "Hepsi tamam",
+  "checkDoneAt": "{title} · {time}",
+  "@checkDoneAt": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "checkDoneEvening": "İçin rahat. İyi geceler.",
+  "checkDoneMorning": "Hazırsın. İyi günler.",
+  "undo": "Geri al",
+  "close": "Kapat",
+  "iconIron": "Ütü",
+  "iconPlug": "Priz",
+  "iconFlame": "Ocak",
+  "iconLock": "Kilit",
+  "iconKey": "Anahtar",
+  "iconBag": "Çanta",
+  "iconWallet": "Cüzdan",
+  "iconBulb": "Lamba",
+  "iconPill": "İlaç",
+  "iconNotes": "Not",
+  "iconChecklist": "Liste",
+  "historyTitle": "Geçmiş",
+  "historyLast14": "Son 14 gün",
+  "historyActivity": "Eşik etkinliği",
+  "historyRange": "{from}–{to} {month}",
+  "@historyRange": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "historyEmpty": "Henüz kayıt yok",
+  "historyScoreA11y": "{total} eşikten {done} tanesi tamamlandı",
+  "@historyScoreA11y": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "historyPercent": "%{percent} tamamlandı",
+  "@historyPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "historyFirstSoon": "İlk eşiğin yakında",
+  "historyGreat": "Eşiği geçtin",
+  "historyHalfway": "Yolun yarısındasın",
+  "historyNewDay": "Her gün yeni bir eşik",
+  "historyGridA11y": "Akşam ve sabah kontrolleri, son iki hafta",
+  "outcomeDone": "Tamamlandı",
+  "outcomeViaBackup": "Yedek bildirimle",
+  "outcomeMissed": "Atlandı",
+  "outcomeNotTracked": "Kayıt yok",
+  "outcomeOff": "İzin günü",
+  "historyAverageEvening": "Ortalama akşam eşiği",
+  "historyEveningTrigger": "Akşam tetikleyicisi",
+  "historyEarliest": "En erken {time}",
+  "@historyEarliest": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "historyLatest": "En geç {time}",
+  "@historyLatest": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "appName": "Eşik",
+  "todayDoneAt": "Tamamlandı · {time}",
+  "@todayDoneAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "todayContinue": "Devam et · {count} madde kaldı",
+  "@todayContinue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayCheckNow": "Şimdi kontrol et",
+  "todayThresholdEvening": "Bu akşamki eşiğin",
+  "todayThresholdMorning": "Bu sabahki eşiğin",
+  "todayOffDay": "Bugün izin günü; Eşik hatırlatmaz. İstersen yine de kontrol edebilirsin.",
+  "todayCardBody": "{when} {count} maddelik kontrolün önüne gelir.",
+  "@todayCardBody": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayItemsProgress": "{count} madde · {done}/{count}",
+  "@todayItemsProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "summaryEveningDoneAt": "Bu akşam {time} tamam",
+  "@summaryEveningDoneAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMorningDoneAt": "Bu sabah {time} tamam",
+  "@summaryMorningDoneAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMorningNotDone": "Bu sabah yapılmadı",
+  "summaryMorningPartial": "Bu sabah yarım kaldı",
+  "summaryLastNightDoneAt": "Dün akşam {time} tamam",
+  "@summaryLastNightDoneAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryLastNightMissed": "Dün akşam atlandı",
+  "summaryLastNightNoRecord": "Dün akşam kayıt yok",
+  "summaryLastNightOff": "Dün akşam izin günüydü",
+  "summaryGoToEvening": "Akşam eşiğine geç",
+  "summaryGoToMorning": "Sabah eşiğine geç",
+  "summaryEveningLine": "Akşam eşiği · {trigger}",
+  "@summaryEveningLine": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMorningLine": "Sabah eşiği · {trigger}",
+  "@summaryMorningLine": {
+    "placeholders": {
+      "trigger": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryLast7A11y": "Son 7 gün: {done} tamamlandı",
+  "@summaryLast7A11y": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "modeEveningSwitch": "Akşam modu. Sabaha geç",
+  "modeMorningSwitch": "Sabah modu. Akşama geç",
+  "modeEvening": "Akşam modu",
+  "modeMorning": "Sabah modu",
+  "setupCardMore": "{issue} · {count} eksik",
+  "@setupCardMore": {
+    "placeholders": {
+      "issue": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupCardA11y": "{detail}. Kurulumu tamamla",
+  "@setupCardA11y": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "setupFinish": "Kurulumu tamamla",
+  "dayStripA11y": "{day}, {weekday}",
+  "@dayStripA11y": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "dayStripDoneA11y": "{day}, {weekday}, {count} eşik tamamlandı",
+  "@dayStripDoneA11y": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "issueNotifications": "Bildirimler kapalı",
+  "issueBattery": "Pil kısıtlaması açık",
+  "issueNfcOff": "NFC kapalı",
+  "issueNfcTag": "Etiket henüz yazılmadı",
+  "issueNoAlarm": "Kurulu alarm yok",
+  "windowStartHelp": "Aralığın başlangıcı",
+  "windowEndHelp": "Aralığın bitişi",
+  "backupTimeHelp": "Yedek bildirim saati",
+  "settingsTitle": "Eşiklerim",
+  "beforeBed": "Yatmadan önce",
+  "beforeLeaving": "Evden çıkmadan önce",
+  "pickStartTime": "Başlangıç saatini seç",
+  "pickEndTime": "Bitiş saatini seç",
+  "anyTime": "Her saatte",
+  "onlyInWindow": "Sadece bu aralıkta",
+  "windowOff": "Aralık kapalı",
+  "whatTriggers": "Ne olunca?",
+  "firstOneWins": "Hangisi önce olursa o gün o hatırlatır.",
+  "pickSeveral": "Birden fazla seçebilirsin; hangisi önce olursa o hatırlatır.",
+  "whichDays": "Hangi günler?",
+  "changeBackupTime": "Yedek saati değiştir",
+  "backupRow": "Hiçbiri olmazsa {time} hatırlat",
+  "@backupRow": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backupReminder": "Yedek bildirim",
+  "setupCheck": "Kurulumu kontrol et",
+  "setupFinishMissing": "Kurulumu tamamla · {count} eksik",
+  "@setupFinishMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "autoSaved": "Değişiklikler kendiliğinden kaydedilir",
+  "timeButtonA11y": "{label}, şu an {time}",
+  "@timeButtonA11y": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tileA11y": "{title}, {subtitle}",
+  "@tileA11y": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "subtitle": {
+        "type": "String"
+      }
+    }
+  },
+  "comingSoon": "Yakında",
+  "comingSoonLower": "yakında",
+  "selected": "Seçili",
+  "whenSilent": "Telefon sessizdeyken",
+  "silentQuietHint": "Bildirim telefonun ses ayarına uyar.",
+  "silentVibrateHint": "Sessizde ya da Rahatsız Etmeyin açıkken de titreşir.",
+  "silentMutedHint": "Alarm sesi kapalı, bu yüzden duyulmaz. Ses tuşlarıyla alarm sesini aç.",
+  "silentRingHint": "Sessizde de alarm sesi düzeyinde çalar ve titreşir.",
+  "waitFrom": "{when} itibarıyla {text}",
+  "@waitFrom": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "waitCharging": "şarja takılması bekleniyor",
+  "waitWifi": "Wi‑Fi bağlantısı bekleniyor",
+  "waitLeaving": "Wi‑Fi’dan çıkış bekleniyor",
+  "waitAlarm": "sıradaki alarm {when}",
+  "@waitAlarm": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "waitAlarmSettling": "alarm çaldı, kapanması bekleniyor",
+  "waitNoAlarm": "kurulu alarm yok",
+  "waitSilence": "sesin kısılması bekleniyor",
+  "waitAlreadySilent": "telefon zaten tamamen sessizde; önce sesi biraz aç",
+  "waitUnsilence": "sesin açılması bekleniyor",
+  "waitNotSilent": "zil zaten açık; gece sesi kısarsan sabah çalışır",
+  "waitNone": "kurulu değil",
+  "statusLine": "Durum: {text}",
+  "@statusLine": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "statusLineKind": "{kind}: {text}",
+  "@statusLineKind": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "hintCharging": "Şarja taktıktan sonra birkaç dakika içinde gelir.",
+  "hintAlarm": "Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.",
+  "hintWifi": "Wi‑Fi’dan kopup mobil veriye geçince gelir; mobil veri açık olmalı.",
+  "hintSilenced": "Ses bir kademe kısılınca gelir: sesliden titreşime, titreşimden sessize ya da Rahatsız Etmeyin açılınca.",
+  "hintUnsilenced": "Ses bir kademe açılınca gelir: sessizden titreşime, titreşimden sesliye ya da Rahatsız Etmeyin kapanınca.",
+  "hintNfc": "Etikete dokununca kontrol ekranı açılır.",
+  "hintSoon": "Bu tetikleyici yakında. O zamana kadar yedek saat hatırlatır.",
+  "backupOff": "Yedek bildirim kapalı",
+  "backupNext": "Sıradaki yedek: {when}",
+  "@backupNext": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "backupLast": "Son yedek: {when} {outcome}",
+  "@backupLast": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "triggerLast": "Son tetik: {when} {outcome}",
+  "@triggerLast": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      },
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "triggerLastKind": "Son tetik ({kind}): {when} {outcome}",
+  "@triggerLastKind": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      },
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomeShown": "gönderildi",
+  "outcomeAlreadyDone": "atlandı: kontrol zaten yapılmıştı",
+  "outcomeAlreadyNotified": "atlandı: o gün bildirim zaten gelmişti",
+  "outcomeNoPermission": "gönderilemedi: bildirim izni kapalı",
+  "outcomeDisabled": "atlandı: yedek kapalı",
+  "outcomeOffDay": "atlandı: izin günü",
+  "rangeA11y": "Saat aralığı {start} ile {end} arası",
+  "@rangeA11y": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "itemDeleted": "“{title}” silindi",
+  "@itemDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "checklistTitle": "Kontrol listem",
+  "checklistEmpty": "Bu listede henüz madde yok. Aşağıdan ekleyebilirsin.",
+  "delete": "Sil",
+  "checklistHint": "Basılı tut ve sürükle · silmek için sola kaydır",
+  "newItem": "Yeni madde",
+  "pickIcon": "İkon seç",
+  "dragToReorder": "Sürükleyerek sırala",
+  "newItemHint": "Örn. Ocağı kapattım mı?",
+  "add": "Ekle",
+  "stepNotifTitle": "Bildirimlere izin ver",
+  "stepNotifDetail": "Eşik yalnızca eşik geldiğinde yazar. Günde en fazla iki bildirim.",
+  "allow": "İzin ver",
+  "stepBatteryTitle": "Arka planda çalışmasına izin ver",
+  "stepBatteryDetail": "Samsung pil tasarrufu Eşik’i uyutabilir. Açılan pencerede “İzin ver”e dokun. Pencere yerine ayarlar açılırsa Pil’e dokun ve “Kısıtlamasız”ı seç.",
+  "stepUsageTitle": "Kullanım erişimi ver",
+  "stepUsageDetail": "Instagram’ın kapandığını anlamak için hangi uygulamanın açık olduğunu görmemiz gerekir.",
+  "stepUsageAction": "Kullanım erişimini aç",
+  "stepNoPermissionTitle": "Ek izin gerekmez",
+  "stepSilencedDetail": "Akşam aralığında telefonun sesini bir kademe kısınca (sesliden titreşime, titreşimden sessize) ya da Rahatsız Etmeyin açılınca Eşik bunu fark eder.",
+  "stepUnsilencedDetail": "Sabah aralığında telefonun sesini bir kademe açınca (sessizden titreşime, titreşimden sesliye) ya da Rahatsız Etmeyin kapanınca Eşik bunu fark eder.",
+  "gotIt": "Anladım",
+  "stepNotifAccessTitle": "Bildirim erişimi ver",
+  "stepNotifAccessDetail": "Uyku modu açıldığında haberimiz olsun diye. Bildirimlerinin içeriği okunmaz.",
+  "stepNotifAccessAction": "Erişimi aç",
+  "stepWifiTitle": "Mobil veri açık kalsın",
+  "stepWifiDetail": "Sabah aralığında evin Wi‑Fi’ına bağlıyken Eşik hazırda bekler; bağlantı kopup telefon mobil veriye geçince hatırlatır. Wi‑Fi adı okunmaz, konum izni gerekmez.",
+  "stepNfcTitle": "Etiketi hazırla",
+  "stepNfcDetail": "Boş bir NFC etiketini telefonun arkasına tut; Eşik etikete kendi bağlantısını yazar.",
+  "stepNfcAction": "Etiketi yaz",
+  "stepAlarmTitle": "Sabah alarmın kurulu olsun",
+  "stepAlarmDetail": "Ek izin gerekmez. Saat uygulamasındaki alarm çalıp kapandığında Eşik bunu fark eder. Ertelersen son çalışı bekler.",
+  "stepTestTitle": "Dene",
+  "stepTestCharging": "Önce deneme bildirimi. Gerçeği, seçtiğin saat aralığında telefonu şarja taktıktan sonra birkaç dakika içinde gelir.",
+  "stepTestWifi": "Önce deneme bildirimi. Gerçeği, sabah aralığında Wi‑Fi’ı kapatıp mobil veriye geçince gelir.",
+  "stepTestAlarm": "Önce deneme bildirimi. Gerçeği, sabah aralığında çalan bir alarmı kapattıktan sonra gelir.",
+  "stepTestSilenced": "Önce deneme bildirimi. Gerçeği, akşam aralığında telefonun sesini kıstığında birkaç saniye içinde gelir.",
+  "stepTestUnsilenced": "Önce deneme bildirimi. Gerçeği, sabah aralığında telefonun sesini açtığında birkaç saniye içinde gelir.",
+  "stepTestNfc": "Uygulamadan çık, kilidi açık telefonu etikete dokundur. Kontrol ekranı açılmalı.",
+  "stepTestMany": "Deneme bildirimi gönderelim. Gerçeğini, seçtiğin davranışlardan o gün ilk olanı gönderir.",
+  "stepTestOther": "Deneme bildirimi gönderelim; gerçek tetikleyici de aynı şekilde gelecek.",
+  "finish": "Bitir",
+  "sendTest": "Deneme bildirimi gönder",
+  "notifDenied": "Bildirim izni verilmedi. İstersen ayarlardan açabilirsin.",
+  "settings": "Ayarlar",
+  "testNotSent": "Bildirim gönderilemedi: bildirim izni kapalı.",
+  "continueLabel": "Devam",
+  "openInSettings": "Ayarlardan aç",
+  "turnOnNfc": "NFC’yi aç",
+  "openClock": "Saat uygulamasını aç",
+  "detailNotifOn": "Bildirimler açık. Eşik yalnızca eşik geldiğinde yazar.",
+  "detailNotifBlocked": "İzin verilmiş ama Eşik bildirimleri telefon ayarlarında kapalı. Açılan sayfada bildirimleri aç.",
+  "detailBatteryOk": "Eşik pil kısıtlamasından muaf; arka planda uyutulmaz.",
+  "detailNoAlarm": "Saat uygulamasında kurulu alarm yok. Sabah alarmını kur; çalıp kapandığında Eşik bunu fark eder.",
+  "detailNextAlarm": "Sıradaki alarm {when}. Çalıp kapandığında Eşik bunu fark eder. Ertelersen son çalışı bekler.",
+  "@detailNextAlarm": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "noNfc": "Bu telefonda NFC yok. Başka bir sabah tetikleyicisi seç.",
+  "detailNfcOff": "NFC kapalı. Etiketi yazmak ve okumak için açık olmalı.",
+  "detailTagWritten": "Etiket yazıldı. İstersen yeni bir etikete yeniden yazabilirsin.",
+  "tagReady": "Etiket hazır. Kapının yanına yapıştırabilirsin.",
+  "nfcOffRetry": "NFC kapalı. Açıp tekrar dene.",
+  "tagReadOnly": "Bu etiket kilitli, üzerine yazılamıyor. Boş bir etiket dene.",
+  "tagIncompatible": "Bu etiket uygun değil. NTAG213 ya da benzeri bir etiket dene.",
+  "tagError": "Yazılamadı. Telefonu etikete biraz daha uzun tut.",
+  "setupTitle": "Kurulum",
+  "stepOf": "Adım {current} / {total}",
+  "@stepOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "holdToTag": "Etikete yaklaştır",
+  "holdToTagDetail": "Telefonun arkasını etikete değdir ve titreşimi bekle.",
+  "skip": "Atla",
+  "later": "Sonra",
+  "cancel": "Vazgeç",
+  "stepA11y": "{number}. adım, {title}, {state}",
+  "@stepA11y": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      },
+      "state": {
+        "type": "String"
+      }
+    }
+  },
+  "stepStateDone": "tamamlandı",
+  "stepStateCurrent": "şu anki adım",
+  "stepStateUpcoming": "sırada",
+  "back": "Geri",
+  "next": "İleri",
+  "startSetup": "Kuruluma başla",
+  "notNow": "Şimdi değil",
+  "pageOf": "Sayfa {current} / {total}",
+  "@pageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "introKicker": "Eşik’e hoş geldin",
+  "introTitle": "Yatmadan önce.\nKapıdan çıkmadan önce.",
+  "introBody": "Günün iki eşiğinde kendi kontrol listen, tam doğru anda önünde.",
+  "scenarioKicker": "Örnek senaryo",
+  "scenarioTitle": "Saat değil, an.",
+  "scenarioBody": "22:30 alarmı sen dizideyken çalar. Eşik ise telefonu şarja taktığın an gelir; üç maddeye bakar, rahat uyursun.",
+  "calloutPlugged": "Şarja taktın",
+  "calloutPluggedAt": "22:47 · eşik",
+  "calloutDoor": "Kapı",
+  "calloutLocked": "Kilitli",
+  "calloutIron": "Ütü",
+  "calloutUnplugged": "Fiş çekildi",
+  "notifyKicker": "Son adım",
+  "notifyTitle": "Doğru anda\nhaber verelim.",
+  "notifyBody": "Sadece eşik geldiğinde yazarız. Günde en fazla iki bildirim, reklam yok.",
+  "eveningThreshold": "Akşam eşiği",
+  "morningThreshold": "Sabah eşiği",
+  "now": "şimdi",
+  "notifyPreview": "Şarja taktın. Ütü, yapılacaklar, kapı: 3 madde.",
+  "tabToday": "Bugün",
+  "tabList": "Liste",
+  "tabHistory": "Geçmiş",
+  "tabSettings": "Ayarlar",
+  "checkNow": "Kontrol et",
+  "evening": "Akşam",
+  "morning": "Sabah",
+  "startupFailed": "Eşik başlatılamadı",
+  "startupTimeout": "Ayarlar zamanında yüklenemedi.",
+  "startupHelp": "Aşağıdaki metni kopyalayıp geliştiriciye gönderebilirsin.",
+  "copyError": "Hatayı kopyala",
+  "retry": "Tekrar dene",
+  "language": "Dil",
+  "languageSystem": "Sistem"
+}

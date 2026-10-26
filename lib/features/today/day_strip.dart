@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../theme/esik_palette.dart';
+import '../../l10n/texts.dart';
 
 class DayStripEntry {
   const DayStripEntry({
@@ -64,12 +65,14 @@ class _Day extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final size = e.isToday ? 46.0 : 42.0;
     return Semantics(
-      label:
-          '${e.day}, ${e.weekday}${e.isFuture ? '' : ', ${(e.progress * 2).round()} eşik tamamlandı'}',
+      label: e.isFuture
+          ? l10n.dayStripA11y(e.day, e.weekday)
+          : l10n.dayStripDoneA11y(e.day, e.weekday, (e.progress * 2).round()),
       excludeSemantics: true,
       child: Column(
         children: [
@@ -184,6 +187,3 @@ class _RingPainter extends CustomPainter {
       o.track != track ||
       o.today != today;
 }
-
-const turkishWeekdays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
-const turkishWeekdayInitials = ['P', 'S', 'Ç', 'P', 'C', 'C', 'P'];

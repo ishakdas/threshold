@@ -192,7 +192,7 @@ class MainActivity : FlutterActivity() {
         val ask = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))
         if (startActivitySafely(ask)) return
         openSettings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, withPackage = true)
-        Toast.makeText(this, "Pil’e dokun ve “Kısıtlamasız”ı seç", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, Lang.context(this).getString(R.string.battery_hint), Toast.LENGTH_LONG).show()
     }
 
     /** Kurulum rehberi için gerçek durum. Adlar Dart'taki SetupHealth.parse ile aynıdır. */

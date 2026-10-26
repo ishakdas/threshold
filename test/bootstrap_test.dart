@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Locale;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,8 @@ import 'package:threshold/bootstrap.dart';
 
 void main() {
   testWidgets('ayarlar yüklenince uygulama açılır', (tester) async {
+    tester.platformDispatcher.localesTestValue = const [Locale('tr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     SharedPreferences.setMockInitialValues({'onboarding_seen': true});
     await tester.pumpWidget(const EsikBootstrap());
     await tester.pumpAndSettle();
@@ -18,6 +21,8 @@ void main() {
   testWidgets('yükleme hata verirse açılışta kalmaz, hatayı gösterir', (
     tester,
   ) async {
+    tester.platformDispatcher.localesTestValue = const [Locale('tr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     await tester.pumpWidget(
       EsikBootstrap(
         loadPreferences: () async => throw PlatformException(
@@ -36,6 +41,8 @@ void main() {
   testWidgets('yükleme hiç bitmezse zaman aşımında hatayı gösterir', (
     tester,
   ) async {
+    tester.platformDispatcher.localesTestValue = const [Locale('tr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     await tester.pumpWidget(
       EsikBootstrap(
         loadPreferences: () => Completer<SharedPreferences>().future,
@@ -49,6 +56,8 @@ void main() {
   });
 
   testWidgets('Tekrar dene başarılı olursa uygulama açılır', (tester) async {
+    tester.platformDispatcher.localesTestValue = const [Locale('tr')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     SharedPreferences.setMockInitialValues({'onboarding_seen': true});
     var calls = 0;
     await tester.pumpWidget(

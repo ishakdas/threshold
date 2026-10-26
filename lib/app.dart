@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/day_mode.dart';
 import 'data/app_state.dart';
+import 'l10n/app_localizations.dart';
 import 'platform/native_bridge.dart';
 import 'router.dart';
 import 'theme/esik_theme.dart';
@@ -71,9 +71,9 @@ class _EsikAppState extends ConsumerState<EsikApp> {
       debugShowCheckedModeBanner: false,
       theme: esikTheme(mode),
       themeAnimationDuration: const Duration(milliseconds: 450),
-      locale: const Locale('tr'),
-      supportedLocales: const [Locale('tr')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      locale: ref.watch(localeProvider),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       routerConfig: ref.watch(routerProvider),
     );
   }

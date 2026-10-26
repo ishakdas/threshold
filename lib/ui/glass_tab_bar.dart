@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../theme/esik_palette.dart';
 import 'esik_icons.dart';
+import '../l10n/texts.dart';
 
 class GlassTab {
   const GlassTab({required this.icon, required this.label});
@@ -128,10 +129,11 @@ class _PrimaryPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return Semantics(
       button: true,
-      label: 'Kontrol et',
+      label: l10n.checkNow,
       child: GestureDetector(
         onTap: () {
           HapticFeedback.mediumImpact();

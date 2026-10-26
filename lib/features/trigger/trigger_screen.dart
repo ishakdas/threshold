@@ -13,6 +13,7 @@ import '../../ui/esik_icons.dart';
 import '../../platform/native_bridge.dart';
 import '../setup/setup_health.dart';
 import 'arc_range_picker.dart';
+import '../../l10n/texts.dart';
 
 /// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
 /// Her değişiklik anında kaydedilir; yedek alarm da hemen yeniden kurulur.
@@ -55,7 +56,9 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: start ? c.windowStart : c.windowEnd,
-      helpText: start ? 'Aralığın başlangıcı' : 'Aralığın bitişi',
+      helpText: start
+          ? context.l10n.windowStartHelp
+          : context.l10n.windowEndHelp,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
         child: child!,
@@ -75,7 +78,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: _config.backupTime,
-      helpText: 'Yedek bildirim saati',
+      helpText: context.l10n.backupTimeHelp,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
         child: child!,
@@ -86,11 +89,14 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = _mode == DayMode.evening;
     final c = ref.watch(triggerConfigProvider)[_mode]!;
     final issueCount = ref.watch(setupIssuesProvider)?[_mode]?.length ?? 0;
+    // "Hiçbiri olmazsa {saat} hatırlat": saat altı çizili, ortasından böl.
+    final backupParts = l10n.backupRow('\u0000').split('\u0000');
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -102,9 +108,9 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 130),
             children: [
               ScreenHeader(
-                title: 'Eşiklerim',
+                title: l10n.settingsTitle,
                 trailing: InfoChip(
-                  label: evening ? 'Yatmadan önce' : 'Evden çıkmadan önce',
+                  label: evening ? l10n.beforeBed : l10n.beforeLeaving,
                   icon: evening ? EsikIcon.moon : EsikIcon.sun,
                 ),
               ),
@@ -135,13 +141,13 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                           children: [
                             _TimeButton(
                               time: c.windowStart,
-                              label: 'Başlangıç saatini seç',
+                              label: l10n.pickStartTime,
                               onTap: () => _pickWindow(start: true),
                             ),
                             Text(' – ', style: t.headlineMedium),
                             _TimeButton(
                               time: c.windowEnd,
-                              label: 'Bitiş saatini seç',
+                              label: l10n.pickEndTime,
                               onTap: () => _pickWindow(start: false),
                             ),
                           ],
@@ -149,7 +155,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                       )
                     else
                       Text(
-                        'Her saatte',
+                        l10n.anyTime,
                         textAlign: TextAlign.center,
                         style: t.headlineMedium?.copyWith(fontSize: 34),
                       ),
@@ -157,7 +163,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                     Semantics(
                       toggled: c.windowEnabled,
                       button: true,
-                      label: 'Sadece bu aralıkta',
+                      label: l10n.onlyInWindow,
                       excludeSemantics: true,
                       child: GestureDetector(
                         onTap: () {
@@ -166,8 +172,8 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                         },
                         child: InfoChip(
                           label: c.windowEnabled
-                              ? 'Sadece bu aralıkta'
-                              : 'Aralık kapalı',
+                              ? l10n.onlyInWindow
+                              : l10n.windowOff,
                           icon: EsikIcon.clock,
                         ),
                       ),
@@ -176,9 +182,9 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6),
-                child: DotLabel('Ne olunca?'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: DotLabel(l10n.whatTriggers),
               ),
               const SizedBox(height: 10),
               GridView.count(
@@ -203,9 +209,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Text(
-                  c.kinds.length > 1
-                      ? 'Hangisi önce olursa o gün o hatırlatır.'
-                      : 'Birden fazla seçebilirsin; hangisi önce olursa o hatırlatır.',
+                  c.kinds.length > 1 ? l10n.firstOneWins : l10n.pickSeveral,
                   style: t.labelSmall?.copyWith(
                     fontSize: 12,
                     color: p.textFaint,
@@ -213,9 +217,9 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6),
-                child: DotLabel('Hangi günler?'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: DotLabel(l10n.whichDays),
               ),
               const SizedBox(height: 10),
               _DayPicker(
@@ -241,22 +245,22 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                     Expanded(
                       child: Semantics(
                         button: true,
-                        label: 'Yedek saati değiştir',
+                        label: l10n.changeBackupTime,
                         child: GestureDetector(
                           onTap: _pickBackup,
                           child: Text.rich(
                             TextSpan(
-                              text: 'Hiçbiri olmazsa ',
+                              text: backupParts.first,
                               children: [
                                 TextSpan(
-                                  text: timeAt(c.backupTime),
+                                  text: l10n.at(c.backupTime),
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     decoration: TextDecoration.underline,
                                     decorationColor: p.textFaint,
                                   ),
                                 ),
-                                const TextSpan(text: ' hatırlat'),
+                                TextSpan(text: backupParts.last),
                               ],
                             ),
                             style: t.bodyMedium,
@@ -266,7 +270,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                     ),
                     EsikSwitch(
                       value: c.backupEnabled,
-                      semanticLabel: 'Yedek bildirim',
+                      semanticLabel: l10n.backupReminder,
                       onChanged: (v) => _update(c.copyWith(backupEnabled: v)),
                     ),
                   ],
@@ -275,11 +279,13 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               _StatusLine(mode: _mode),
               const SizedBox(height: 10),
               const _SilentAlertCard(),
+              const SizedBox(height: 10),
+              const _LanguageCard(),
               const SizedBox(height: 16),
               PrimaryPillButton(
                 label: switch (issueCount) {
-                  0 => 'Kurulumu kontrol et',
-                  final n => 'Kurulumu tamamla · $n eksik',
+                  0 => l10n.setupCheck,
+                  final n => l10n.setupFinishMissing(n),
                 },
                 warning: issueCount > 0,
                 trailingIcon: EsikIcon.arrowRight,
@@ -289,7 +295,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const SizedBox(height: 8),
               Center(
                 child: Text(
-                  'Değişiklikler kendiliğinden kaydedilir',
+                  l10n.autoSaved,
                   style: t.labelSmall?.copyWith(
                     fontSize: 12,
                     color: p.textFaint,
@@ -318,11 +324,12 @@ class _TimeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     return Semantics(
       button: true,
-      label: '$label, şu an ${formatTime(time)}',
+      label: l10n.timeButtonA11y(label, formatTime(time)),
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
@@ -357,6 +364,7 @@ class _TriggerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final soon = !kind.supported;
@@ -364,7 +372,10 @@ class _TriggerTile extends StatelessWidget {
       selected: selected,
       button: true,
       enabled: onTap != null,
-      label: '${kind.title}, ${soon ? 'yakında' : kind.subtitle}',
+      label: l10n.tileA11y(
+        kind.title(l10n),
+        soon ? l10n.comingSoonLower : kind.subtitle(l10n),
+      ),
       excludeSemantics: true,
       child: Opacity(
         opacity: soon && !selected ? 0.45 : 1,
@@ -383,7 +394,7 @@ class _TriggerTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      kind.title,
+                      kind.title(l10n),
                       style: t.labelLarge?.copyWith(
                         fontWeight: FontWeight.w400,
                       ),
@@ -393,10 +404,10 @@ class _TriggerTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       soon
-                          ? 'Yakında'
+                          ? l10n.comingSoon
                           : selected
-                          ? 'Seçili'
-                          : kind.subtitle,
+                          ? l10n.selected
+                          : kind.subtitle(l10n),
                       style: t.labelSmall?.copyWith(
                         fontSize: 12,
                         fontWeight: FontWeight.w300,
@@ -424,6 +435,7 @@ class _DayPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     return Row(
@@ -433,7 +445,7 @@ class _DayPicker extends StatelessWidget {
           Semantics(
             button: true,
             toggled: days.contains(d),
-            label: weekdayNames[d - 1],
+            label: l10n.weekdayName(d),
             excludeSemantics: true,
             child: GestureDetector(
               onTap: () => onToggle(d),
@@ -452,7 +464,7 @@ class _DayPicker extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  weekdayLetters[d - 1],
+                  l10n.weekdayLetterList[d - 1],
                   style: t.labelLarge?.copyWith(
                     color: days.contains(d) ? p.onPrimaryButton : p.textMuted,
                     fontWeight: days.contains(d)
@@ -468,12 +480,58 @@ class _DayPicker extends StatelessWidget {
   }
 }
 
+/// Uygulamanın dili: telefonunki ya da seçilen.
+class _LanguageCard extends ConsumerWidget {
+  const _LanguageCard();
+
+  /// Diller her zaman kendi adlarıyla yazılır; yalnızca "Sistem" çevrilir.
+  static String _name(AppLocalizations l10n, AppLanguage language) =>
+      switch (language) {
+        AppLanguage.system => l10n.languageSystem,
+        AppLanguage.tr => 'Türkçe',
+        AppLanguage.en => 'English',
+        AppLanguage.es => 'Español',
+      };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              EsikIconView(EsikIcon.globe, size: 18, color: p.text),
+              const SizedBox(width: 10),
+              Expanded(child: Text(l10n.language, style: t.bodyMedium)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ChoicePills<AppLanguage>(
+            values: AppLanguage.values,
+            value: ref.watch(languageProvider),
+            label: (lang) => _name(l10n, lang),
+            expand: false,
+            onChanged: ref.read(languageProvider.notifier).set,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Telefon sessizdeyken bildirim titresin ya da çalsın mı? İki mod için ortak.
 class _SilentAlertCard extends ConsumerWidget {
   const _SilentAlertCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final value = ref.watch(silentAlertProvider);
@@ -490,28 +548,24 @@ class _SilentAlertCard extends ConsumerWidget {
             children: [
               EsikIconView(EsikIcon.vibrate, size: 18, color: p.text),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text('Telefon sessizdeyken', style: t.bodyMedium),
-              ),
+              Expanded(child: Text(l10n.whenSilent, style: t.bodyMedium)),
             ],
           ),
           const SizedBox(height: 12),
           ChoicePills<SilentAlert>(
             values: SilentAlert.values,
             value: value,
-            label: (a) => a.label,
+            label: (a) => a.label(l10n),
             icon: (a) => a.icon,
             onChanged: ref.read(silentAlertProvider.notifier).set,
           ),
           const SizedBox(height: 10),
           Text(
             switch (value) {
-              SilentAlert.quiet => 'Bildirim telefonun ses ayarına uyar.',
-              SilentAlert.vibrate =>
-                'Sessizde ya da Rahatsız Etmeyin açıkken de titreşir.',
-              SilentAlert.ring when muted => 'Alarm sesi kapalı, bu yüzden duyulmaz. Ses tuşlarıyla alarm sesini aç.',
-              SilentAlert.ring =>
-                'Sessizde de alarm sesi düzeyinde çalar ve titreşir.',
+              SilentAlert.quiet => l10n.silentQuietHint,
+              SilentAlert.vibrate => l10n.silentVibrateHint,
+              SilentAlert.ring when muted => l10n.silentMutedHint,
+              SilentAlert.ring => l10n.silentRingHint,
             },
             style: t.labelMedium?.copyWith(
               fontWeight: muted ? FontWeight.w400 : FontWeight.w300,
@@ -531,47 +585,51 @@ class _StatusLine extends ConsumerWidget {
   final DayMode mode;
 
   /// "Durum: şarj bekleniyor". Tetikleyicinin gerçekten kurulu olduğunu gösterir.
-  static String _waiting(TriggerWaiting w, DateTime now, {required bool many}) {
+  static String _waiting(
+    AppLocalizations l10n,
+    TriggerWaiting w,
+    DateTime now, {
+    required bool many,
+  }) {
     final at = w.at;
     // Bekleme henüz başlamadıysa ne zaman başlayacağı.
-    final later = at != null && at.isAfter(now.add(const Duration(minutes: 1)))
-        ? '${formatWhen(at, now)} itibarıyla '
-        : '';
+    String from(String text) =>
+        at != null && at.isAfter(now.add(const Duration(minutes: 1)))
+        ? l10n.waitFrom(l10n.when(at, now), text)
+        : text;
     final text = switch (w.wait) {
-      TriggerWait.charging =>
-        '$later'
-            'şarja takılması bekleniyor',
-      TriggerWait.wifi => '${later}Wi‑Fi bağlantısı bekleniyor',
-      TriggerWait.leaving => 'Wi‑Fi’dan çıkış bekleniyor',
-      TriggerWait.alarm => 'sıradaki alarm ${formatWhen(at!, now)}',
-      TriggerWait.alarmSettling => 'alarm çaldı, kapanması bekleniyor',
-      TriggerWait.noAlarm => 'kurulu alarm yok',
-      TriggerWait.silence => 'sesin kısılması bekleniyor',
-      TriggerWait.alreadySilent =>
-        'telefon zaten tamamen sessizde; önce sesi biraz aç',
-      TriggerWait.unsilence => 'sesin açılması bekleniyor',
-      TriggerWait.notSilent =>
-        'zil zaten açık; gece sesi kısarsan sabah çalışır',
-      TriggerWait.none => 'kurulu değil',
+      TriggerWait.charging => from(l10n.waitCharging),
+      TriggerWait.wifi => from(l10n.waitWifi),
+      TriggerWait.leaving => l10n.waitLeaving,
+      TriggerWait.alarm => l10n.waitAlarm(l10n.when(at!, now)),
+      TriggerWait.alarmSettling => l10n.waitAlarmSettling,
+      TriggerWait.noAlarm => l10n.waitNoAlarm,
+      TriggerWait.silence => l10n.waitSilence,
+      TriggerWait.alreadySilent => l10n.waitAlreadySilent,
+      TriggerWait.unsilence => l10n.waitUnsilence,
+      TriggerWait.notSilent => l10n.waitNotSilent,
+      TriggerWait.none => l10n.waitNone,
     };
-    return many ? '${w.kind.title}: $text' : 'Durum: $text';
+    return many
+        ? l10n.statusLineKind(w.kind.title(l10n), text)
+        : l10n.statusLine(text);
   }
 
   /// Tetikleyicinin çalışması için bilinmesi gereken tek şey.
-  static String? _hint(TriggerKind kind) => switch (kind) {
-    TriggerKind.charging => 'Şarja taktıktan sonra birkaç dakika içinde gelir.',
-    TriggerKind.alarmStopped =>
-      'Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.',
-    TriggerKind.leftHomeWifi =>
-      'Wi‑Fi’dan kopup mobil veriye geçince gelir; mobil veri açık olmalı.',
-    TriggerKind.silenced => 'Ses bir kademe kısılınca gelir: sesliden titreşime, titreşimden sessize ya da Rahatsız Etmeyin açılınca.',
-    TriggerKind.unsilenced => 'Ses bir kademe açılınca gelir: sessizden titreşime, titreşimden sesliye ya da Rahatsız Etmeyin kapanınca.',
-    TriggerKind.nfcTag => 'Etikete dokununca kontrol ekranı açılır.',
-    _ => 'Bu tetikleyici yakında. O zamana kadar yedek saat hatırlatır.',
-  };
+  static String _hint(AppLocalizations l10n, TriggerKind kind) =>
+      switch (kind) {
+        TriggerKind.charging => l10n.hintCharging,
+        TriggerKind.alarmStopped => l10n.hintAlarm,
+        TriggerKind.leftHomeWifi => l10n.hintWifi,
+        TriggerKind.silenced => l10n.hintSilenced,
+        TriggerKind.unsilenced => l10n.hintUnsilenced,
+        TriggerKind.nfcTag => l10n.hintNfc,
+        _ => l10n.hintSoon,
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final p = context.palette;
     final status = ref.watch(thresholdStatusProvider).value?[mode];
     final kinds = ref.watch(triggerConfigProvider)[mode]!.kinds;
@@ -580,16 +638,29 @@ class _StatusLine extends ConsumerWidget {
     final now = ref.watch(clockProvider)();
     final lines = [
       status.next == null
-          ? 'Yedek bildirim kapalı'
-          : 'Sıradaki yedek: ${formatWhen(status.next!, now)}',
+          ? l10n.backupOff
+          : l10n.backupNext(l10n.when(status.next!, now)),
       if (status.lastAt != null && status.lastOutcome != null)
-        'Son yedek: ${formatWhen(status.lastAt!, now)} ${status.lastOutcome!.description}',
+        l10n.backupLast(
+          l10n.when(status.lastAt!, now),
+          status.lastOutcome!.description(l10n),
+        ),
       if (status.triggerAt != null && status.triggerOutcome != null)
-        'Son tetik${status.triggerKind == null ? '' : ' (${lowerFirst(status.triggerKind!.title)})'}: '
-            '${formatWhen(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
-      for (final w in status.waits) _waiting(w, now, many: kinds.length > 1),
+        if (status.triggerKind case final kind?)
+          l10n.triggerLastKind(
+            l10n.lower(kind.title(l10n)),
+            l10n.when(status.triggerAt!, now),
+            status.triggerOutcome!.description(l10n),
+          )
+        else
+          l10n.triggerLast(
+            l10n.when(status.triggerAt!, now),
+            status.triggerOutcome!.description(l10n),
+          ),
+      for (final w in status.waits)
+        _waiting(l10n, w, now, many: kinds.length > 1),
       // Tek tetikleyicide ne yapılacağını söyle; çoğunda satırlar yeter.
-      if (kinds.length == 1) ?_hint(kinds.single),
+      if (kinds.length == 1) _hint(l10n, kinds.single),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 0),

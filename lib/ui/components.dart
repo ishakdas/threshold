@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../core/day_mode.dart';
 import '../theme/esik_palette.dart';
 import 'esik_icons.dart';
+import '../l10n/texts.dart';
 
 /// Düz, okunaklı içerik kartı. Cam efekti kullanmaz.
 class SurfaceCard extends StatelessWidget {
@@ -244,10 +245,15 @@ class DotLabel extends StatelessWidget {
           decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle),
         ),
         const SizedBox(width: 7),
-        Text(
-          text,
-          style: Theme.of(context).textTheme.labelMedium
-              ?.copyWith(color: p.textMuted),
+        // Uzun çevirilerde taşmasın.
+        Flexible(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.labelMedium
+                ?.copyWith(color: p.textMuted),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
       ],
     );
@@ -269,6 +275,7 @@ class ScreenHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return SizedBox(
       height: 44,
@@ -277,7 +284,7 @@ class ScreenHeader extends StatelessWidget {
           if (onBack != null) ...[
             IconButton(
               onPressed: onBack,
-              tooltip: 'Geri',
+              tooltip: l10n.back,
               padding: EdgeInsets.zero,
               visualDensity: VisualDensity.compact,
               icon: EsikIconView(EsikIcon.arrowLeft, color: p.text),
@@ -313,12 +320,13 @@ class ModeSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
 
     Widget pill(DayMode mode) {
       final selected = mode == value;
-      final label = mode == DayMode.evening ? 'Akşam' : 'Sabah';
+      final label = mode == DayMode.evening ? l10n.evening : l10n.morning;
       final count = counts?[mode];
       return Semantics(
         selected: selected,
@@ -384,14 +392,19 @@ class ChoicePills<T> extends StatelessWidget {
     required this.values,
     required this.value,
     required this.label,
-    required this.icon,
+    this.icon,
     required this.onChanged,
+    this.expand = true,
   });
+
+  /// true: haplar satırı eşit bölüşür. false: her hap metni kadar, sığmazsa
+  /// alt satıra geçer (uzun adlar, ör. dil seçimi).
+  final bool expand;
 
   final List<T> values;
   final T value;
   final String Function(T) label;
-  final EsikIcon Function(T) icon;
+  final EsikIcon Function(T)? icon;
   final ValueChanged<T> onChanged;
 
   @override
@@ -414,7 +427,7 @@ class ChoicePills<T> extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             height: 38,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(horizontal: expand ? 10 : 16),
             decoration: BoxDecoration(
               color: selected ? p.primaryButton : p.chip.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(19),
@@ -425,13 +438,15 @@ class ChoicePills<T> extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                EsikIconView(
-                  icon(v),
-                  size: 14,
-                  strokeWidth: 2,
-                  color: selected ? p.onPrimaryButton : p.text,
-                ),
-                const SizedBox(width: 6),
+                if (icon case final icon?) ...[
+                  EsikIconView(
+                    icon(v),
+                    size: 14,
+                    strokeWidth: 2,
+                    color: selected ? p.onPrimaryButton : p.text,
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 Flexible(
                   child: Text(
                     label(v),
@@ -450,6 +465,21 @@ class ChoicePills<T> extends StatelessWidget {
       );
     }
 
+    if (!expand) {
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final v in values)
+            IntrinsicWidth(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 72),
+                child: pill(v),
+              ),
+            ),
+        ],
+      );
+    }
     return Row(
       children: [
         for (var i = 0; i < values.length; i++) ...[

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'data/app_state.dart';
 import 'ui/esik_logo.dart';
+import 'l10n/texts.dart';
 
 /// Uygulamanın ilk karesini hemen çizer, kalıcı ayarları arkada yükler.
 ///
@@ -68,6 +69,13 @@ class _EsikBootstrapState extends State<EsikBootstrap> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Inter', brightness: Brightness.dark),
+      // Ayarlar okunamadığı için seçilen dil bilinmiyor: telefonun dili.
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localeResolutionCallback: (locale, supported) => supported.firstWhere(
+        (l) => l.languageCode == locale?.languageCode,
+        orElse: () => const Locale('en'),
+      ),
       home: _error == null
           ? const _Splash()
           : StartupErrorScreen(error: _error!, stack: _stack, onRetry: _load),
@@ -100,12 +108,13 @@ class StartupErrorScreen extends StatelessWidget {
   final StackTrace? stack;
   final VoidCallback onRetry;
 
-  String get _report => error is TimeoutException
-      ? 'Ayarlar zamanında yüklenemedi.\n$error'
+  String _report(AppLocalizations l10n) => error is TimeoutException
+      ? '${l10n.startupTimeout}\n$error'
       : '$error\n\n${stack ?? ''}';
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     const text = Color(0xFFF5EFE6);
     return Scaffold(
       backgroundColor: const Color(0xFF0B1029),
@@ -117,8 +126,8 @@ class StartupErrorScreen extends StatelessWidget {
             children: [
               const EsikLogo(size: 32, archColor: text),
               const SizedBox(height: 20),
-              const Text(
-                'Eşik başlatılamadı',
+              Text(
+                l10n.startupFailed,
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w300,
@@ -126,8 +135,8 @@ class StartupErrorScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Aşağıdaki metni kopyalayıp geliştiriciye gönderebilirsin.',
+              Text(
+                l10n.startupHelp,
                 style: TextStyle(fontSize: 14, color: Color(0xB3F5EFE6)),
               ),
               const SizedBox(height: 16),
@@ -141,7 +150,7 @@ class StartupErrorScreen extends StatelessWidget {
                   ),
                   child: SingleChildScrollView(
                     child: SelectableText(
-                      _report,
+                      _report(l10n),
                       style: const TextStyle(
                         fontSize: 12,
                         color: text,
@@ -157,13 +166,13 @@ class StartupErrorScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () =>
-                          Clipboard.setData(ClipboardData(text: _report)),
+                          Clipboard.setData(ClipboardData(text: _report(l10n))),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: text,
                         minimumSize: const Size(0, 52),
                         shape: const StadiumBorder(),
                       ),
-                      child: const Text('Hatayı kopyala'),
+                      child: Text(l10n.copyError),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -176,7 +185,7 @@ class StartupErrorScreen extends StatelessWidget {
                         minimumSize: const Size(0, 52),
                         shape: const StadiumBorder(),
                       ),
-                      child: const Text('Tekrar dene'),
+                      child: Text(l10n.retry),
                     ),
                   ),
                 ],

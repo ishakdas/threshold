@@ -3,18 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
 import '../../data/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../platform/native_bridge.dart';
 
 /// Eşik'in çalışmasını engelleyen, kullanıcının düzeltebileceği bir eksik.
-enum SetupIssue {
-  notifications('Bildirimler kapalı'),
-  battery('Pil kısıtlaması açık'),
-  nfcOff('NFC kapalı'),
-  nfcTag('Etiket henüz yazılmadı'),
-  noAlarm('Kurulu alarm yok');
+enum SetupIssue { notifications, battery, nfcOff, nfcTag, noAlarm }
 
-  const SetupIssue(this.label);
-  final String label;
+extension SetupIssueText on SetupIssue {
+  String label(AppLocalizations l) => switch (this) {
+    SetupIssue.notifications => l.issueNotifications,
+    SetupIssue.battery => l.issueBattery,
+    SetupIssue.nfcOff => l.issueNfcOff,
+    SetupIssue.nfcTag => l.issueNfcTag,
+    SetupIssue.noAlarm => l.issueNoAlarm,
+  };
 }
 
 /// Bir modun tetikleyicisine özel eksikler.

@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:threshold/core/day_mode.dart';
 
+import 'helpers.dart';
+
 void main() {
   group('dayModeFor', () {
     DayMode at(int hour, [int minute = 0]) =>
@@ -24,6 +26,7 @@ void main() {
   test('mod saatten okunur ve elle değiştirilebilir', () {
     final container = ProviderContainer(
       overrides: [
+        turkishDevice,
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 20, 22, 14)),
       ],
     );

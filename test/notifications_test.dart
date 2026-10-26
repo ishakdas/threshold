@@ -150,7 +150,10 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final c = ProviderContainer(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          turkishDevice,
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
       );
       addTearDown(c.dispose);
       c.read(checklistProvider);
@@ -172,6 +175,7 @@ void main() {
       var now = DateTime(2026, 10, 20, 22, 40);
       final c = ProviderContainer(
         overrides: [
+          turkishDevice,
           sharedPreferencesProvider.overrideWithValue(prefs),
           clockProvider.overrideWithValue(() => now),
         ],

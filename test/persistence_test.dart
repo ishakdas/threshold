@@ -8,6 +8,8 @@ import 'package:threshold/data/models.dart';
 import 'package:threshold/data/store.dart';
 import 'package:threshold/ui/esik_icons.dart';
 
+import 'helpers.dart';
+
 void main() {
   late SharedPreferences prefs;
   var now = DateTime(2026, 10, 20, 22, 14);
@@ -22,6 +24,7 @@ void main() {
   ProviderContainer open() {
     final c = ProviderContainer(
       overrides: [
+        turkishDevice,
         sharedPreferencesProvider.overrideWithValue(prefs),
         clockProvider.overrideWithValue(() => now),
       ],
@@ -123,7 +126,13 @@ void main() {
       '{"evening":{"kind":"nfcTag","windowStart":"99:99"}}',
     );
     final c = open();
-    expect(c.read(checklistProvider), defaultChecklist);
+    List<String> titles(Map<DayMode, List<CheckItem>> m) => [
+      for (final mode in DayMode.values) ...m[mode]!.map((i) => i.title),
+    ];
+    expect(
+      titles(c.read(checklistProvider)),
+      titles(defaultChecklistFor(trL10n)),
+    );
     final evening = c.read(triggerConfigProvider)[DayMode.evening]!;
     // nfcTag bir sabah tetikleyicisi; akşama yazılmışsa varsayılan kullanılır.
     expect(evening.kinds, [TriggerKind.charging]);

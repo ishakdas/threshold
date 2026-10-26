@@ -10,9 +10,9 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /** Akşam ve sabah eşikleri. [key], Dart'taki DayMode adıyla aynıdır. */
-enum class Mode(val key: String, val routeParam: String, val title: String) {
-    EVENING("evening", "aksam", "Akşam eşiği"),
-    MORNING("morning", "sabah", "Sabah eşiği");
+enum class Mode(val key: String, val routeParam: String) {
+    EVENING("evening", "aksam"),
+    MORNING("morning", "sabah");
 
     companion object {
         fun of(key: String?): Mode? = entries.firstOrNull { it.key == key }
@@ -112,6 +112,9 @@ object EsikData {
             backupTime = time(o.optString("backupTime", ""), d.backupTime),
         )
     }
+
+    /** Uygulamanın dili: "system", "tr", "en" ya da "es" (Dart'taki AppLanguage). */
+    fun language(c: Context): String = prefs(c).getString(PREFIX + "language", null) ?: "system"
 
     /** Sessizdeyken bildirim: "quiet", "vibrate" ya da "ring" (Dart'taki SilentAlert). */
     fun silentAlert(c: Context): String = prefs(c).getString(PREFIX + "silent_alert", null) ?: "quiet"

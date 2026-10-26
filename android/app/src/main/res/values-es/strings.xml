@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android tarafındaki metinler (bildirimler). Uygulama içi çeviriler: lib/l10n/*.arb. -->
+<resources>
+    <string name="mode_evening">Umbral de la noche</string>
+    <string name="mode_morning">Umbral de la mañana</string>
+    <string name="channel_name">Controles de Eşik</string>
+    <string name="channel_description">Recordatorios de la lista de la noche y la mañana</string>
+    <string name="icon_iron">Plancha</string>
+    <string name="icon_plug">Enchufe</string>
+    <string name="icon_flame">Fogón</string>
+    <string name="icon_lock">Cerradura</string>
+    <string name="icon_key">Llaves</string>
+    <string name="icon_bag">Mochila</string>
+    <string name="icon_wallet">Cartera</string>
+    <string name="icon_bulb">Lámpara</string>
+    <string name="icon_pill">Medicina</string>
+    <string name="icon_notes">Notas</string>
+    <string name="icon_checklist">Lista</string>
+    <string name="past_charging">Has enchufado el teléfono</string>
+    <string name="past_silenced">Has silenciado el teléfono</string>
+    <string name="past_unsilenced">Has vuelto a activar el sonido</string>
+    <string name="past_appClosed">Has cerrado Instagram</string>
+    <string name="past_sleepMode">El modo descanso está activado</string>
+    <string name="past_airplaneMode">Has activado el modo avión</string>
+    <string name="past_alarmStopped">Has apagado la alarma</string>
+    <string name="past_unplugged">Has desconectado el teléfono</string>
+    <string name="past_leftHomeWifi">Has salido de casa</string>
+    <string name="past_nfcTag">Has tocado la etiqueta de la puerta</string>
+    <string name="past_default">Hora del umbral</string>
+    <string name="reason_backup">Hora de comprobar</string>
+    <string name="reason_test">Aviso de prueba</string>
+    <string name="summary_empty">Tu lista está vacía. Toca para añadir elementos.</string>
+    <string name="action_all_done">Todo listo</string>
+    <string name="action_one_by_one">Uno por uno</string>
+    <string name="battery_hint">Toca Batería y elige “Sin restricciones”</string>
+    <plurals name="summary_ready">
+        <item quantity="one">Tu control de 1 elemento está listo.</item>
+        <item quantity="other">Tu control de %1$d elementos está listo.</item>
+    </plurals>
+    <plurals name="summary_labels">
+        <item quantity="one">1 elemento: %2$s.</item>
+        <item quantity="other">%1$d elementos: %2$s.</item>
+    </plurals>
+</resources>

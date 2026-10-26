@@ -9,6 +9,7 @@ import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
+import '../../l10n/texts.dart';
 
 class ChecklistScreen extends ConsumerStatefulWidget {
   const ChecklistScreen({super.key});
@@ -48,9 +49,9 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-          content: Text('“${item.title}” silindi'),
+          content: Text(context.l10n.itemDeleted(item.title)),
           action: SnackBarAction(
-            label: 'Geri al',
+            label: context.l10n.undo,
             onPressed: () => notifier.insert(mode, index, item),
           ),
         ),
@@ -59,6 +60,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final lists = ref.watch(checklistProvider);
@@ -73,7 +75,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 130),
             children: [
-              const ScreenHeader(title: 'Kontrol listem'),
+              ScreenHeader(title: l10n.checklistTitle),
               const SizedBox(height: 14),
               ModeSegment(
                 value: _mode,
@@ -85,7 +87,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Text(
-                    'Bu listede henüz madde yok. Aşağıdan ekleyebilirsin.',
+                    l10n.checklistEmpty,
                     textAlign: TextAlign.center,
                     style: t.bodyMedium?.copyWith(color: p.textMuted),
                   ),
@@ -144,7 +146,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                           color: const Color(0xFFE5484D),
                           borderRadius: BorderRadius.circular(26),
                         ),
-                        child: const Column(
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -156,7 +158,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                             ),
                             SizedBox(height: 3),
                             Text(
-                              'Sil',
+                              l10n.delete,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -175,7 +177,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(6, 2, 6, 0),
                   child: Text(
-                    'Basılı tut ve sürükle · silmek için sola kaydır',
+                    l10n.checklistHint,
                     style: t.labelMedium?.copyWith(
                       fontWeight: FontWeight.w300,
                       color: p.textFaint,
@@ -183,9 +185,9 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                   ),
                 ),
               const SizedBox(height: 22),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6),
-                child: DotLabel('Yeni madde'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: DotLabel(l10n.newItem),
               ),
               const SizedBox(height: 10),
               _NewItemField(
@@ -198,7 +200,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Text(
-                  'İkon seç',
+                  l10n.pickIcon,
                   style: t.labelMedium?.copyWith(color: p.textMuted),
                 ),
               ),
@@ -222,6 +224,7 @@ class _ItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return Container(
       height: 72,
@@ -254,7 +257,7 @@ class _ItemRow extends StatelessWidget {
           ReorderableDragStartListener(
             index: index,
             child: Semantics(
-              label: 'Sürükleyerek sırala',
+              label: l10n.dragToReorder,
               child: SizedBox(
                 width: 44,
                 height: 60,
@@ -305,6 +308,7 @@ class _NewItemField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return Container(
       height: 64,
@@ -330,7 +334,7 @@ class _NewItemField extends StatelessWidget {
               decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
-                hintText: 'Örn. Ocağı kapattım mı?',
+                hintText: l10n.newItemHint,
                 hintStyle: Theme.of(context).textTheme.bodyLarge
                     ?.copyWith(color: p.textFaint),
               ),
@@ -341,7 +345,7 @@ class _NewItemField extends StatelessWidget {
             builder: (context, _) {
               final enabled = controller.text.trim().isNotEmpty;
               return IconButton.filled(
-                tooltip: 'Ekle',
+                tooltip: l10n.add,
                 onPressed: enabled ? onSubmit : null,
                 style: IconButton.styleFrom(
                   fixedSize: const Size(48, 48),
@@ -373,6 +377,7 @@ class _IconPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final l10n = context.l10n;
     return SizedBox(
       height: 84,
       child: ListView.separated(
@@ -381,7 +386,8 @@ class _IconPicker extends StatelessWidget {
         itemCount: checkItemIcons.length,
         separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, i) {
-          final (icon, label) = checkItemIcons[i];
+          final icon = checkItemIcons[i];
+          final label = icon.label(l10n)!;
           final isSelected = icon == selected;
           return Semantics(
             selected: isSelected,

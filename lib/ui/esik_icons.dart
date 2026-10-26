@@ -42,6 +42,9 @@ enum EsikIcon {
   alarm('M4 13a8 8 0 1 0 16 0a8 8 0 1 0-16 0zM12 9v4l2.5 2M4 4L2 6M20 4l2 2'),
   bell('M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4'),
   bellOff('M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 21h4M4 4l16 16'),
+  globe(
+    'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.6-3.8 9s1.3 6.4 3.8 9',
+  ),
   vibrate(
     'M9 3h6a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM4 9v6M20 9v6M11 18h2',
   ),
@@ -122,17 +125,17 @@ class EsikIconView extends StatelessWidget {
   }
 }
 
-/// Maddeye seçilebilecek ikonlar ve ekran okuyucu için adları.
-const checkItemIcons = <(EsikIcon, String)>[
-  (EsikIcon.iron, 'Ütü'),
-  (EsikIcon.plug, 'Priz'),
-  (EsikIcon.flame, 'Ocak'),
-  (EsikIcon.lock, 'Kilit'),
-  (EsikIcon.key, 'Anahtar'),
-  (EsikIcon.bag, 'Çanta'),
-  (EsikIcon.wallet, 'Cüzdan'),
-  (EsikIcon.bulb, 'Lamba'),
-  (EsikIcon.pill, 'İlaç'),
-  (EsikIcon.notes, 'Not'),
-  (EsikIcon.checklist, 'Liste'),
+/// Maddeye seçilebilecek ikonlar. Adları: lib/l10n/texts.dart (iconLabel).
+const checkItemIcons = <EsikIcon>[
+  EsikIcon.iron,
+  EsikIcon.plug,
+  EsikIcon.flame,
+  EsikIcon.lock,
+  EsikIcon.key,
+  EsikIcon.bag,
+  EsikIcon.wallet,
+  EsikIcon.bulb,
+  EsikIcon.pill,
+  EsikIcon.notes,
+  EsikIcon.checklist,
 ];

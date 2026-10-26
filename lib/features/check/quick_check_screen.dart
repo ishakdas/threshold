@@ -14,6 +14,7 @@ import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import 'glow_orb.dart';
+import '../../l10n/texts.dart';
 
 /// Bildirime dokununca açılan hızlı kontrol. Büyük, tiklenebilir maddeler.
 class QuickCheckScreen extends ConsumerStatefulWidget {
@@ -75,6 +76,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
     final items = ref.watch(checklistProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
@@ -105,10 +107,12 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                       key: const ValueKey('list'),
                       children: [
                         ScreenHeader(
-                          title: evening ? 'Akşam kontrolü' : 'Sabah kontrolü',
+                          title: evening
+                              ? l10n.checkTitleEvening
+                              : l10n.checkTitleMorning,
                           onBack: _close,
                           trailing: InfoChip(
-                            label: config.shortTitle,
+                            label: config.shortTitle(l10n),
                             icon: config.kinds.first.icon,
                             iconColor: context.palette.accent,
                           ),
@@ -119,8 +123,10 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                               ? 0
                               : session.checked.length / items.length,
                           child: Semantics(
-                            label:
-                                '${session.checked.length} / ${items.length} tamamlandı',
+                            label: l10n.checkProgressA11y(
+                              session.checked.length,
+                              items.length,
+                            ),
                             excludeSemantics: true,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -136,7 +142,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                                       ),
                                 ),
                                 Text(
-                                  'tamamlandı',
+                                  l10n.checkDoneLabel,
                                   style: Theme.of(context).textTheme.labelMedium
                                       ?.copyWith(
                                         color: Colors.white.withValues(
@@ -160,7 +166,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
-                                    'Maddeye dokun, tik at',
+                                    l10n.checkTapHint,
                                     textAlign: TextAlign.center,
                                     style: Theme.of(context)
                                         .textTheme
@@ -188,7 +194,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                             Expanded(
                               flex: 10,
                               child: SecondaryPillButton(
-                                label: '10 dk sonra',
+                                label: l10n.checkSnooze,
                                 icon: EsikIcon.clock,
                                 height: 56,
                                 onPressed: _close,
@@ -198,7 +204,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
                             Expanded(
                               flex: 14,
                               child: PrimaryPillButton(
-                                label: 'Hepsi tamam',
+                                label: l10n.allDone,
                                 icon: EsikIcon.check,
                                 height: 56,
                                 expand: true,
@@ -325,6 +331,7 @@ class _DoneView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = mode == DayMode.evening;
@@ -355,19 +362,20 @@ class _DoneView extends StatelessWidget {
                   ),
                   const SizedBox(height: 30),
                   DotLabel(
-                    '${evening ? 'Akşam' : 'Sabah'} kontrolü · $at',
+                    l10n.checkDoneAt(
+                      evening ? l10n.checkTitleEvening : l10n.checkTitleMorning,
+                      at,
+                    ),
                     center: true,
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Hepsi tamam',
+                    l10n.allDone,
                     style: t.headlineLarge?.copyWith(fontSize: 40),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    evening
-                        ? 'İçin rahat. İyi geceler.'
-                        : 'Hazırsın. İyi günler.',
+                    evening ? l10n.checkDoneEvening : l10n.checkDoneMorning,
                     style: t.bodyLarge?.copyWith(color: p.textMuted),
                   ),
                   const SizedBox(height: 22),
@@ -377,7 +385,7 @@ class _DoneView extends StatelessWidget {
                     alignment: WrapAlignment.center,
                     children: [
                       for (final i in items)
-                        InfoChip(label: _shortLabel(i), icon: i.icon),
+                        InfoChip(label: _shortLabel(i, l10n), icon: i.icon),
                     ],
                   ),
                 ],
@@ -390,7 +398,7 @@ class _DoneView extends StatelessWidget {
             Expanded(
               flex: 10,
               child: SecondaryPillButton(
-                label: 'Geri al',
+                label: l10n.undo,
                 onPressed: onUndo,
                 height: 56,
               ),
@@ -399,7 +407,7 @@ class _DoneView extends StatelessWidget {
             Expanded(
               flex: 14,
               child: PrimaryPillButton(
-                label: 'Kapat',
+                label: l10n.close,
                 onPressed: onClose,
                 height: 56,
                 expand: true,
@@ -412,10 +420,6 @@ class _DoneView extends StatelessWidget {
   }
 
   /// Etikette maddenin ikonunun kısa adı kullanılır ("Ütü", "Kilit").
-  static String _shortLabel(CheckItem item) {
-    for (final (icon, label) in checkItemIcons) {
-      if (icon == item.icon) return label;
-    }
-    return item.title.split(' ').first;
-  }
+  static String _shortLabel(CheckItem item, AppLocalizations l10n) =>
+      item.icon.label(l10n) ?? item.title.split(' ').first;
 }

@@ -5,9 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threshold/core/day_mode.dart';
 import 'package:threshold/data/app_state.dart';
 import 'package:threshold/data/models.dart';
+import 'package:threshold/l10n/texts.dart';
 import 'package:threshold/features/setup/setup_guide_screen.dart';
 import 'package:threshold/features/trigger/arc_range_picker.dart';
 import 'package:threshold/ui/esik_icons.dart';
+
+import 'helpers.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -20,6 +23,7 @@ void main() {
   ProviderContainer container() {
     final c = ProviderContainer(
       overrides: [
+        turkishDevice,
         sharedPreferencesProvider.overrideWithValue(prefs),
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 20, 22, 14)),
       ],
@@ -98,7 +102,7 @@ void main() {
 
   test('kurulum adımları tetikleyiciye göre değişir', () {
     List<String> steps(TriggerKind k) =>
-        setupStepsFor([k]).map((s) => s.title).toList();
+        setupStepsFor(trL10n, [k]).map((s) => s.title).toList();
     expect(steps(TriggerKind.charging), [
       'Bildirimlere izin ver',
       'Arka planda çalışmasına izin ver',
@@ -136,11 +140,11 @@ void main() {
         TriggerKind.nfcTag,
       ]);
       expect(base.toggle(TriggerKind.alarmStopped), same(base));
-      expect(two.title, 'Alarmı durdurunca +2');
+      expect(two.title(trL10n), 'Alarmı durdurunca +2');
       final pair = base.toggle(TriggerKind.unsilenced);
-      expect(pair.title, 'Alarmı durdurunca ya da sessizden çıkarınca');
+      expect(pair.title(trL10n), 'Alarmı durdurunca ya da sessizden çıkarınca');
       expect(
-        pair.when,
+        pair.when(trL10n),
         'Alarmı durdurduğunda ya da telefonu sessizden çıkardığında',
       );
     });
@@ -181,7 +185,7 @@ void main() {
     });
 
     test('kurulum her tetikleyicinin adımını içerir', () {
-      final titles = setupStepsFor([
+      final titles = setupStepsFor(trL10n, [
         TriggerKind.alarmStopped,
         TriggerKind.nfcTag,
       ]).map((s) => s.title);

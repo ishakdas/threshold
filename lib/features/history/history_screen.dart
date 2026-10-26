@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/day_mode.dart';
@@ -11,7 +12,7 @@ import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../ui/esik_logo.dart';
-import '../today/day_strip.dart';
+import '../../l10n/texts.dart';
 
 /// Son 14 günün sade özeti: yay gösterge, hap ızgarası ve ortalama saat.
 class HistoryScreen extends ConsumerWidget {
@@ -19,6 +20,7 @@ class HistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final logs = ref.watch(historyProvider);
     final p = context.palette;
     final t = Theme.of(context).textTheme;
@@ -43,8 +45,11 @@ class HistoryScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 130),
             children: [
               ScreenHeader(
-                title: 'Geçmiş',
-                trailing: InfoChip(label: 'Son 14 gün', icon: EsikIcon.history),
+                title: l10n.historyTitle,
+                trailing: InfoChip(
+                  label: l10n.historyLast14,
+                  icon: EsikIcon.history,
+                ),
               ),
               const SizedBox(height: 18),
               _ScoreGauge(done: done, total: total),
@@ -73,14 +78,18 @@ class HistoryScreen extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Eşik etkinliği',
+                            l10n.historyActivity,
                             style: t.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
                         Text(
-                          '${from.day}–${to.day} ${_month(to.month)}',
+                          l10n.historyRange(
+                            from.day,
+                            to.day,
+                            DateFormat.MMMM(l10n.localeName).format(to),
+                          ),
                           style: t.labelSmall?.copyWith(
                             fontSize: 12,
                             color: p.textMuted,
@@ -100,7 +109,7 @@ class HistoryScreen extends ConsumerWidget {
                 SurfaceCard(
                   child: _AverageCard(
                     times: eveningTimes,
-                    triggerTitle: evening.shortTitle,
+                    triggerTitle: evening.shortTitle(l10n),
                   ),
                 ),
             ],
@@ -109,21 +118,6 @@ class HistoryScreen extends ConsumerWidget {
       ),
     );
   }
-
-  static String _month(int m) => const [
-    'Ocak',
-    'Şubat',
-    'Mart',
-    'Nisan',
-    'Mayıs',
-    'Haziran',
-    'Temmuz',
-    'Ağustos',
-    'Eylül',
-    'Ekim',
-    'Kasım',
-    'Aralık',
-  ][m - 1];
 }
 
 class _ScoreGauge extends StatelessWidget {
@@ -133,6 +127,7 @@ class _ScoreGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final f = total == 0 ? 0.0 : done / total;
@@ -142,8 +137,8 @@ class _ScoreGauge extends StatelessWidget {
         final r = (w - 60) / 2;
         return Semantics(
           label: total == 0
-              ? 'Henüz kayıt yok'
-              : '$total eşikten $done tanesi tamamlandı',
+              ? l10n.historyEmpty
+              : l10n.historyScoreA11y(total, done),
           excludeSemantics: true,
           child: SizedBox(
             height: r + 40,
@@ -188,17 +183,17 @@ class _ScoreGauge extends StatelessWidget {
                       const SizedBox(height: 6),
                       InfoChip(
                         label: total == 0
-                            ? 'Henüz kayıt yok'
-                            : '%${(f * 100).round()} tamamlandı',
+                            ? l10n.historyEmpty
+                            : l10n.historyPercent((f * 100).round()),
                         icon: total == 0 ? EsikIcon.clock : EsikIcon.check,
                       ),
                       const SizedBox(height: 8),
                       Text(
                         switch (f) {
-                          _ when total == 0 => 'İlk eşiğin yakında',
-                          >= 0.85 => 'Eşiği geçtin',
-                          >= 0.5 => 'Yolun yarısındasın',
-                          _ => 'Her gün yeni bir eşik',
+                          _ when total == 0 => l10n.historyFirstSoon,
+                          >= 0.85 => l10n.historyGreat,
+                          >= 0.5 => l10n.historyHalfway,
+                          _ => l10n.historyNewDay,
                         },
                         style: t.bodyLarge?.copyWith(
                           fontSize: 17,
@@ -293,6 +288,7 @@ class _PillGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final weeks = [logs.sublist(0, 7), logs.sublist(7, 14)];
     Widget row(DayMode mode, List<DayLog> week) => Row(
@@ -316,7 +312,7 @@ class _PillGrid extends StatelessWidget {
       ],
     );
     return Semantics(
-      label: 'Akşam ve sabah kontrolleri, son iki hafta',
+      label: l10n.historyGridA11y,
       child: Column(
         children: [
           for (final mode in DayMode.values)
@@ -331,7 +327,7 @@ class _PillGrid extends StatelessWidget {
               for (final l in weeks.last)
                 Expanded(
                   child: Text(
-                    turkishWeekdayInitials[l.date.weekday - 1],
+                    l10n.weekdayLetterList[l.date.weekday - 1],
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: p.textMuted),
                   ),
@@ -430,6 +426,7 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final style = TextStyle(fontSize: 11, color: p.textMuted);
     Widget item(Widget swatch, String label) => Row(
@@ -444,12 +441,19 @@ class _Legend extends StatelessWidget {
       spacing: 16,
       runSpacing: 6,
       children: [
-        item(const _Pill(outcome: CheckOutcome.done), 'Tamamlandı'),
-        item(const _Pill(outcome: CheckOutcome.viaBackup), 'Yedek bildirimle'),
-        item(const _Pill(outcome: CheckOutcome.missed), 'Atlandı'),
+        item(const _Pill(outcome: CheckOutcome.done), l10n.outcomeDone),
+        item(
+          const _Pill(outcome: CheckOutcome.viaBackup),
+          l10n.outcomeViaBackup,
+        ),
+        item(const _Pill(outcome: CheckOutcome.missed), l10n.outcomeMissed),
         if (showUntracked)
-          item(const _Pill(outcome: CheckOutcome.notTracked), 'Kayıt yok'),
-        if (showOff) item(const _Pill(outcome: CheckOutcome.off), 'İzin günü'),
+          item(
+            const _Pill(outcome: CheckOutcome.notTracked),
+            l10n.outcomeNotTracked,
+          ),
+        if (showOff)
+          item(const _Pill(outcome: CheckOutcome.off), l10n.outcomeOff),
       ],
     );
   }
@@ -471,6 +475,7 @@ class _AverageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final mins = times.map(_eveningMinutes).toList()..sort();
@@ -488,7 +493,7 @@ class _AverageCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Ortalama akşam eşiği', style: muted),
+                  Text(l10n.historyAverageEvening, style: muted),
                   Text(
                     formatTime(_fromMinutes(avg)),
                     style: t.titleLarge?.copyWith(fontWeight: FontWeight.w300),
@@ -499,7 +504,7 @@ class _AverageCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('Akşam tetikleyicisi', style: muted),
+                Text(l10n.historyEveningTrigger, style: muted),
                 Text(
                   triggerTitle,
                   style: t.bodyLarge?.copyWith(
@@ -568,13 +573,13 @@ class _AverageCard extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                'En erken ${formatTime(_fromMinutes(lo))}',
+                l10n.historyEarliest(formatTime(_fromMinutes(lo))),
                 style: muted,
               ),
             ),
             Flexible(
               child: Text(
-                'En geç ${formatTime(_fromMinutes(hi))}',
+                l10n.historyLatest(formatTime(_fromMinutes(hi))),
                 style: muted,
                 textAlign: TextAlign.end,
               ),

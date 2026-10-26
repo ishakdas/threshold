@@ -13,6 +13,7 @@ import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../ui/esik_logo.dart';
 import '../../ui/threshold_door.dart';
+import '../../l10n/texts.dart';
 
 /// İlk açılışta gösterilen üç sayfa: ne yapar, örnek senaryo, bildirim izni.
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -48,6 +49,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final last = _index == 2;
@@ -65,7 +67,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   children: [
                     if (_index > 0)
                       IconButton(
-                        tooltip: 'Geri',
+                        tooltip: l10n.back,
                         onPressed: () => _go(_index - 1),
                         icon: EsikIconView(EsikIcon.arrowLeft, color: p.text),
                       ),
@@ -83,7 +85,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                             minimumSize: const Size(0, 34),
                           ),
-                          child: const Text('Atla'),
+                          child: Text(l10n.skip),
                         ),
                       ),
                   ],
@@ -108,7 +110,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           _Dots(index: _index),
                           const SizedBox(height: 18),
                           PrimaryPillButton(
-                            label: 'Kuruluma başla',
+                            label: l10n.startSetup,
                             icon: EsikIcon.bell,
                             height: 56,
                             expand: true,
@@ -121,7 +123,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               minimumSize: const Size(0, 44),
                             ),
                             child: Text(
-                              'Şimdi değil',
+                              l10n.notNow,
                               style: t.bodyMedium?.copyWith(color: p.textMuted),
                             ),
                           ),
@@ -133,13 +135,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           const Spacer(),
                           _SquareButton(
                             icon: EsikIcon.arrowLeft,
-                            label: 'Geri',
+                            label: l10n.back,
                             onTap: _index == 0 ? null : () => _go(_index - 1),
                           ),
                           const SizedBox(width: 10),
                           _SquareButton(
                             icon: EsikIcon.arrowRight,
-                            label: 'İleri',
+                            label: l10n.next,
                             primary: true,
                             onTap: () => _go(_index + 1),
                           ),
@@ -160,9 +162,10 @@ class _Dots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return Semantics(
-      label: 'Sayfa ${index + 1} / 3',
+      label: l10n.pageOf(index + 1, 3),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -276,11 +279,14 @@ class _IntroPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _Page(
-      kicker: 'Eşik’e hoş geldin',
-      title: 'Yatmadan önce.\nKapıdan çıkmadan önce.',
-      body: 'Günün iki eşiğinde kendi kontrol listen, tam doğru anda önünde.',
-      visual: FittedBox(child: ThresholdDoor(doorWidth: 150, doorHeight: 270)),
+    final l10n = context.l10n;
+    return _Page(
+      kicker: l10n.introKicker,
+      title: l10n.introTitle,
+      body: l10n.introBody,
+      visual: const FittedBox(
+        child: ThresholdDoor(doorWidth: 150, doorHeight: 270),
+      ),
     );
   }
 }
@@ -290,11 +296,12 @@ class _ScenarioPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _Page(
-      kicker: 'Örnek senaryo',
-      title: 'Saat değil, an.',
-      body: '22:30 alarmı sen dizideyken çalar. Eşik ise telefonu şarja taktığın an gelir; üç maddeye bakar, rahat uyursun.',
-      visual: _GhostWithCallouts(),
+    final l10n = context.l10n;
+    return _Page(
+      kicker: l10n.scenarioKicker,
+      title: l10n.scenarioTitle,
+      body: l10n.scenarioBody,
+      visual: const _GhostWithCallouts(),
     );
   }
 }
@@ -308,6 +315,7 @@ class _GhostWithCallouts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     const svg =
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><defs>'
@@ -395,7 +403,7 @@ class _GhostWithCallouts extends StatelessWidget {
               Positioned(
                 left: 212,
                 top: 22,
-                child: callout('Şarja taktın', '22:47 · eşik'),
+                child: callout(l10n.calloutPlugged, l10n.calloutPluggedAt),
               ),
               Positioned(left: 128, top: 128, child: dot()),
               Positioned(
@@ -407,7 +415,11 @@ class _GhostWithCallouts extends StatelessWidget {
                   color: p.text.withValues(alpha: 0.45),
                 ),
               ),
-              Positioned(left: 10, top: 112, child: callout('Kapı', 'Kilitli')),
+              Positioned(
+                left: 10,
+                top: 112,
+                child: callout(l10n.calloutDoor, l10n.calloutLocked),
+              ),
               Positioned(left: 206, top: 190, child: dot()),
               Positioned(
                 left: 220,
@@ -421,7 +433,7 @@ class _GhostWithCallouts extends StatelessWidget {
               Positioned(
                 left: 240,
                 top: 174,
-                child: callout('Ütü', 'Fiş çekildi'),
+                child: callout(l10n.calloutIron, l10n.calloutUnplugged),
               ),
             ],
           ),
@@ -436,11 +448,12 @@ class _NotifyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final p = context.palette;
     return _Page(
-      kicker: 'Son adım',
-      title: 'Doğru anda\nhaber verelim.',
-      body: 'Sadece eşik geldiğinde yazarız. Günde en fazla iki bildirim, reklam yok.',
+      kicker: l10n.notifyKicker,
+      title: l10n.notifyTitle,
+      body: l10n.notifyBody,
       visual: ExcludeSemantics(
         child: FittedBox(
           child: SizedBox(
@@ -527,7 +540,7 @@ class _NotifyPage extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Akşam eşiği',
+                                          l10n.eveningThreshold,
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
@@ -536,7 +549,7 @@ class _NotifyPage extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        'şimdi',
+                                        l10n.now,
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: p.textMuted,
@@ -546,7 +559,7 @@ class _NotifyPage extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Şarja taktın. Ütü, yapılacaklar, kapı: 3 madde.',
+                                    l10n.notifyPreview,
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: p.text.withValues(alpha: 0.85),
