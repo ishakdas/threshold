@@ -1163,4 +1163,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seePlus => 'See Plus';
+
+  @override
+  String get oneByOne => 'Go one by one';
 }

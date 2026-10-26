@@ -64,8 +64,16 @@ Eşik'in internet izni yok. Listelerin, ayarların ve geçmişin yalnızca telef
 | Dosya | Play alanı |
 |---|---|
 | `ikon-512.png` | Uygulama simgesi (512×512) |
-| `one-cikan-1024x500.png` | Öne çıkan grafik (1024×500) |
-| `telefon-1.png` … `telefon-6.png` | Telefon ekran görüntüleri (1080×1920) |
+| `<dil>/one-cikan-1024x500.png` | Öne çıkan grafik (1024×500) |
+| `<dil>/1.png` … `<dil>/6.png` | Telefon ekran görüntüleri (1080×1920), sırayla |
+
+`<dil>`: `tr`, `en`, `es`. Her dil Play Console'da o dilin mağaza girişine
+yüklenir. Yeniden üretmek için:
+
+```
+flutter test tool/store_assets_test.dart --update-goldens
+python3 tool/store_marketing.py
+```
 
 ## Sürüm notu (ilk dahili test)
 

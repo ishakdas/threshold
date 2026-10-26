@@ -1136,4 +1136,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get seePlus => 'Plus’a bak';
+
+  @override
+  String get oneByOne => 'Tek tek bak';
 }

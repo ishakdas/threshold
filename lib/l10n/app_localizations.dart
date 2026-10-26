@@ -2067,6 +2067,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Plus’a bak'**
   String get seePlus;
+
+  /// No description provided for @oneByOne.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tek tek bak'**
+  String get oneByOne;
 }
 
 class _AppLocalizationsDelegate

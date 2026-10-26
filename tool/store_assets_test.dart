@@ -1,14 +1,17 @@
-// Play Store görsellerini gerçek ekranlardan üretir: telefon ekran görüntüleri
-// (1080×1920) ve öne çıkan grafik (1024×500). Örnek veriyle, Inter yazı
-// tipiyle çizer.
+// Play Store görsellerinin ham ekranlarını üretir: gerçek uygulama ekranları
+// (üç dilde, örnek veriyle, Plus açık) ve kilit ekranındaki bildirimin
+// canlandırması. tool/store_marketing.py bunları çerçeveleyip başlık ekler.
 //
 //   flutter test tool/store_assets_test.dart --update-goldens
+//   python3 tool/store_marketing.py
 //
-// Çıktı: docs/play/gorseller/
+// Ham çıktı: build/store_raw/<dil>/ (depoya girmez).
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:threshold/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +27,7 @@ import 'package:threshold/theme/esik_theme.dart';
 import 'package:threshold/ui/atmosphere.dart';
 import 'package:threshold/ui/esik_logo.dart';
 
-const _out = '../docs/play/gorseller';
+const _out = '../build/store_raw';
 const _channel = MethodChannel('esik/native');
 
 Future<void> _loadFonts() async {
@@ -72,12 +75,9 @@ Map<String, Object?> _sampleLog(DateTime today) {
   return log;
 }
 
-Future<void> _boot(WidgetTester t, DateTime now) async {
+Future<void> _boot(WidgetTester t, DateTime now, String lang) async {
   await _loadFonts();
-  t.view.physicalSize = const Size(1080, 1920);
-  t.view.devicePixelRatio = 2.75;
-  t.view.padding = const FakeViewPadding(top: 24 * 2.75, bottom: 16 * 2.75);
-  addTearDown(t.view.reset);
+  _phone(t);
 
   // Kurulum tamam: uyarı kartı görünmesin.
   t.binding.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (
@@ -121,12 +121,20 @@ Future<void> _boot(WidgetTester t, DateTime now) async {
       overrides: [
         clockProvider.overrideWithValue(() => now),
         sharedPreferencesProvider.overrideWithValue(prefs),
-        deviceLocaleProvider.overrideWithValue(const Locale('tr')),
+        deviceLocaleProvider.overrideWithValue(Locale(lang)),
       ],
       child: const EsikApp(),
     ),
   );
   await _settle(t);
+}
+
+/// 393×852 mantıksal piksel, 3× (1179×2556); üstte durum çubuğu payı.
+void _phone(WidgetTester t) {
+  t.view.physicalSize = const Size(393 * 3, 852 * 3);
+  t.view.devicePixelRatio = 3;
+  t.view.padding = const FakeViewPadding(top: 50 * 3, bottom: 20 * 3);
+  addTearDown(t.view.reset);
 }
 
 /// Kontrol ekranındaki kürenin sonsuz animasyonu yüzünden pumpAndSettle bitmez.
@@ -139,117 +147,174 @@ Future<void> _settle(WidgetTester t) async {
 GoRouter _router(WidgetTester t) =>
     GoRouter.of(t.element(find.byType(Scaffold).first));
 
-Future<void> _shot(WidgetTester t, String name) async {
+Future<void> _shot(WidgetTester t, Finder f, String path) async {
   await _settle(t);
-  await expectLater(find.byType(EsikApp), matchesGoldenFile('$_out/$name.png'));
+  await expectLater(f, matchesGoldenFile('$_out/$path.png'));
 }
 
 void main() {
   final evening = DateTime(2026, 10, 20, 22, 41);
   final morning = DateTime(2026, 10, 21, 7, 24);
+  final app = find.byType(EsikApp);
 
-  testWidgets('telefon-1: akşam', (t) async {
-    await _boot(t, evening);
-    await _shot(t, 'telefon-1');
-  });
+  for (final lang in ['tr', 'en', 'es']) {
+    final l10n = lookupAppLocalizations(Locale(lang));
 
-  testWidgets('telefon-2: hızlı kontrol', (t) async {
-    await _boot(t, evening);
-    _router(t).push('/kontrol');
-    await _settle(t);
-    await t.tap(find.text('Ütünün fişini çektim mi?'));
-    await t.tap(find.text('Kapıyı kilitledim mi?'));
-    await _shot(t, 'telefon-2');
-  });
+    testWidgets('$lang: kilit ekranı bildirimi', (t) async {
+      await _loadFonts();
+      _phone(t);
+      await t.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: esikTheme(DayMode.evening),
+          locale: Locale(lang),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: const _LockScreen(),
+        ),
+      );
+      await t.pump();
+      await _shot(t, find.byType(_LockScreen), '$lang/1-bildirim');
+    });
 
-  testWidgets('telefon-3: sabah', (t) async {
-    await _boot(t, morning);
-    await _shot(t, 'telefon-3');
-  });
+    testWidgets('$lang: akşam', (t) async {
+      await _boot(t, evening, lang);
+      await _shot(t, app, '$lang/2-aksam');
+    });
 
-  testWidgets('telefon-4: tetikleyiciler', (t) async {
-    await _boot(t, evening);
-    _router(t).go('/ayarlar');
-    await _settle(t);
-    await t.drag(find.byType(ListView).first, const Offset(0, -330));
-    await _shot(t, 'telefon-4');
-  });
+    testWidgets('$lang: hızlı kontrol', (t) async {
+      await _boot(t, evening, lang);
+      _router(t).push('/kontrol');
+      await _settle(t);
+      await t.tap(find.text(l10n.defaultEveningIron));
+      await t.tap(find.text(l10n.defaultEveningLock));
+      await _shot(t, app, '$lang/3-kontrol');
+    });
 
-  testWidgets('telefon-5: geçmiş', (t) async {
-    await _boot(t, morning);
-    _router(t).go('/gecmis');
-    await _shot(t, 'telefon-5');
-  });
+    testWidgets('$lang: tetikleyiciler', (t) async {
+      await _boot(t, evening, lang);
+      _router(t).go('/ayarlar');
+      await _settle(t);
+      await t.drag(find.byType(ListView).first, const Offset(0, -330));
+      await _shot(t, app, '$lang/4-tetikleyiciler');
+    });
 
-  testWidgets('telefon-6: liste', (t) async {
-    await _boot(t, evening);
-    _router(t).go('/liste');
-    await _shot(t, 'telefon-6');
-  });
+    testWidgets('$lang: sabah', (t) async {
+      await _boot(t, morning, lang);
+      await _shot(t, app, '$lang/5-sabah');
+    });
 
-  testWidgets('öne çıkan grafik', (t) async {
-    await _loadFonts();
-    t.view.physicalSize = const Size(1024, 500);
-    t.view.devicePixelRatio = 1;
-    addTearDown(t.view.reset);
-    await t.pumpWidget(
-      MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: esikTheme(DayMode.evening),
-        home: const _FeatureGraphic(),
-      ),
-    );
-    await t.pump();
-    await expectLater(
-      find.byType(_FeatureGraphic),
-      matchesGoldenFile('$_out/one-cikan-1024x500.png'),
-    );
-  });
+    testWidgets('$lang: geçmiş', (t) async {
+      await _boot(t, morning, lang);
+      _router(t).go('/gecmis');
+      await _shot(t, app, '$lang/6-gecmis');
+    });
+  }
 }
 
-/// 1024×500: logo, ad ve tek cümle.
-class _FeatureGraphic extends StatelessWidget {
-  const _FeatureGraphic();
+/// Kilit ekranında Eşik bildirimi: Android'in gösterdiğinin sadeleştirilmiş
+/// canlandırması (metinler EsikNotifications.kt ile aynı anlamda).
+class _LockScreen extends StatelessWidget {
+  const _LockScreen();
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final t = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
+    final date = DateFormat.MMMMEEEEd(l10n.localeName)
+        .format(DateTime(2026, 10, 20));
+    TextStyle s(double size, {FontWeight w = FontWeight.w400, Color? c}) =>
+        TextStyle(
+          fontFamily: 'Inter',
+          fontSize: size,
+          fontWeight: w,
+          color: c ?? p.text,
+          height: 1.25,
+        );
     return Scaffold(
       body: Atmosphere(
-        glowTop: -420,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 96),
-          child: Row(
-            children: [
-              EsikLogo(size: 240, archColor: p.text),
-              const SizedBox(width: 56),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Eşik',
-                      style: t.headlineMedium?.copyWith(
-                        fontSize: 104,
-                        fontWeight: FontWeight.w400,
-                        height: 1,
-                      ),
+        glowTop: -120,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Text(date, style: s(18, c: p.textMuted)),
+                Text('22:47', style: s(96, w: FontWeight.w300)),
+                const SizedBox(height: 70),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.16),
                     ),
-                    const SizedBox(height: 22),
-                    Text(
-                      'Yatmadan ve evden çıkmadan önce,\ndoğru anda kontrol et.',
-                      style: t.bodyLarge?.copyWith(
-                        fontSize: 27,
-                        color: p.textMuted,
-                        height: 1.35,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: p.accentGradient,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: const EsikLogo(
+                              size: 15,
+                              archColor: Colors.white,
+                              lightColor: Color(0xFFFFF1D6),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Eşik · ${l10n.now}',
+                            style: s(13, c: p.textMuted),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      Text(
+                        l10n.eveningThreshold,
+                        style: s(17, w: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(l10n.notifyPreview, style: s(15)),
+                      const SizedBox(height: 8),
+                      for (final item in [
+                        l10n.defaultEveningIron,
+                        l10n.defaultEveningTodo,
+                        l10n.defaultEveningLock,
+                      ])
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Text('•  $item', style: s(14, c: p.textMuted)),
+                        ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          for (final a in [l10n.allDone, l10n.oneByOne])
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 8, 26, 12),
+                              child: Text(
+                                a,
+                                style: s(15, w: FontWeight.w600, c: p.accent),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
