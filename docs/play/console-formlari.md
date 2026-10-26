@@ -26,7 +26,7 @@ Deneme süresi Play'de değil, uygulamada: ilk açılıştan itibaren 15 gün
 
 ## Gizlilik politikası
 
-URL: `docs/gizlilik.md` yayımlandığı adres (GitHub Pages ya da benzeri).
+URL: https://ishakdas.github.io/esik-gizlilik/ (`ishakdas/esik-gizlilik` deposu, `docs/gizlilik.md` ile aynı tutulur).
 
 ## Reklamlar
 
