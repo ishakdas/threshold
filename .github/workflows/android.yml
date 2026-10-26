@@ -80,7 +80,7 @@ jobs:
           echo "signed=true" >> "$GITHUB_OUTPUT"
       # Derlenen Dart kodundaki adlar karıştırılır; hata raporlarını çözmek
       # için gereken eşleme dosyaları ayrı bir artifact olarak saklanır.
-      - run: flutter build apk --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
+      - run: .github/scripts/build.sh apk --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
       # Play'in veri güvenliği formu bu listeye dayanıyor; değişirse fark edilsin.
       - name: APK izinleri
         run: |
@@ -101,7 +101,7 @@ jobs:
           retention-days: 90
       - name: Play Store paketi (AAB)
         if: steps.key.outputs.signed == 'true'
-        run: flutter build appbundle --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
+        run: .github/scripts/build.sh appbundle --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
       - uses: actions/upload-artifact@v4
         if: steps.key.outputs.signed == 'true'
         with:
@@ -127,7 +127,7 @@ jobs:
       - run: flutter pub get
       # Yalnızca telefonda denemek için: Plus denemesi 15 gün yerine 5 dakika,
       # Ayarlar'daki Plus kartı başlangıcı dakikasıyla gösterir. Play'e gitmez.
-      - run: flutter build apk --release --build-number=${{ github.run_number }} --dart-define=ESIK_TRIAL_MINUTES=5
+      - run: .github/scripts/build.sh apk --release --build-number=${{ github.run_number }} --dart-define=ESIK_TRIAL_MINUTES=5
       - uses: actions/upload-artifact@v4
         with:
           name: esik-${{ github.run_number }}-test-5dk-apk
