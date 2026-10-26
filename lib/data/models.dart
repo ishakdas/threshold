@@ -79,6 +79,16 @@ enum TriggerKind {
     appClosed || sleepMode || airplaneMode || unplugged => false,
   };
 
+  /// Eşik Plus olmadan da kullanılabilir. Diğer çalışan tetikleyiciler
+  /// (Wi‑Fi, NFC) Plus'a özel. Android tarafı (EsikData.FREE_KINDS) aynı listeyi
+  /// kullanır.
+  bool get free => switch (this) {
+    charging || silenced || alarmStopped || unsilenced => true,
+    _ => false,
+  };
+
+  bool get plusOnly => supported && !free;
+
   /// Önce çalışanlar, "Yakında" olanlar sonda.
   static List<TriggerKind> forMode(DayMode mode) => [
     ...values.where((k) => k.mode == mode && k.supported),
@@ -140,6 +150,19 @@ class TriggerConfig {
     if (next.isEmpty) return this;
     next.sort((a, b) => a.index.compareTo(b.index));
     return copyWith(kinds: next);
+  }
+
+  /// Eşik Plus yoksa geçerli olan hâli: tek ve ücretsiz bir tetikleyici,
+  /// her gün. Kullanıcının asıl seçimi saklanır; Plus alınınca geri gelir.
+  TriggerConfig effective({required bool plus}) {
+    if (plus) return this;
+    final mode = kinds.first.mode;
+    final kind =
+        kinds.where((k) => k.free).firstOrNull ??
+        (mode == DayMode.evening
+            ? TriggerKind.charging
+            : TriggerKind.alarmStopped);
+    return copyWith(kinds: [kind], days: allWeekdays);
   }
 
   /// Günü ekler ya da çıkarır; son gün çıkarılamaz.

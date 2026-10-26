@@ -1052,4 +1052,88 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get languageSystem => 'Sistem';
+
+  @override
+  String get plusName => 'Eşik Plus';
+
+  @override
+  String get plusTagline => 'Eşiklerini tam sana göre kur.';
+
+  @override
+  String get plusFeatureMulti => 'Birden fazla tetikleyici';
+
+  @override
+  String get plusFeatureWifiNfc => 'Wi‑Fi ve kapıdaki NFC etiketi';
+
+  @override
+  String get plusFeatureDays => 'Çalışacağı günleri seçme';
+
+  @override
+  String get plusFeatureSilent => 'Sessizdeyken titret ya da çal';
+
+  @override
+  String get plusFeatureHistory => 'Geçmiş ve istatistikler';
+
+  @override
+  String get plusOnce => 'Tek seferlik ödeme, abonelik yok. Reklam yok.';
+
+  @override
+  String plusBuy(String price) {
+    return 'Ömür boyu · $price';
+  }
+
+  @override
+  String get plusBuyNoPrice => 'Plus’ı al';
+
+  @override
+  String get plusRestore => 'Satın alımı geri yükle';
+
+  @override
+  String get plusUnavailable =>
+      'Google Play’e şu an ulaşılamıyor. Biraz sonra tekrar dene.';
+
+  @override
+  String get plusPending => 'Ödeme bekleniyor…';
+
+  @override
+  String get plusThanks => 'Teşekkürler! Plus artık sende.';
+
+  @override
+  String get plusOwned => 'Plus sende';
+
+  @override
+  String plusTrialLeft(int days) {
+    return 'Deneme: $days gün kaldı';
+  }
+
+  @override
+  String get plusFree => 'Ücretsiz sürüm';
+
+  @override
+  String plusTrialNote(int days) {
+    return 'İlk $days gün bütün Plus özellikleri açık.';
+  }
+
+  @override
+  String get plusMultiHint =>
+      'Birden fazla tetikleyici ve Wi‑Fi, NFC Plus ile.';
+
+  @override
+  String plusTrialEnding(int days) {
+    return 'Plus denemesinin son $days günü';
+  }
+
+  @override
+  String get plusTrialEndingBody =>
+      'Sonra her modda tek tetikleyiciyle devam eder.';
+
+  @override
+  String get plusHistoryTitle => 'Geçmiş Plus ile';
+
+  @override
+  String get plusHistoryBody =>
+      'Hangi akşam ve sabah kontrol yaptığını, saatlerini ve ortalamanı gör.';
+
+  @override
+  String get seePlus => 'Plus’a bak';
 }

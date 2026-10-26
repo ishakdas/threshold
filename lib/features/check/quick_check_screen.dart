@@ -15,6 +15,7 @@ import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import 'glow_orb.dart';
 import '../../l10n/texts.dart';
+import '../../data/plus.dart';
 
 /// Bildirime dokununca açılan hızlı kontrol. Büyük, tiklenebilir maddeler.
 class QuickCheckScreen extends ConsumerStatefulWidget {
@@ -80,7 +81,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
     final items = ref.watch(checklistProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
-    final config = ref.watch(triggerConfigProvider)[mode]!;
+    final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
     final evening = mode == DayMode.evening;
 
     return Scaffold(

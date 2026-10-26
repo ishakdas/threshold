@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/day_mode.dart';
-import '../../data/app_state.dart';
 import '../../data/models.dart';
 import '../../l10n/app_localizations.dart';
 import '../../platform/native_bridge.dart';
+import '../../data/plus.dart';
 
 /// Eşik'in çalışmasını engelleyen, kullanıcının düzeltebileceği bir eksik.
 enum SetupIssue { notifications, battery, nfcOff, nfcTag, noAlarm }
@@ -38,7 +38,7 @@ List<SetupIssue> setupIssues(SetupHealth h, List<TriggerKind> kinds) => [
 final setupIssuesProvider = Provider<Map<DayMode, List<SetupIssue>>?>((ref) {
   final health = ref.watch(setupHealthProvider).value;
   if (health == null) return null;
-  final configs = ref.watch(triggerConfigProvider);
+  final configs = ref.watch(effectiveTriggerConfigProvider);
   return {
     for (final mode in DayMode.values)
       mode: setupIssues(health, configs[mode]!.kinds),

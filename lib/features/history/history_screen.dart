@@ -13,6 +13,8 @@ import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../ui/esik_logo.dart';
 import '../../l10n/texts.dart';
+import '../../data/plus.dart';
+import '../plus/plus_sheet.dart';
 
 /// Son 14 günün sade özeti: yay gösterge, hap ızgarası ve ortalama saat.
 class HistoryScreen extends ConsumerWidget {
@@ -33,7 +35,27 @@ class HistoryScreen extends ConsumerWidget {
     final anyOff = outcomes.contains(CheckOutcome.off);
     final from = logs.first.date, to = logs.last.date;
     final eveningTimes = [for (final l in logs) ?l.eveningAt];
-    final evening = ref.watch(triggerConfigProvider)[DayMode.evening]!;
+    final evening = ref.watch(effectiveTriggerConfigProvider)[DayMode.evening]!;
+
+    if (!ref.watch(plusProvider).active) {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Atmosphere(
+          glowTop: -380,
+          child: SafeArea(
+            bottom: false,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 130),
+              children: [
+                ScreenHeader(title: l10n.historyTitle),
+                const SizedBox(height: 18),
+                const _PlusTeaser(),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -115,6 +137,41 @@ class HistoryScreen extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Ücretsiz sürümde geçmişin yerine: ne göreceğini anlatır, Plus'a götürür.
+class _PlusTeaser extends StatelessWidget {
+  const _PlusTeaser();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    return SurfaceCard(
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const IconCircle(icon: EsikIcon.history, size: 44, active: true),
+          const SizedBox(height: 14),
+          Text(l10n.plusHistoryTitle, style: t.headlineSmall),
+          const SizedBox(height: 6),
+          Text(
+            l10n.plusHistoryBody,
+            style: t.bodyMedium?.copyWith(color: p.textMuted),
+          ),
+          const SizedBox(height: 18),
+          PrimaryPillButton(
+            label: l10n.seePlus,
+            trailingIcon: EsikIcon.arrowRight,
+            expand: true,
+            onPressed: () => showPlusSheet(context),
+          ),
+        ],
       ),
     );
   }

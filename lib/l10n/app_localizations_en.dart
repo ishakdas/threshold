@@ -1068,4 +1068,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageSystem => 'System';
+
+  @override
+  String get plusName => 'Eşik Plus';
+
+  @override
+  String get plusTagline => 'Set up your thresholds exactly your way.';
+
+  @override
+  String get plusFeatureMulti => 'Several triggers at once';
+
+  @override
+  String get plusFeatureWifiNfc => 'Wi‑Fi and the NFC door tag';
+
+  @override
+  String get plusFeatureDays => 'Choose which days it works';
+
+  @override
+  String get plusFeatureSilent => 'Vibrate or ring when silent';
+
+  @override
+  String get plusFeatureHistory => 'History and stats';
+
+  @override
+  String get plusOnce => 'One-time payment, no subscription. No ads.';
+
+  @override
+  String plusBuy(String price) {
+    return 'Lifetime · $price';
+  }
+
+  @override
+  String get plusBuyNoPrice => 'Get Plus';
+
+  @override
+  String get plusRestore => 'Restore purchase';
+
+  @override
+  String get plusUnavailable =>
+      'Can’t reach Google Play right now. Try again shortly.';
+
+  @override
+  String get plusPending => 'Waiting for payment…';
+
+  @override
+  String get plusThanks => 'Thank you! Plus is yours.';
+
+  @override
+  String get plusOwned => 'You have Plus';
+
+  @override
+  String plusTrialLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Trial: $days days left',
+      one: 'Trial: 1 day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plusFree => 'Free version';
+
+  @override
+  String plusTrialNote(int days) {
+    return 'All Plus features are on for the first $days days.';
+  }
+
+  @override
+  String get plusMultiHint => 'Several triggers, Wi‑Fi and NFC come with Plus.';
+
+  @override
+  String plusTrialEnding(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Last $days days of your Plus trial',
+      one: 'Last day of your Plus trial',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plusTrialEndingBody => 'After that, each mode keeps one trigger.';
+
+  @override
+  String get plusHistoryTitle => 'History comes with Plus';
+
+  @override
+  String get plusHistoryBody =>
+      'See which evenings and mornings you checked, when, and your average.';
+
+  @override
+  String get seePlus => 'See Plus';
 }

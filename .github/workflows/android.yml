@@ -78,6 +78,14 @@ jobs:
           } > android/key.properties
           echo "signed=true" >> "$GITHUB_OUTPUT"
       - run: flutter build apk --release --build-number=${{ github.run_number }}
+      # Play'in veri güvenliği formu bu listeye dayanıyor; değişirse fark edilsin.
+      - name: APK izinleri
+        run: |
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT2" dump permissions build/app/outputs/flutter-apk/app-release.apk | tee permissions.txt
+          if grep -q "android.permission.INTERNET" permissions.txt; then
+            echo "::warning::APK internet izni içeriyor; docs/play/console-formlari.md ve gizlilik politikası güncellenmeli."
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: esik-${{ github.run_number }}-apk

@@ -165,7 +165,10 @@ void main() {
     });
 
     test('izin günü geçmişte atlandı sayılmaz', () async {
-      SharedPreferences.setMockInitialValues({'installed_on': '2026-10-01'});
+      SharedPreferences.setMockInitialValues({
+        'installed_on': '2026-10-01',
+        'plus_owned': true,
+      });
       prefs = await SharedPreferences.getInstance();
       final c = container();
       c

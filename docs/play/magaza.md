@@ -44,6 +44,9 @@ Telefon sessizdeyken bile titreşimle ya da Eşik'in kendi sesiyle haber vermesi
 GEÇMİŞ
 Son iki haftada hangi akşam ve sabah kontrolü yaptığını, hangilerini yedek bildirimle tamamladığını görürsün.
 
+EŞİK PLUS
+İlk 15 gün her şey açık. Sonra her modda bir tetikleyiciyle ücretsiz devam edebilir ya da tek seferlik ödemeyle Eşik Plus'ı alabilirsin: birden fazla tetikleyici, Wi‑Fi ve NFC, gün seçimi, sessizde titreşim ve geçmiş. Abonelik yok.
+
 GİZLİLİK
 Eşik'in internet izni yok. Listelerin, ayarların ve geçmişin yalnızca telefonunda durur; hiçbir veri toplanmaz, gönderilmez, paylaşılmaz. Reklam yok, hesap yok.
 ```

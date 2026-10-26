@@ -14,6 +14,8 @@ import '../../platform/native_bridge.dart';
 import '../setup/setup_health.dart';
 import 'arc_range_picker.dart';
 import '../../l10n/texts.dart';
+import '../../data/plus.dart';
+import '../plus/plus_sheet.dart';
 
 /// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
 /// Her değişiklik anında kaydedilir; yedek alarm da hemen yeniden kurulur.
@@ -35,7 +37,17 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     '/kurulum?mod=${_mode == DayMode.evening ? 'aksam' : 'sabah'}',
   );
 
-  void _toggleKind(TriggerConfig c, TriggerKind kind) {
+  void _toggleKind(TriggerConfig c, TriggerKind kind, {required bool plus}) {
+    if (!plus) {
+      // Ücretsiz sürümde tek ve ücretsiz bir tetikleyici: dokunulan seçilir.
+      if (kind.plusOnly) {
+        showPlusSheet(context);
+        return;
+      }
+      HapticFeedback.selectionClick();
+      _update(c.copyWith(kinds: [kind]));
+      return;
+    }
     final next = c.toggle(kind);
     if (identical(next, c)) {
       // Son tetikleyici kaldırılamaz.
@@ -93,7 +105,10 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = _mode == DayMode.evening;
+    final plus = ref.watch(plusProvider).active;
+    // Asıl seçim saklanır; Plus yoksa geçerli olan gösterilir.
     final c = ref.watch(triggerConfigProvider)[_mode]!;
+    final shown = c.effective(plus: plus);
     final issueCount = ref.watch(setupIssuesProvider)?[_mode]?.length ?? 0;
     // "Hiçbiri olmazsa {saat} hatırlat": saat altı çizili, ortasından böl.
     final backupParts = l10n.backupRow('\u0000').split('\u0000');
@@ -114,6 +129,8 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                   icon: evening ? EsikIcon.moon : EsikIcon.sun,
                 ),
               ),
+              const SizedBox(height: 12),
+              const _PlusCard(),
               const SizedBox(height: 14),
               ModeSegment(
                 value: _mode,
@@ -200,8 +217,11 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                   for (final kind in TriggerKind.forMode(_mode))
                     _TriggerTile(
                       kind: kind,
-                      selected: c.kinds.contains(kind),
-                      onTap: kind.supported ? () => _toggleKind(c, kind) : null,
+                      selected: shown.kinds.contains(kind),
+                      locked: !plus && kind.plusOnly,
+                      onTap: kind.supported
+                          ? () => _toggleKind(c, kind, plus: plus)
+                          : null,
                     ),
                 ],
               ),
@@ -209,7 +229,11 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Text(
-                  c.kinds.length > 1 ? l10n.firstOneWins : l10n.pickSeveral,
+                  !plus
+                      ? l10n.plusMultiHint
+                      : c.kinds.length > 1
+                      ? l10n.firstOneWins
+                      : l10n.pickSeveral,
                   style: t.labelSmall?.copyWith(
                     fontSize: 12,
                     color: p.textFaint,
@@ -219,12 +243,18 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: DotLabel(l10n.whichDays),
+                child: DotLabel(
+                  plus ? l10n.whichDays : '${l10n.whichDays} · Plus',
+                ),
               ),
               const SizedBox(height: 10),
               _DayPicker(
-                days: c.days,
+                days: shown.days,
                 onToggle: (d) {
+                  if (!plus) {
+                    showPlusSheet(context);
+                    return;
+                  }
                   final next = c.toggleDay(d);
                   if (identical(next, c)) {
                     HapticFeedback.heavyImpact();
@@ -353,11 +383,15 @@ class _TriggerTile extends StatelessWidget {
   const _TriggerTile({
     required this.kind,
     required this.selected,
+    this.locked = false,
     required this.onTap,
   });
 
   final TriggerKind kind;
   final bool selected;
+
+  /// Plus'a özel ve Plus yok: "Plus" yazar, dokununca Plus sayfası açılır.
+  final bool locked;
 
   /// Henüz desteklenmeyen tetikleyicide null: kart soluk ve "Yakında" yazar.
   final VoidCallback? onTap;
@@ -405,6 +439,8 @@ class _TriggerTile extends StatelessWidget {
                     Text(
                       soon
                           ? l10n.comingSoon
+                          : locked
+                          ? 'Plus'
                           : selected
                           ? l10n.selected
                           : kind.subtitle(l10n),
@@ -480,6 +516,57 @@ class _DayPicker extends StatelessWidget {
   }
 }
 
+/// Plus durumu: deneme günleri, ücretsiz sürüm ya da satın alındı.
+class _PlusCard extends ConsumerWidget {
+  const _PlusCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    final plus = ref.watch(plusProvider);
+    final status = plus.owned
+        ? l10n.plusOwned
+        : plus.inTrial
+        ? l10n.plusTrialLeft(plus.trialDaysLeft)
+        : l10n.plusFree;
+    return SurfaceCard(
+      radius: 26,
+      highlighted: !plus.owned,
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+      onTap: () => showPlusSheet(context),
+      child: Row(
+        children: [
+          IconCircle(
+            icon: plus.owned ? EsikIcon.check : EsikIcon.door,
+            size: 36,
+            active: true,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.plusName, style: t.labelLarge),
+                Text(
+                  status,
+                  style: t.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: p.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (!plus.owned)
+            EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
+        ],
+      ),
+    );
+  }
+}
+
 /// Uygulamanın dili: telefonunki ya da seçilen.
 class _LanguageCard extends ConsumerWidget {
   const _LanguageCard();
@@ -534,7 +621,8 @@ class _SilentAlertCard extends ConsumerWidget {
     final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final value = ref.watch(silentAlertProvider);
+    final value = ref.watch(effectiveSilentAlertProvider);
+    final plus = ref.watch(plusProvider).active;
     final muted =
         value == SilentAlert.ring &&
         ref.watch(setupHealthProvider).value?.alarmVolume == 0;
@@ -557,7 +645,9 @@ class _SilentAlertCard extends ConsumerWidget {
             value: value,
             label: (a) => a.label(l10n),
             icon: (a) => a.icon,
-            onChanged: ref.read(silentAlertProvider.notifier).set,
+            onChanged: (v) => !plus && v != SilentAlert.quiet
+                ? showPlusSheet(context)
+                : ref.read(silentAlertProvider.notifier).set(v),
           ),
           const SizedBox(height: 10),
           Text(
@@ -632,7 +722,7 @@ class _StatusLine extends ConsumerWidget {
     final l10n = context.l10n;
     final p = context.palette;
     final status = ref.watch(thresholdStatusProvider).value?[mode];
-    final kinds = ref.watch(triggerConfigProvider)[mode]!.kinds;
+    final kinds = ref.watch(effectiveTriggerConfigProvider)[mode]!.kinds;
     // Android kanalı yoksa (testler) satır gösterilmez.
     if (status == null) return const SizedBox.shrink();
     final now = ref.watch(clockProvider)();

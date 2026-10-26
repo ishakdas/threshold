@@ -1072,4 +1072,100 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get languageSystem => 'Sistema';
+
+  @override
+  String get plusName => 'Eşik Plus';
+
+  @override
+  String get plusTagline => 'Configura tus umbrales a tu manera.';
+
+  @override
+  String get plusFeatureMulti => 'Varios disparadores a la vez';
+
+  @override
+  String get plusFeatureWifiNfc => 'Wi‑Fi y la etiqueta NFC de la puerta';
+
+  @override
+  String get plusFeatureDays => 'Elegir qué días funciona';
+
+  @override
+  String get plusFeatureSilent => 'Vibrar o sonar en silencio';
+
+  @override
+  String get plusFeatureHistory => 'Historial y estadísticas';
+
+  @override
+  String get plusOnce => 'Pago único, sin suscripción. Sin anuncios.';
+
+  @override
+  String plusBuy(String price) {
+    return 'De por vida · $price';
+  }
+
+  @override
+  String get plusBuyNoPrice => 'Obtener Plus';
+
+  @override
+  String get plusRestore => 'Restaurar compra';
+
+  @override
+  String get plusUnavailable =>
+      'No se puede conectar con Google Play ahora. Inténtalo en un rato.';
+
+  @override
+  String get plusPending => 'Esperando el pago…';
+
+  @override
+  String get plusThanks => '¡Gracias! Ya tienes Plus.';
+
+  @override
+  String get plusOwned => 'Tienes Plus';
+
+  @override
+  String plusTrialLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Prueba: quedan $days días',
+      one: 'Prueba: queda 1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plusFree => 'Versión gratuita';
+
+  @override
+  String plusTrialNote(int days) {
+    return 'Todas las funciones Plus están activas los primeros $days días.';
+  }
+
+  @override
+  String get plusMultiHint =>
+      'Varios disparadores, Wi‑Fi y NFC vienen con Plus.';
+
+  @override
+  String plusTrialEnding(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Últimos $days días de tu prueba Plus',
+      one: 'Último día de tu prueba Plus',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get plusTrialEndingBody =>
+      'Después, cada modo sigue con un disparador.';
+
+  @override
+  String get plusHistoryTitle => 'El historial viene con Plus';
+
+  @override
+  String get plusHistoryBody =>
+      'Mira qué noches y mañanas comprobaste, a qué hora y tu media.';
+
+  @override
+  String get seePlus => 'Ver Plus';
 }

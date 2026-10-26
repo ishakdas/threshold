@@ -49,5 +49,5 @@ assets/
 4. **Bildirimler** — bildirimdeki "Hepsi tamam", yedek saat, deneme bildirimi ✅
 5. **Tetikleyiciler** — şarja takınca, sessize alınca / sessizden çıkarınca, alarm kapanınca, Wi‑Fi'dan çıkınca, kapıdaki NFC etiketi ✅; şarjdan çıkarma, uyku/uçak modu ve uygulama kapanınca sonra
 6. **İzin rehberi** — telefonun gerçek durumuna bakan kurulum: bildirim, pil kısıtlaması, NFC, alarm; eksikler Bugün ekranında ✅
-7. **Play Store** — dahili test kanalı
+7. **Play Store** — Eşik Plus (15 gün deneme, ömürlük tek seferlik satın alma), dahili test kanalı
 8. **iOS** — Kısayollar entegrasyonu

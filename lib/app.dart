@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/day_mode.dart';
 import 'data/app_state.dart';
+import 'data/plus.dart';
 import 'l10n/app_localizations.dart';
+import 'platform/billing.dart';
 import 'platform/native_bridge.dart';
 import 'router.dart';
 import 'theme/esik_theme.dart';
@@ -31,6 +33,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     _bridge.listen(onOpenRoute: _openRoute, onDataChanged: _reloadData);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       unawaited(_reschedule());
+      unawaited(ref.read(plusBillingProvider.notifier).start());
       final route = await _bridge.takeLaunchRoute();
       if (route != null) _openRoute(route);
     });
@@ -65,6 +68,8 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     // Eşik ayarı değişince, ayar diske yazıldıktan sonra Android'deki yedek
     // alarmları ve tetikleyici işlerini yeniden kur.
     ref.listen(triggerConfigProvider, (_, _) => _reschedule());
+    // Plus açılınca ya da kapanınca Android tetikleyicileri buna göre kurulur.
+    ref.listen(plusProvider.select((p) => p.active), (_, _) => _reschedule());
     final mode = ref.watch(dayModeProvider);
     return MaterialApp.router(
       title: 'Eşik',

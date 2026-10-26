@@ -11,6 +11,7 @@ import '../l10n/app_localizations.dart';
 import '../ui/esik_icons.dart';
 import 'models.dart';
 import 'store.dart';
+import 'plus.dart';
 
 /// main() içinde gerçek örnekle override edilir.
 final sharedPreferencesProvider = Provider<SharedPreferences>(
@@ -407,7 +408,7 @@ final historyProvider = Provider<List<DayLog>>((ref) {
   final today = ref.watch(todayProvider);
   final installed = ref.watch(installDayProvider);
   final log = ref.watch(checkLogProvider);
-  final configs = ref.watch(triggerConfigProvider);
+  final configs = ref.watch(effectiveTriggerConfigProvider);
 
   (CheckOutcome, TimeOfDay?) outcome(DateTime day, DayMode mode) {
     if (day.isBefore(installed)) return (CheckOutcome.notTracked, null);

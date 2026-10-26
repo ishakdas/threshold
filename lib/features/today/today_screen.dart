@@ -15,6 +15,8 @@ import '../../ui/esik_logo.dart';
 import '../../ui/threshold_door.dart';
 import 'day_strip.dart';
 import '../../l10n/texts.dart';
+import '../../data/plus.dart';
+import '../plus/plus_sheet.dart';
 
 /// Tek ana ekran: üstte gün şeridi, ortada şu anki eşiğin büyük kartı,
 /// altta diğer eşiğin özeti.
@@ -56,6 +58,11 @@ class TodayScreen extends ConsumerWidget {
             // Eksik bir izin ya da ayar varsa eşik haber veremeyebilir.
             if (_SetupCard.issueMode(ref, mode) case final issueMode?) ...[
               _SetupCard(mode: issueMode),
+              const SizedBox(height: 10),
+            ] else if (ref.watch(plusProvider)
+                case PlusState(inTrial: true, :final trialDaysLeft)
+                when trialDaysLeft <= 3) ...[
+              _TrialCard(daysLeft: trialDaysLeft),
               const SizedBox(height: 10),
             ],
             _ThresholdCard(mode: mode),
@@ -104,7 +111,7 @@ class _ThresholdCard extends ConsumerWidget {
     final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final config = ref.watch(triggerConfigProvider)[mode]!;
+    final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
     final items = ref.watch(checklistProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final evening = mode == DayMode.evening;
@@ -226,7 +233,7 @@ class _SummaryCard extends ConsumerWidget {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = mode == DayMode.evening;
-    final config = ref.watch(triggerConfigProvider)[mode]!;
+    final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
     final items = ref.watch(checklistProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final history = ref.watch(historyProvider);
@@ -415,6 +422,48 @@ class _ModeChip extends StatelessWidget {
           label: evening ? l10n.modeEvening : l10n.modeMorning,
           icon: evening ? EsikIcon.moon : EsikIcon.sun,
         ),
+      ),
+    );
+  }
+}
+
+/// Plus denemesinin son günleri: ne değişeceğini söyler, Plus'a götürür.
+class _TrialCard extends StatelessWidget {
+  const _TrialCard({required this.daysLeft});
+  final int daysLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final l10n = context.l10n;
+    return SurfaceCard(
+      highlighted: true,
+      radius: 24,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      onTap: () => showPlusSheet(context),
+      child: Row(
+        children: [
+          const IconCircle(icon: EsikIcon.clock, size: 40, active: true),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.plusTrialEnding(daysLeft), style: t.labelLarge),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.plusTrialEndingBody,
+                  style: t.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: p.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
+        ],
       ),
     );
   }

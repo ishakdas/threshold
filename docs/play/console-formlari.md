@@ -4,6 +4,26 @@ Play Console → **Politika → Uygulama içeriği** altındaki formlar için.
 Cevaplar uygulamanın bugünkü hâline göredir; yeni bir izin ya da ağ
 bağlantısı eklenirse güncellenmeli.
 
+## Uygulama içi ürün: Eşik Plus
+
+Play Console → **Para kazanma → Ürünler → Uygulama içi ürünler → Ürün oluştur**
+
+| Alan | Değer |
+|---|---|
+| Ürün kimliği | `esik_plus` (uygulamadaki `plusProductId` ile aynı olmalı, sonradan değişmez) |
+| Ad | Eşik Plus |
+| Açıklama | Birden fazla tetikleyici, Wi‑Fi ve NFC, gün seçimi, sessizde titret/çal, geçmiş. Tek seferlik. |
+| Fiyat | Türkiye: **49 TL**. Diğer ülkeler için Play'in otomatik çevirisi ya da elle (ör. 2,99 $) |
+| Tür | Tek seferlik, tüketilmeyen (non-consumable) |
+
+Ürün, uygulamanın Play'e yüklenmiş bir sürümü olmadan oluşturulamaz; önce
+dahili teste bir AAB yüklenir. Test için Play Console → **Ayarlar → Lisans
+testi** altına test hesabının e-postası eklenir; bu hesaplar ödeme yapmadan
+satın alabilir.
+
+Deneme süresi Play'de değil, uygulamada: ilk açılıştan itibaren 15 gün
+(`plusTrialDays`, Android'de `EsikData.TRIAL_DAYS`).
+
 ## Gizlilik politikası
 
 URL: `docs/gizlilik.md` yayımlandığı adres (GitHub Pages ya da benzeri).
@@ -40,6 +60,15 @@ altını seçmemek gerekir; Aile Politikası'nın ek koşulları devreye girer.
 | Soru | Cevap |
 |---|---|
 | Uygulamanız gerekli kullanıcı veri türlerinden herhangi birini topluyor veya paylaşıyor mu? | **Hayır** |
+
+Satın alma Google Play üzerinden yapılır; ödeme bilgisi uygulamaya hiç
+gelmez. Uygulama yalnızca Play'den "Plus satın alındı mı" bilgisini sorar ve
+cihazda saklar; bu bilgi uygulamadan dışarı çıkmaz. Bunun "Satın alma
+geçmişi" beyanı gerektirip gerektirmediği, formu doldururken Play Console'daki
+güncel açıklamaya göre kontrol edilmeli.
+
+CI her derlemede APK'nın izin listesini yazdırır ("APK izinleri" adımı);
+internet izni girerse uyarı verir.
 
 Gerekçe: Sürüm APK'sında `INTERNET` izni yok (yalnızca debug/profile
 manifest'lerinde var). Listeler, ayarlar ve geçmiş yalnızca cihazda,

@@ -685,5 +685,57 @@
   "copyError": "Hatayı kopyala",
   "retry": "Tekrar dene",
   "language": "Dil",
-  "languageSystem": "Sistem"
+  "languageSystem": "Sistem",
+  "plusName": "Eşik Plus",
+  "plusTagline": "Eşiklerini tam sana göre kur.",
+  "plusFeatureMulti": "Birden fazla tetikleyici",
+  "plusFeatureWifiNfc": "Wi‑Fi ve kapıdaki NFC etiketi",
+  "plusFeatureDays": "Çalışacağı günleri seçme",
+  "plusFeatureSilent": "Sessizdeyken titret ya da çal",
+  "plusFeatureHistory": "Geçmiş ve istatistikler",
+  "plusOnce": "Tek seferlik ödeme, abonelik yok. Reklam yok.",
+  "plusBuy": "Ömür boyu · {price}",
+  "@plusBuy": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "plusBuyNoPrice": "Plus’ı al",
+  "plusRestore": "Satın alımı geri yükle",
+  "plusUnavailable": "Google Play’e şu an ulaşılamıyor. Biraz sonra tekrar dene.",
+  "plusPending": "Ödeme bekleniyor…",
+  "plusThanks": "Teşekkürler! Plus artık sende.",
+  "plusOwned": "Plus sende",
+  "plusTrialLeft": "Deneme: {days} gün kaldı",
+  "@plusTrialLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "plusFree": "Ücretsiz sürüm",
+  "plusTrialNote": "İlk {days} gün bütün Plus özellikleri açık.",
+  "@plusTrialNote": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "plusMultiHint": "Birden fazla tetikleyici ve Wi‑Fi, NFC Plus ile.",
+  "plusTrialEnding": "Plus denemesinin son {days} günü",
+  "@plusTrialEnding": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "plusTrialEndingBody": "Sonra her modda tek tetikleyiciyle devam eder.",
+  "plusHistoryTitle": "Geçmiş Plus ile",
+  "plusHistoryBody": "Hangi akşam ve sabah kontrol yaptığını, saatlerini ve ortalamanı gör.",
+  "seePlus": "Plus’a bak"
 }

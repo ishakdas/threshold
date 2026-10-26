@@ -108,6 +108,7 @@ Future<void> _boot(WidgetTester t, DateTime now) async {
   SharedPreferences.setMockInitialValues({
     'onboarding_seen': true,
     'installed_on': '2026-09-01',
+    'plus_owned': true,
     EsikStore.logKey: jsonEncode(_sampleLog(thresholdDay(now))),
     EsikStore.triggersKey: jsonEncode({
       'evening': evening.toJson(),

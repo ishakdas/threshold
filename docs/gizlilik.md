@@ -11,6 +11,9 @@ anlatır.
 - Eşik **hiçbir kişisel veri toplamaz, göndermez ya da paylaşmaz.**
 - Uygulamanın **internet izni yoktur**; telefonundan dışarı veri çıkamaz.
 - Hesap, reklam, analitik ya da üçüncü taraf takip aracı yoktur.
+- Eşik Plus satın alımı Google Play üzerinden yapılır; ödeme bilgilerin
+  Eşik'e hiç ulaşmaz. Eşik yalnızca Play'den Plus'ın satın alınıp
+  alınmadığını öğrenir ve bunu telefonunda saklar.
 
 ## Telefonunda saklananlar
 
@@ -59,6 +62,9 @@ Eşik reminds you of your evening and morning checklists at the right moment.
 - Eşik **does not collect, transmit or share any personal data.**
 - The app has **no internet permission**; no data can leave your phone.
 - There are no accounts, ads, analytics or third‑party trackers.
+- Eşik Plus is purchased through Google Play; your payment details never
+  reach Eşik. The app only asks Google Play whether Plus was purchased and
+  stores that on your phone.
 
 Your checklists, settings and check history are stored only on your phone,
 in the app's private storage, and are deleted when you uninstall the app.

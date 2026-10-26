@@ -95,7 +95,35 @@ object EsikData {
         fallback
     }
 
+    /** Plus olmadan kullanılabilen tetikleyiciler (Dart'taki TriggerKind.free). */
+    private val FREE_KINDS = setOf("charging", "silenced", "alarmStopped", "unsilenced")
+
+    /** İlk açılıştan itibaren Plus'ın açık olduğu gün sayısı (Dart'taki plusTrialDays). */
+    private const val TRIAL_DAYS = 15L
+
+    /** Eşik Plus açık mı: satın alındı ya da deneme sürüyor (Dart'taki PlusState.active). */
+    fun plusActive(c: Context): Boolean {
+        if (prefs(c).getBoolean(PREFIX + "plus_owned", false)) return true
+        val installed = prefs(c).getString(PREFIX + "installed_on", null) ?: return true
+        return try {
+            thresholdDay() < LocalDate.parse(installed).plusDays(TRIAL_DAYS)
+        } catch (e: Exception) {
+            true
+        }
+    }
+
+    /**
+     * Geçerli eşik ayarı. Plus yoksa tek ve ücretsiz bir tetikleyici, her gün
+     * (Dart'taki TriggerConfig.effective); kullanıcının asıl seçimi diskte kalır.
+     */
     fun config(c: Context, mode: Mode): TriggerConfig {
+        val raw = rawConfig(c, mode)
+        if (plusActive(c)) return raw
+        val kind = raw.kinds.firstOrNull { it in FREE_KINDS } ?: defaultConfigs.getValue(mode).kinds.first()
+        return raw.copy(kinds = listOf(kind), days = ALL_DAYS)
+    }
+
+    private fun rawConfig(c: Context, mode: Mode): TriggerConfig {
         val d = defaultConfigs.getValue(mode)
         val o = readJson(c, TRIGGERS)?.optJSONObject(mode.key) ?: return d
         // Eski kayıtlarda tek "kind" alanı vardı.
@@ -117,7 +145,8 @@ object EsikData {
     fun language(c: Context): String = prefs(c).getString(PREFIX + "language", null) ?: "system"
 
     /** Sessizdeyken bildirim: "quiet", "vibrate" ya da "ring" (Dart'taki SilentAlert). */
-    fun silentAlert(c: Context): String = prefs(c).getString(PREFIX + "silent_alert", null) ?: "quiet"
+    fun silentAlert(c: Context): String =
+        if (plusActive(c)) prefs(c).getString(PREFIX + "silent_alert", null) ?: "quiet" else "quiet"
 
     fun isComplete(c: Context, day: LocalDate, mode: Mode): Boolean =
         readJson(c, LOG)?.optJSONObject(day.toString())?.optJSONObject(mode.key)

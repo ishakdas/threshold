@@ -1923,6 +1923,150 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Sistem'**
   String get languageSystem;
+
+  /// No description provided for @plusName.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşik Plus'**
+  String get plusName;
+
+  /// No description provided for @plusTagline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşiklerini tam sana göre kur.'**
+  String get plusTagline;
+
+  /// No description provided for @plusFeatureMulti.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birden fazla tetikleyici'**
+  String get plusFeatureMulti;
+
+  /// No description provided for @plusFeatureWifiNfc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Wi‑Fi ve kapıdaki NFC etiketi'**
+  String get plusFeatureWifiNfc;
+
+  /// No description provided for @plusFeatureDays.
+  ///
+  /// In tr, this message translates to:
+  /// **'Çalışacağı günleri seçme'**
+  String get plusFeatureDays;
+
+  /// No description provided for @plusFeatureSilent.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sessizdeyken titret ya da çal'**
+  String get plusFeatureSilent;
+
+  /// No description provided for @plusFeatureHistory.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçmiş ve istatistikler'**
+  String get plusFeatureHistory;
+
+  /// No description provided for @plusOnce.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tek seferlik ödeme, abonelik yok. Reklam yok.'**
+  String get plusOnce;
+
+  /// No description provided for @plusBuy.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ömür boyu · {price}'**
+  String plusBuy(String price);
+
+  /// No description provided for @plusBuyNoPrice.
+  ///
+  /// In tr, this message translates to:
+  /// **'Plus’ı al'**
+  String get plusBuyNoPrice;
+
+  /// No description provided for @plusRestore.
+  ///
+  /// In tr, this message translates to:
+  /// **'Satın alımı geri yükle'**
+  String get plusRestore;
+
+  /// No description provided for @plusUnavailable.
+  ///
+  /// In tr, this message translates to:
+  /// **'Google Play’e şu an ulaşılamıyor. Biraz sonra tekrar dene.'**
+  String get plusUnavailable;
+
+  /// No description provided for @plusPending.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ödeme bekleniyor…'**
+  String get plusPending;
+
+  /// No description provided for @plusThanks.
+  ///
+  /// In tr, this message translates to:
+  /// **'Teşekkürler! Plus artık sende.'**
+  String get plusThanks;
+
+  /// No description provided for @plusOwned.
+  ///
+  /// In tr, this message translates to:
+  /// **'Plus sende'**
+  String get plusOwned;
+
+  /// No description provided for @plusTrialLeft.
+  ///
+  /// In tr, this message translates to:
+  /// **'Deneme: {days} gün kaldı'**
+  String plusTrialLeft(int days);
+
+  /// No description provided for @plusFree.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ücretsiz sürüm'**
+  String get plusFree;
+
+  /// No description provided for @plusTrialNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlk {days} gün bütün Plus özellikleri açık.'**
+  String plusTrialNote(int days);
+
+  /// No description provided for @plusMultiHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Birden fazla tetikleyici ve Wi‑Fi, NFC Plus ile.'**
+  String get plusMultiHint;
+
+  /// No description provided for @plusTrialEnding.
+  ///
+  /// In tr, this message translates to:
+  /// **'Plus denemesinin son {days} günü'**
+  String plusTrialEnding(int days);
+
+  /// No description provided for @plusTrialEndingBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sonra her modda tek tetikleyiciyle devam eder.'**
+  String get plusTrialEndingBody;
+
+  /// No description provided for @plusHistoryTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Geçmiş Plus ile'**
+  String get plusHistoryTitle;
+
+  /// No description provided for @plusHistoryBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi akşam ve sabah kontrol yaptığını, saatlerini ve ortalamanı gör.'**
+  String get plusHistoryBody;
+
+  /// No description provided for @seePlus.
+  ///
+  /// In tr, this message translates to:
+  /// **'Plus’a bak'**
+  String get seePlus;
 }
 
 class _AppLocalizationsDelegate

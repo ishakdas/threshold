@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/day_mode.dart';
-import '../../data/app_state.dart';
 import '../../data/models.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
@@ -12,6 +11,7 @@ import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../platform/native_bridge.dart';
 import '../../l10n/texts.dart';
+import '../../data/plus.dart';
 
 /// Adımın ana butonunun ne yapacağı.
 enum SetupStepKind { notifications, battery, trigger, test }
@@ -364,7 +364,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
-    final kinds = ref.watch(triggerConfigProvider)[mode]!.kinds;
+    final kinds = ref.watch(effectiveTriggerConfigProvider)[mode]!.kinds;
     final steps = setupStepsFor(l10n, kinds);
     final health = ref.watch(setupHealthProvider).value;
     if (health != null && !_positioned) {
