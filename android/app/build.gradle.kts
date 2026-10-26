@@ -13,10 +13,29 @@ val uploadKey = Properties().apply {
     if (file.exists()) file.inputStream().use { load(it) }
 }
 
+// flutter build --dart-define değerleri (Flutter bunları base64 olarak geçirir).
+// Test APK'sı ESIK_TRIAL_MINUTES ile kısa deneme süresiyle derlenir.
+val dartDefines: Map<String, String> =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.mapNotNull { encoded ->
+            runCatching { String(java.util.Base64.getDecoder().decode(encoded)) }
+                .getOrNull()
+                ?.split("=", limit = 2)
+                ?.takeIf { it.size == 2 }
+                ?.let { it[0] to it[1] }
+        }
+        ?.toMap()
+        ?: emptyMap()
+
 android {
     namespace = "com.ishakdas.threshold"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -33,6 +52,8 @@ android {
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
         // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
         // flag during build.
+        // 0: normal (15 gün). Test APK'sında dakika cinsinden deneme süresi.
+        buildConfigField("int", "TRIAL_MINUTES", dartDefines["ESIK_TRIAL_MINUTES"]?.toIntOrNull()?.toString() ?: "0")
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

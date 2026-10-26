@@ -36,6 +36,7 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
       - run: flutter test
+      - run: flutter test --dart-define=ESIK_TRIAL_MINUTES=5 test/plus_trial_minutes_test.dart
 
   apk:
     name: APK
@@ -107,3 +108,28 @@ jobs:
           name: esik-${{ github.run_number }}-aab
           path: build/app/outputs/bundle/release/app-release.aab
           retention-days: 90
+
+  test-apk:
+    name: Test APK (5 dk deneme)
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      # Yalnızca telefonda denemek için: Plus denemesi 15 gün yerine 5 dakika,
+      # Ayarlar'daki Plus kartı başlangıcı dakikasıyla gösterir. Play'e gitmez.
+      - run: flutter build apk --release --build-number=${{ github.run_number }} --dart-define=ESIK_TRIAL_MINUTES=5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: esik-${{ github.run_number }}-test-5dk-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14

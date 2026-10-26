@@ -526,8 +526,14 @@ class _PlusCard extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final l10n = context.l10n;
     final plus = ref.watch(plusProvider);
+    final testStart = plus.testStart;
     final status = plus.owned
         ? l10n.plusOwned
+        : testStart != null
+        // Yalnızca test APK'sı: başlangıç dakikasıyla, kalan süre dakikayla.
+        ? 'TEST · başlangıç ${testStart.day}.${testStart.month} '
+              '${formatTime(TimeOfDay.fromDateTime(testStart))} · '
+              '${plus.inTrial ? '${plus.testMinutesLeft} dk kaldı' : 'deneme bitti'}'
         : plus.inTrial
         ? l10n.plusTrialLeft(plus.trialDaysLeft)
         : l10n.plusFree;

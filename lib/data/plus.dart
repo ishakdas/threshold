@@ -14,6 +14,11 @@ const plusProductId = 'esik_plus';
 /// Android tarafı (EsikData.TRIAL_DAYS) aynı süreyi kullanır.
 const plusTrialDays = 15;
 
+/// Yalnızca test APK'sı: denemeyi gün yerine bu kadar dakika yapar
+/// (`--dart-define=ESIK_TRIAL_MINUTES=5`). Normal sürümde 0. Android tarafı
+/// aynı değeri BuildConfig.TRIAL_MINUTES olarak alır.
+const trialMinutesOverride = int.fromEnvironment('ESIK_TRIAL_MINUTES');
+
 /// Eşik Plus satın alındı mı? Play'den gelen satın almalar burada saklanır;
 /// Android tarafı da bildirimleri buna göre gönderir.
 class PlusOwnedNotifier extends Notifier<bool> {
@@ -38,12 +43,21 @@ final plusOwnedProvider = NotifierProvider<PlusOwnedNotifier, bool>(
 );
 
 class PlusState {
-  const PlusState({required this.owned, required this.trialDaysLeft});
+  const PlusState({
+    required this.owned,
+    required this.trialDaysLeft,
+    this.testStart,
+    this.testMinutesLeft = 0,
+  });
 
   final bool owned;
 
   /// Denemenin kalan günü (bugün dahil); bittiyse 0.
   final int trialDaysLeft;
+
+  /// Yalnızca test APK'sı: denemenin başladığı an ve kalan dakika.
+  final DateTime? testStart;
+  final int testMinutesLeft;
 
   bool get inTrial => !owned && trialDaysLeft > 0;
 
@@ -65,6 +79,25 @@ final trialStartProvider = Provider<DateTime>((ref) {
 });
 
 final plusProvider = Provider<PlusState>((ref) {
+  if (trialMinutesOverride > 0) {
+    ref.watch(clockTickProvider);
+    final ms = ref
+        .watch(sharedPreferencesProvider)
+        .getInt(EsikStore.trialStartKey);
+    final now = ref.watch(clockProvider)();
+    final start = ms == null ? now : DateTime.fromMillisecondsSinceEpoch(ms);
+    final left = start
+        .add(const Duration(minutes: trialMinutesOverride))
+        .difference(now);
+    // Yukarı yuvarla: 2 dk 10 sn kaldıysa "3 dk kaldı".
+    final minutes = left.isNegative ? 0 : (left.inSeconds + 59) ~/ 60;
+    return PlusState(
+      owned: ref.watch(plusOwnedProvider),
+      trialDaysLeft: minutes > 0 ? 1 : 0,
+      testStart: start,
+      testMinutesLeft: minutes,
+    );
+  }
   final installed = ref.watch(trialStartProvider);
   final today = ref.watch(todayProvider);
   final used = today.difference(installed).inDays;

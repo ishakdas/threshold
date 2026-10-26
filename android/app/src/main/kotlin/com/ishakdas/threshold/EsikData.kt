@@ -104,6 +104,10 @@ object EsikData {
     /** Eşik Plus açık mı: satın alındı ya da deneme sürüyor (Dart'taki PlusState.active). */
     fun plusActive(c: Context): Boolean {
         if (prefs(c).getBoolean(PREFIX + "plus_owned", false)) return true
+        // Test APK'sı: deneme dakikayla ölçülür (Dart'taki trialMinutesOverride).
+        if (BuildConfig.TRIAL_MINUTES > 0) {
+            return System.currentTimeMillis() < TrialAnchor.earliest(c) + BuildConfig.TRIAL_MINUTES * 60_000L
+        }
         // Deneme başlangıcı: uygulamanın kaydı ya da (veriler silindiyse)
         // Android'in kurulum zamanı, hangisi eskiyse (TrialAnchor).
         val start = java.time.Instant.ofEpochMilli(TrialAnchor.earliest(c))
