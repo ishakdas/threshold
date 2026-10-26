@@ -1,14 +1,18 @@
 package com.ishakdas.threshold
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioManager
 import android.net.Uri
 import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.provider.AlarmClock
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -53,8 +57,14 @@ class MainActivity : FlutterActivity() {
                     val pm = getSystemService(PowerManager::class.java)
                     result.success(pm.isIgnoringBatteryOptimizations(packageName))
                 }
+                "setupHealth" -> result.success(setupHealth())
+                // Samsung'da en kısa yol: Uygulama bilgileri → Pil → Kısıtlamasız.
                 "openBatterySettings" -> {
-                    openSettings(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    openSettings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, withPackage = true)
+                    result.success(null)
+                }
+                "openClock" -> {
+                    startActivitySafely(Intent(AlarmClock.ACTION_SHOW_ALARMS))
                     result.success(null)
                 }
                 "writeNfcTag" -> writeNfcTag(result)
@@ -129,6 +139,7 @@ class MainActivity : FlutterActivity() {
     private fun finishNfc(outcome: String) {
         val result = nfcResult ?: return
         nfcResult = null
+        if (outcome == "written") TriggerScheduler.setNfcTagWritten(this)
         NfcAdapter.getDefaultAdapter(this)?.let { runCatching { it.disableReaderMode(this) } }
         result.success(outcome)
     }
@@ -170,8 +181,34 @@ class MainActivity : FlutterActivity() {
         permissionResult = null
     }
 
-    private fun openSettings(action: String) {
-        if (!startActivitySafely(Intent(action))) {
+    /** Kurulum rehberi için gerçek durum. Adlar Dart'taki SetupHealth.parse ile aynıdır. */
+    private fun setupHealth(): Map<String, Any?> {
+        val nm = getSystemService(NotificationManager::class.java)
+        val channel = nm.getNotificationChannel(EsikNotifications.CHANNEL_ID)
+        val audio = getSystemService(AudioManager::class.java)
+        val nfc = NfcAdapter.getDefaultAdapter(this)
+        return mapOf(
+            "notificationPermission" to EsikNotifications.hasPermission(this),
+            "notificationsEnabled" to (
+                nm.areNotificationsEnabled() &&
+                    channel?.importance != NotificationManager.IMPORTANCE_NONE
+                ),
+            "battery" to getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(packageName),
+            "nfc" to when {
+                nfc == null -> "unsupported"
+                nfc.isEnabled -> "on"
+                else -> "off"
+            },
+            "nfcTagWritten" to TriggerScheduler.nfcTagWritten(this),
+            "nextAlarm" to getSystemService(AlarmManager::class.java).nextAlarmClock?.triggerTime,
+            "alarmVolume" to audio.getStreamVolume(AudioManager.STREAM_ALARM),
+        )
+    }
+
+    private fun openSettings(action: String, withPackage: Boolean = false) {
+        val intent = Intent(action)
+        if (withPackage) intent.data = Uri.parse("package:$packageName")
+        if (!startActivitySafely(intent)) {
             startActivitySafely(
                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")),
             )

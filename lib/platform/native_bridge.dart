@@ -62,6 +62,12 @@ class NativeBridge {
 
   Future<void> openNfcSettings() => _call<void>('openNfcSettings');
 
+  /// Saat uygulamasının alarm listesi.
+  Future<void> openClock() => _call<void>('openClock');
+
+  Future<SetupHealth?> setupHealth() async =>
+      SetupHealth.parse(await _call<Object?>('setupHealth'));
+
   Future<bool> notificationsGranted() async =>
       await _call<bool>('notificationsGranted') ?? false;
 
@@ -181,6 +187,64 @@ enum TriggerWait {
   none,
 }
 
+enum NfcState { unsupported, off, on }
+
+/// Kurulumun telefondaki gerçek durumu (MainActivity.setupHealth).
+class SetupHealth {
+  const SetupHealth({
+    this.notificationPermission = true,
+    this.notificationsEnabled = true,
+    this.battery = true,
+    this.nfc = NfcState.on,
+    this.nfcTagWritten = false,
+    this.nextAlarm,
+    this.alarmVolume = 1,
+  });
+
+  final bool notificationPermission;
+
+  /// Uygulamanın ve Eşik kanalının bildirimleri telefon ayarlarında açık mı.
+  final bool notificationsEnabled;
+
+  /// Pil optimizasyonundan muaf ("Kısıtlamasız").
+  final bool battery;
+  final NfcState nfc;
+  final bool nfcTagWritten;
+
+  /// Saat uygulamasındaki sıradaki alarm; yoksa null.
+  final DateTime? nextAlarm;
+  final int alarmVolume;
+
+  bool get notifications => notificationPermission && notificationsEnabled;
+
+  static SetupHealth? parse(Object? raw) {
+    if (raw is! Map) return null;
+    return SetupHealth(
+      notificationPermission: raw['notificationPermission'] == true,
+      notificationsEnabled: raw['notificationsEnabled'] == true,
+      battery: raw['battery'] == true,
+      nfc:
+          NfcState.values.where((n) => n.name == raw['nfc']).firstOrNull ??
+          NfcState.unsupported,
+      nfcTagWritten: raw['nfcTagWritten'] == true,
+      nextAlarm: switch (raw['nextAlarm']) {
+        final int ms => DateTime.fromMillisecondsSinceEpoch(ms),
+        _ => null,
+      },
+      alarmVolume: switch (raw['alarmVolume']) {
+        final int v => v,
+        _ => 1,
+      },
+    );
+  }
+}
+
+/// Kurulum durumu; ön plana dönünce yenilenir. Android kanalı yoksa (testler) null.
+final setupHealthProvider = FutureProvider<SetupHealth?>((ref) {
+  ref.watch(clockTickProvider);
+  return ref.watch(nativeBridgeProvider).setupHealth();
+});
+
 /// NFC etiketi yazmanın sonucu (Android'deki NfcTagWriter ile aynı adlar).
 enum NfcWriteResult {
   written,
@@ -212,16 +276,4 @@ final thresholdStatusProvider = FutureProvider<Map<DayMode, ThresholdStatus>?>((
 ) {
   ref.watch(clockTickProvider);
   return ref.watch(nativeBridgeProvider).status();
-});
-
-/// Bildirim izni var mı? Ön plana dönünce yeniden sorulur. Android kanalı
-/// yoksa (testler) null.
-final notificationsGrantedProvider = FutureProvider<bool?>((ref) async {
-  ref.watch(clockTickProvider);
-  final bridge = ref.watch(nativeBridgeProvider);
-  try {
-    return await bridge._channel.invokeMethod<bool>('notificationsGranted');
-  } on MissingPluginException {
-    return null;
-  }
 });

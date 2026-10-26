@@ -11,6 +11,7 @@ import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../platform/native_bridge.dart';
+import '../setup/setup_health.dart';
 import 'arc_range_picker.dart';
 
 /// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
@@ -195,7 +196,10 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const _SilentAlertCard(),
               const SizedBox(height: 16),
               PrimaryPillButton(
-                label: 'Kurulumu kontrol et',
+                label: switch (ref.watch(setupIssuesProvider)?[_mode]?.length) {
+                  null || 0 => 'Kurulumu kontrol et',
+                  final n => 'Kurulumu tamamla · $n eksik',
+                },
                 trailingIcon: EsikIcon.arrowRight,
                 expand: true,
                 onPressed: _openSetup,
@@ -301,6 +305,9 @@ class _SilentAlertCard extends ConsumerWidget {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final value = ref.watch(silentAlertProvider);
+    final muted =
+        value == SilentAlert.ring &&
+        ref.watch(setupHealthProvider).value?.alarmVolume == 0;
     return SurfaceCard(
       radius: 30,
       padding: const EdgeInsets.fromLTRB(18, 14, 12, 12),
@@ -330,12 +337,13 @@ class _SilentAlertCard extends ConsumerWidget {
               SilentAlert.quiet => 'Bildirim telefonun ses ayarına uyar.',
               SilentAlert.vibrate =>
                 'Sessizde ya da Rahatsız Etmeyin açıkken de titreşir.',
+              SilentAlert.ring when muted => 'Alarm sesi kapalı, bu yüzden duyulmaz. Ses tuşlarıyla alarm sesini aç.',
               SilentAlert.ring =>
                 'Sessizde de alarm sesi düzeyinde çalar ve titreşir.',
             },
             style: t.labelMedium?.copyWith(
-              fontWeight: FontWeight.w300,
-              color: p.textMuted,
+              fontWeight: muted ? FontWeight.w400 : FontWeight.w300,
+              color: muted ? p.accent : p.textMuted,
             ),
           ),
         ],
@@ -350,25 +358,12 @@ class _StatusLine extends ConsumerWidget {
   const _StatusLine({required this.mode});
   final DayMode mode;
 
-  static String _when(DateTime at, DateTime now) {
-    final t = TimeOfDay.fromDateTime(at);
-    final d = DateTime(at.year, at.month, at.day);
-    final today = DateTime(now.year, now.month, now.day);
-    final day = switch (d.difference(today).inDays) {
-      0 => 'bugün',
-      1 => 'yarın',
-      -1 => 'dün',
-      _ => '${at.day}.${at.month}',
-    };
-    return '$day ${formatTime(t)}';
-  }
-
   /// "Durum: şarj bekleniyor". Tetikleyicinin gerçekten kurulu olduğunu gösterir.
   static String? _waiting(ThresholdStatus status, DateTime now) {
     final at = status.waitAt;
     // Bekleme henüz başlamadıysa ne zaman başlayacağı.
     final later = at != null && at.isAfter(now.add(const Duration(minutes: 1)))
-        ? '${_when(at, now)} itibarıyla '
+        ? '${formatWhen(at, now)} itibarıyla '
         : '';
     final text = switch (status.wait) {
       null => null,
@@ -377,7 +372,7 @@ class _StatusLine extends ConsumerWidget {
             'şarja takılması bekleniyor',
       TriggerWait.wifi => '${later}Wi‑Fi bağlantısı bekleniyor',
       TriggerWait.leaving => 'Wi‑Fi’dan çıkış bekleniyor',
-      TriggerWait.alarm => 'sıradaki alarm ${_when(at!, now)}',
+      TriggerWait.alarm => 'sıradaki alarm ${formatWhen(at!, now)}',
       TriggerWait.alarmSettling => 'alarm çaldı, kapanması bekleniyor',
       TriggerWait.noAlarm => 'kurulu alarm yok',
       TriggerWait.silence => 'sesin kısılması bekleniyor',
@@ -415,11 +410,11 @@ class _StatusLine extends ConsumerWidget {
     final lines = [
       status.next == null
           ? 'Yedek bildirim kapalı'
-          : 'Sıradaki yedek: ${_when(status.next!, now)}',
+          : 'Sıradaki yedek: ${formatWhen(status.next!, now)}',
       if (status.lastAt != null && status.lastOutcome != null)
-        'Son yedek: ${_when(status.lastAt!, now)} ${status.lastOutcome!.description}',
+        'Son yedek: ${formatWhen(status.lastAt!, now)} ${status.lastOutcome!.description}',
       if (status.triggerAt != null && status.triggerOutcome != null)
-        '${kind.title}: ${_when(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
+        '${kind.title}: ${formatWhen(status.triggerAt!, now)} ${status.triggerOutcome!.description}',
       ?_waiting(status, now),
       ?_hint(kind),
     ];

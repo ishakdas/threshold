@@ -283,6 +283,12 @@ object TriggerScheduler {
         }
     }
 
+    fun nfcTagWritten(c: Context): Boolean = state(c).getBoolean("nfc.written", false)
+
+    fun setNfcTagWritten(c: Context) {
+        state(c).edit().putBoolean("nfc.written", true).apply()
+    }
+
     private fun armedToday(c: Context): Boolean =
         state(c).getString("wifi.armed", null) == EsikData.thresholdDay().toString()
 

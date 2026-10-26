@@ -300,6 +300,19 @@ class DayLog {
 String formatTime(TimeOfDay t) =>
     '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+/// Bir anı bugüne göre yazar: "bugün 14:05", "yarın 07:30", "dün 22:41".
+String formatWhen(DateTime at, DateTime now) {
+  final d = DateTime(at.year, at.month, at.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final day = switch (d.difference(today).inDays) {
+    0 => 'bugün',
+    1 => 'yarın',
+    -1 => 'dün',
+    _ => '${at.day}.${at.month}',
+  };
+  return '$day ${formatTime(TimeOfDay.fromDateTime(at))}';
+}
+
 /// Saati bulunma ekiyle yazar: "22:30’da", "08:15’te", "23:08’de".
 /// Ek, saatin okunuşundaki son sayıya göre seçilir (dakika 00 ise saate göre).
 String timeAt(TimeOfDay t) {

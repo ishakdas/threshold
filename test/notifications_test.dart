@@ -9,6 +9,8 @@ import 'package:threshold/data/models.dart';
 import 'package:threshold/data/store.dart';
 import 'package:threshold/platform/native_bridge.dart';
 
+import 'package:threshold/features/setup/setup_health.dart';
+
 import 'helpers.dart';
 
 const _channel = MethodChannel('esik/native');
@@ -19,6 +21,7 @@ List<MethodCall> fakeNative(
   bool permission = true,
   bool testSent = true,
   String nfc = 'written',
+  Map<String, Object?> Function()? health,
 }) {
   final calls = <MethodCall>[];
   final messenger =
@@ -30,6 +33,7 @@ List<MethodCall> fakeNative(
       'requestNotificationPermission' || 'notificationsGranted' => permission,
       'showTestNotification' => testSent,
       'writeNfcTag' => nfc,
+      'setupHealth' => health?.call(),
       _ => null,
     };
   });
@@ -298,6 +302,72 @@ void main() {
       expect(find.textContaining('NFC kapalı'), findsOneWidget);
       expect(find.text('Adım 3 / 4'), findsOneWidget);
     });
+  });
+
+  group('kurulum durumu', () {
+    Map<String, Object?> healthy({bool battery = true}) => {
+      'notificationPermission': true,
+      'notificationsEnabled': true,
+      'battery': battery,
+      'nfc': 'on',
+      'nfcTagWritten': false,
+      'nextAlarm': DateTime(2026, 10, 21, 7, 30).millisecondsSinceEpoch,
+      'alarmVolume': 5,
+    };
+
+    test('eksikler tetikleyiciye göre hesaplanır', () {
+      final h = SetupHealth.parse({...healthy(), 'nextAlarm': null})!;
+      expect(setupIssues(h, TriggerKind.charging), isEmpty);
+      expect(setupIssues(h, TriggerKind.alarmStopped), [SetupIssue.noAlarm]);
+      expect(setupIssues(h, TriggerKind.nfcTag), [SetupIssue.nfcTag]);
+      final off = SetupHealth.parse({
+        ...healthy(battery: false),
+        'notificationsEnabled': false,
+        'nfc': 'off',
+      })!;
+      expect(setupIssues(off, TriggerKind.nfcTag), [
+        SetupIssue.notifications,
+        SetupIssue.battery,
+        SetupIssue.nfcOff,
+        SetupIssue.nfcTag,
+      ]);
+    });
+
+    testWidgets('Bugün ekranı eksik pil ayarını gösterir', (tester) async {
+      fakeNative(tester, health: () => healthy(battery: false));
+      await pumpApp(tester);
+      expect(find.text('Pil kısıtlaması açık'), findsOneWidget);
+    });
+
+    testWidgets(
+      'rehber ilk eksik adımdan başlar, ayardan dönünce kendisi ilerler',
+      (tester) async {
+        var battery = false;
+        final calls = fakeNative(
+          tester,
+          health: () => healthy(battery: battery),
+        );
+        await pumpApp(tester);
+        GoRouter.of(tester.element(find.text('Eşik'))).push('/kurulum');
+        await tester.pumpAndSettle();
+
+        // Bildirimler zaten açık: rehber pil adımında açılır.
+        expect(find.text('Adım 2 / 3'), findsOneWidget);
+        await tester.tap(find.text('Pil ayarını aç'));
+        await tester.pumpAndSettle();
+        expect(calls.map((c) => c.method), contains('openBatterySettings'));
+        // Ayar değişmeden dönüldü: adımda kalır, atlanabilir.
+        expect(find.text('Adım 2 / 3'), findsOneWidget);
+        expect(find.text('Atla'), findsOneWidget);
+
+        // Kullanıcı Kısıtlamasız'ı seçip uygulamaya döndü.
+        battery = true;
+        final c = ProviderScope.containerOf(tester.element(find.text('Atla')));
+        c.read(clockTickProvider.notifier).refresh();
+        await tester.pumpAndSettle();
+        expect(find.text('Adım 3 / 3'), findsOneWidget);
+      },
+    );
   });
 
   testWidgets('henüz desteklenmeyen tetikleyici seçilemez', (tester) async {

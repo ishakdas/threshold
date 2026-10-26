@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
 import '../../data/models.dart';
-import '../../platform/native_bridge.dart';
+import '../setup/setup_health.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
@@ -50,9 +50,9 @@ class TodayScreen extends ConsumerWidget {
             const SizedBox(height: 14),
             DayStrip(entries: _stripEntries(ref)),
             const SizedBox(height: 10),
-            // Bildirim izni yoksa eşik hiçbir zaman haber veremez.
-            if (ref.watch(notificationsGrantedProvider).value == false) ...[
-              const _SetupCard(),
+            // Eksik bir izin ya da ayar varsa eşik haber veremeyebilir.
+            if (_SetupCard.issueMode(ref, mode) case final issueMode?) ...[
+              _SetupCard(mode: issueMode),
               const SizedBox(height: 10),
             ],
             _ThresholdCard(mode: mode),
@@ -399,25 +399,53 @@ class _ModeChip extends StatelessWidget {
   }
 }
 
-class _SetupCard extends StatelessWidget {
-  const _SetupCard();
+/// Kurulumda eksik varsa: ilk eksik ve kaç tane olduğu.
+class _SetupCard extends ConsumerWidget {
+  const _SetupCard({required this.mode});
+
+  /// Eksiği olan mod; önce şu anki mod. Eksik yoksa null.
+  static DayMode? issueMode(WidgetRef ref, DayMode current) {
+    final issues = ref.watch(setupIssuesProvider);
+    if (issues == null) return null;
+    for (final m in [current, ...DayMode.values]) {
+      if (issues[m]!.isNotEmpty) return m;
+    }
+    return null;
+  }
+
+  final DayMode mode;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
+    final all = ref.watch(setupIssuesProvider)!;
+    final issues = all[mode]!;
+    // Ortak eksikler iki modda da sayılır; bir kez göster.
+    final total = {...all[DayMode.evening]!, ...all[DayMode.morning]!}.length;
+    final detail = total > 1
+        ? '${issues.first.label} · $total eksik'
+        : issues.first.label;
+    final icon = switch (issues.first) {
+      SetupIssue.notifications => EsikIcon.bell,
+      SetupIssue.battery => EsikIcon.battery,
+      SetupIssue.nfcOff || SetupIssue.nfcTag => EsikIcon.nfc,
+      SetupIssue.noAlarm => EsikIcon.alarm,
+    };
     return Semantics(
       button: true,
-      label: 'Bildirimler kapalı. Kurulumu tamamla',
+      label: '$detail. Kurulumu tamamla',
       excludeSemantics: true,
       child: SurfaceCard(
         highlighted: true,
         radius: 24,
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        onTap: () => context.push('/kurulum'),
+        onTap: () => context.push(
+          '/kurulum?mod=${mode == DayMode.evening ? 'aksam' : 'sabah'}',
+        ),
         child: Row(
           children: [
-            const IconCircle(icon: EsikIcon.bell, size: 40, active: true),
+            IconCircle(icon: icon, size: 40, active: true),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -426,7 +454,7 @@ class _SetupCard extends StatelessWidget {
                   Text('Kurulumu tamamla', style: t.labelLarge),
                   const SizedBox(height: 2),
                   Text(
-                    'Bildirimler kapalı; eşik geldiğinde haber veremeyiz.',
+                    detail,
                     style: t.labelMedium?.copyWith(
                       fontWeight: FontWeight.w300,
                       color: p.textMuted,
