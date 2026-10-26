@@ -6,6 +6,7 @@ import 'package:threshold/core/day_mode.dart';
 import 'package:threshold/data/app_state.dart';
 import 'package:threshold/data/models.dart';
 import 'package:threshold/features/setup/setup_guide_screen.dart';
+import 'package:threshold/features/trigger/arc_range_picker.dart';
 import 'package:threshold/ui/esik_icons.dart';
 
 void main() {
@@ -193,6 +194,31 @@ void main() {
         ]),
       );
     });
+  });
+
+  test('elle seçilen aralık yaya ve en az yarım saate oturur', () {
+    const arc = TimeOfDay(hour: 18, minute: 0);
+    TimeOfDay t(int h, int m) => TimeOfDay(hour: h, minute: m);
+    // Yay içinde, geçerli: olduğu gibi.
+    expect(ArcRangePicker.normalize(arc, 720, t(22, 0), t(1, 0)), (
+      t(22, 0),
+      t(1, 0),
+    ));
+    // Bitiş başlangıçtan önce: bitiş yarım saat sonraya.
+    expect(ArcRangePicker.normalize(arc, 720, t(23, 0), t(22, 0)), (
+      t(23, 0),
+      t(23, 30),
+    ));
+    // Yay dışı (15:00): en yakın uca, 18:00'e.
+    expect(ArcRangePicker.normalize(arc, 720, t(15, 0), t(20, 0)), (
+      t(18, 0),
+      t(20, 0),
+    ));
+    // Başlangıç yayın sonunda: başlangıç geri çekilir.
+    expect(ArcRangePicker.normalize(arc, 720, t(6, 0), t(6, 0)), (
+      t(5, 30),
+      t(6, 0),
+    ));
   });
 
   test('lowerFirst Türkçe harfleri doğru küçültür', () {

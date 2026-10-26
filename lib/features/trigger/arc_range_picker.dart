@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -9,6 +10,10 @@ import '../../ui/esik_icons.dart';
 
 /// Yarım daire üzerinde iki tutamaçlı saat aralığı seçici.
 /// Yayın solu [arcStart], sağı [arcStart] + [spanMinutes]'tır.
+///
+/// Bir tutamaca ya da yaya dokunulduğu anda sürükleme bu seçicinin olur;
+/// sayfa kaydırması araya giremez. Yayın dışından kaydırma normal çalışır.
+/// Yayın boş bir yerine dokununca en yakın tutamaç oraya gelir.
 class ArcRangePicker extends StatefulWidget {
   const ArcRangePicker({
     super.key,
@@ -36,12 +41,48 @@ class ArcRangePicker extends StatefulWidget {
   static const snapMinutes = 15;
   static const minGapMinutes = 30;
 
+  /// Elle seçilen saatleri yayın içine ve en az [minGapMinutes] aralığa getirir.
+  static (TimeOfDay, TimeOfDay) normalize(
+    TimeOfDay arcStart,
+    int spanMinutes,
+    TimeOfDay start,
+    TimeOfDay end,
+  ) {
+    final base = arcStart.hour * 60 + arcStart.minute;
+    int offset(TimeOfDay t) {
+      final m = (t.hour * 60 + t.minute - base) % 1440;
+      if (m <= spanMinutes) return m;
+      return (1440 - m) < (m - spanMinutes) ? 0 : spanMinutes;
+    }
+
+    TimeOfDay time(int o) {
+      final m = (base + o) % 1440;
+      return TimeOfDay(hour: m ~/ 60, minute: m % 60);
+    }
+
+    var s = offset(start), e = offset(end);
+    if (e - s < minGapMinutes) {
+      if (s + minGapMinutes <= spanMinutes) {
+        e = s + minGapMinutes;
+      } else {
+        s = e - minGapMinutes;
+      }
+    }
+    return (time(s), time(e));
+  }
+
   @override
   State<ArcRangePicker> createState() => _ArcRangePickerState();
 }
 
 class _ArcRangePickerState extends State<ArcRangePicker> {
   bool? _draggingStart;
+
+  /// Tutamağın etrafında parmağın tutabileceği yarıçap.
+  static const _handleReach = 34.0;
+
+  /// Yay şeridinin yarı kalınlığı ve dokunma payı.
+  static const _bandReach = 30.0;
 
   int get _base => widget.arcStart.hour * 60 + widget.arcStart.minute;
 
@@ -99,6 +140,31 @@ class _ArcRangePickerState extends State<ArcRangePicker> {
     widget.onChanged(_time(s), _time(e));
   }
 
+  /// Parmak indiği anda karar: tutamaç ya da yay mı? Değilse sayfa kaysın.
+  bool _grab(Size size, Offset local) {
+    if (!widget.enabled) return false;
+    final g = _geometry(size);
+    final startPos = _point(g, _offset(widget.start) / widget.spanMinutes);
+    final endPos = _point(g, _offset(widget.end) / widget.spanMinutes);
+    final toStart = (local - startPos).distance;
+    final toEnd = (local - endPos).distance;
+    if (math.min(toStart, toEnd) <= _handleReach) {
+      _draggingStart = toStart < toEnd;
+      return true;
+    }
+    final onBand =
+        ((local - g.center).distance - g.radius).abs() <= _bandReach &&
+        local.dy <= g.center.dy + _bandReach;
+    if (!onBand) return false;
+    // Yaya dokunuldu: en yakın tutamaç oraya gelsin.
+    final f = _fractionAt(g, local);
+    final fs = _offset(widget.start) / widget.spanMinutes;
+    final fe = _offset(widget.end) / widget.spanMinutes;
+    _draggingStart = (f - fs).abs() < (f - fe).abs();
+    _drag(size, local);
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
@@ -114,16 +180,22 @@ class _ArcRangePickerState extends State<ArcRangePicker> {
         return Semantics(
           label:
               'Saat aralığı ${formatTime(widget.start)} ile ${formatTime(widget.end)} arası',
-          child: GestureDetector(
-            onPanStart: widget.enabled
-                ? (d) => _draggingStart =
-                      (d.localPosition - startPos).distance <
-                      (d.localPosition - endPos).distance
-                : null,
-            onPanUpdate: widget.enabled
-                ? (d) => _drag(size, d.localPosition)
-                : null,
-            onPanEnd: (_) => _draggingStart = null,
+          child: RawGestureDetector(
+            gestures: {
+              _GrabDragRecognizer:
+                  GestureRecognizerFactoryWithHandlers<_GrabDragRecognizer>(
+                    () => _GrabDragRecognizer(),
+                    (r) => r
+                      ..grab = ((local) => _grab(size, local))
+                      ..onStart = (global) {
+                        final box = context.findRenderObject()! as RenderBox;
+                        return _ArcDrag(
+                          onUpdate: (g) => _drag(size, box.globalToLocal(g)),
+                          onEnd: () => _draggingStart = null,
+                        );
+                      },
+                  ),
+            },
             child: SizedBox.fromSize(
               size: size,
               child: Stack(
@@ -237,6 +309,31 @@ class _ArcRangePickerState extends State<ArcRangePicker> {
       ),
     );
   }
+}
+
+/// Parmak indiği anda (kaydırma eşiğini beklemeden) kazanan sürükleme;
+/// yalnızca [grab] kabul ettiği dokunuşlar için.
+class _GrabDragRecognizer extends ImmediateMultiDragGestureRecognizer {
+  late bool Function(Offset local) grab;
+
+  @override
+  bool isPointerAllowed(PointerDownEvent event) =>
+      super.isPointerAllowed(event) && grab(event.localPosition);
+}
+
+class _ArcDrag extends Drag {
+  _ArcDrag({required this.onUpdate, required this.onEnd});
+  final ValueChanged<Offset> onUpdate;
+  final VoidCallback onEnd;
+
+  @override
+  void update(DragUpdateDetails details) => onUpdate(details.globalPosition);
+
+  @override
+  void end(DragEndDetails details) => onEnd();
+
+  @override
+  void cancel() => onEnd();
 }
 
 class _Geometry {

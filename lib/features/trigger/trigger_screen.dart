@@ -45,6 +45,32 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     _update(next);
   }
 
+  TimeOfDay get _arcStart => _mode == DayMode.evening
+      ? const TimeOfDay(hour: 18, minute: 0)
+      : const TimeOfDay(hour: 4, minute: 0);
+  int get _arcSpan => _mode == DayMode.evening ? 12 * 60 : 8 * 60;
+
+  Future<void> _pickWindow({required bool start}) async {
+    final c = _config;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: start ? c.windowStart : c.windowEnd,
+      helpText: start ? 'Aralığın başlangıcı' : 'Aralığın bitişi',
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+        child: child!,
+      ),
+    );
+    if (picked == null || !mounted) return;
+    final (s, e) = ArcRangePicker.normalize(
+      _arcStart,
+      _arcSpan,
+      start ? picked : c.windowStart,
+      start ? c.windowEnd : picked,
+    );
+    _update(c.copyWith(windowStart: s, windowEnd: e));
+  }
+
   Future<void> _pickBackup() async {
     final picked = await showTimePicker(
       context: context,
@@ -90,10 +116,8 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const SizedBox(height: 26),
               ArcRangePicker(
                 key: ValueKey(_mode),
-                arcStart: evening
-                    ? const TimeOfDay(hour: 18, minute: 0)
-                    : const TimeOfDay(hour: 4, minute: 0),
-                spanMinutes: evening ? 12 * 60 : 8 * 60,
+                arcStart: _arcStart,
+                spanMinutes: _arcSpan,
                 start: c.windowStart,
                 end: c.windowEnd,
                 enabled: c.windowEnabled,
@@ -102,16 +126,33 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                     _update(c.copyWith(windowStart: s, windowEnd: e)),
                 child: Column(
                   children: [
-                    Text(
-                      c.windowEnabled
-                          ? '${formatTime(c.windowStart)} – ${formatTime(c.windowEnd)}'
-                          : 'Her saatte',
-                      textAlign: TextAlign.center,
-                      style: t.headlineMedium?.copyWith(
-                        fontSize: 34,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                    if (c.windowEnabled)
+                      // Saatlere dokunarak da seçilebilir.
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _TimeButton(
+                              time: c.windowStart,
+                              label: 'Başlangıç saatini seç',
+                              onTap: () => _pickWindow(start: true),
+                            ),
+                            Text(' – ', style: t.headlineMedium),
+                            _TimeButton(
+                              time: c.windowEnd,
+                              label: 'Bitiş saatini seç',
+                              onTap: () => _pickWindow(start: false),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Text(
+                        'Her saatte',
+                        textAlign: TextAlign.center,
+                        style: t.headlineMedium?.copyWith(fontSize: 34),
                       ),
-                    ),
                     const SizedBox(height: 8),
                     Semantics(
                       toggled: c.windowEnabled,
@@ -256,6 +297,44 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Aralığın bir ucundaki saat; dokununca saat seçici açılır.
+class _TimeButton extends StatelessWidget {
+  const _TimeButton({
+    required this.time,
+    required this.label,
+    required this.onTap,
+  });
+
+  final TimeOfDay time;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      label: '$label, şu an ${formatTime(time)}',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Text(
+          formatTime(time),
+          style: t.headlineMedium?.copyWith(
+            fontSize: 34,
+            fontFeatures: const [FontFeature.tabularFigures()],
+            decoration: TextDecoration.underline,
+            decorationStyle: TextDecorationStyle.dotted,
+            decorationColor: p.textFaint,
           ),
         ),
       ),
