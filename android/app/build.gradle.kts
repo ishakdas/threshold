@@ -68,3 +68,9 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Deneme başlangıcını uygulama silinip yeniden kurulsa da hatırlamak için
+    // (TrialAnchor.kt). Google Play hizmetleri olan telefonlarda çalışır.
+    implementation("com.google.android.gms:play-services-auth-blockstore:16.4.0")
+}

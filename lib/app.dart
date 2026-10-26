@@ -34,6 +34,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       unawaited(_reschedule());
       unawaited(ref.read(plusBillingProvider.notifier).start());
+      unawaited(_syncTrial());
       final route = await _bridge.takeLaunchRoute();
       if (route != null) _openRoute(route);
     });
@@ -49,6 +50,13 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     await ref.read(triggerConfigProvider.notifier).saved;
     await _bridge.reschedule();
     if (mounted) ref.invalidate(thresholdStatusProvider);
+  }
+
+  /// Android deneme başlangıcını diske yazdıysa yeniden oku.
+  Future<void> _syncTrial() async {
+    if (await _bridge.syncTrial() == null || !mounted) return;
+    await ref.read(sharedPreferencesProvider).reload();
+    if (mounted) ref.invalidate(trialStartProvider);
   }
 
   void _openRoute(String route) {

@@ -67,6 +67,10 @@ class NativeBridge {
   /// Saat uygulamasının alarm listesi.
   Future<void> openClock() => _call<void>('openClock');
 
+  /// Deneme başlangıcını telefondaki kalıcı kayıtlarla eşitler (TrialAnchor);
+  /// sonucu "trial_start" olarak diske yazar.
+  Future<int?> syncTrial() => _call<int>('syncTrial');
+
   Future<SetupHealth?> setupHealth() async =>
       SetupHealth.parse(await _call<Object?>('setupHealth'));
 

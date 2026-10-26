@@ -51,8 +51,21 @@ class PlusState {
   bool get active => owned || trialDaysLeft > 0;
 }
 
-final plusProvider = Provider<PlusState>((ref) {
+/// Denemenin başladığı gün. Android tarafı (TrialAnchor) uygulamanın kaydı,
+/// kurulum zamanı ve Google Block Store'dan en eskisini "trial_start"a yazar;
+/// böylece veriler silinip ya da uygulama yeniden kurulup deneme sıfırlanamaz.
+final trialStartProvider = Provider<DateTime>((ref) {
   final installed = ref.watch(installDayProvider);
+  final ms = ref
+      .watch(sharedPreferencesProvider)
+      .getInt(EsikStore.trialStartKey);
+  if (ms == null) return installed;
+  final anchored = thresholdDay(DateTime.fromMillisecondsSinceEpoch(ms));
+  return anchored.isBefore(installed) ? anchored : installed;
+});
+
+final plusProvider = Provider<PlusState>((ref) {
+  final installed = ref.watch(trialStartProvider);
   final today = ref.watch(todayProvider);
   final used = today.difference(installed).inDays;
   return PlusState(

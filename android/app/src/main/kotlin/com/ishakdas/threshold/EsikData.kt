@@ -104,12 +104,11 @@ object EsikData {
     /** Eşik Plus açık mı: satın alındı ya da deneme sürüyor (Dart'taki PlusState.active). */
     fun plusActive(c: Context): Boolean {
         if (prefs(c).getBoolean(PREFIX + "plus_owned", false)) return true
-        val installed = prefs(c).getString(PREFIX + "installed_on", null) ?: return true
-        return try {
-            thresholdDay() < LocalDate.parse(installed).plusDays(TRIAL_DAYS)
-        } catch (e: Exception) {
-            true
-        }
+        // Deneme başlangıcı: uygulamanın kaydı ya da (veriler silindiyse)
+        // Android'in kurulum zamanı, hangisi eskiyse (TrialAnchor).
+        val start = java.time.Instant.ofEpochMilli(TrialAnchor.earliest(c))
+            .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
+        return thresholdDay() < thresholdDay(start).plusDays(TRIAL_DAYS)
     }
 
     /**

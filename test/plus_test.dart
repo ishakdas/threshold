@@ -40,6 +40,17 @@ void main() {
       expect(c.read(plusProvider).active, isFalse);
     });
 
+    test('veriler silinse de deneme eski başlangıçtan sayılır', () async {
+      // Veriler silindi: uygulama bugün kurulmuş sanıyor, ama Android'in
+      // kurulum zamanı (trial_start) 20 gün önce.
+      final c = await container({
+        'installed_on': '2026-10-20',
+        'trial_start': DateTime(2026, 9, 30, 12).millisecondsSinceEpoch,
+      });
+      expect(c.read(plusProvider).trialDaysLeft, 0);
+      expect(c.read(plusProvider).active, isFalse);
+    });
+
     test('satın alınca deneme bitse de açık kalır ve saklanır', () async {
       final c = await container({'installed_on': '2026-09-01'});
       c.read(plusOwnedProvider.notifier).set(true);

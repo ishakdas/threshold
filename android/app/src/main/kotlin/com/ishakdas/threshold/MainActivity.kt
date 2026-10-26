@@ -59,6 +59,7 @@ class MainActivity : FlutterActivity() {
                     result.success(pm.isIgnoringBatteryOptimizations(packageName))
                 }
                 "setupHealth" -> result.success(setupHealth())
+                "syncTrial" -> TrialAnchor.sync(this) { result.success(it) }
                 "openBatterySettings" -> {
                     openBatterySettings()
                     result.success(null)

@@ -77,7 +77,9 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > android/key.properties
           echo "signed=true" >> "$GITHUB_OUTPUT"
-      - run: flutter build apk --release --build-number=${{ github.run_number }}
+      # Derlenen Dart kodundaki adlar karıştırılır; hata raporlarını çözmek
+      # için gereken eşleme dosyaları ayrı bir artifact olarak saklanır.
+      - run: flutter build apk --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
       # Play'in veri güvenliği formu bu listeye dayanıyor; değişirse fark edilsin.
       - name: APK izinleri
         run: |
@@ -91,9 +93,14 @@ jobs:
           name: esik-${{ github.run_number }}-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: esik-${{ github.run_number }}-symbols
+          path: build/symbols
+          retention-days: 90
       - name: Play Store paketi (AAB)
         if: steps.key.outputs.signed == 'true'
-        run: flutter build appbundle --release --build-number=${{ github.run_number }}
+        run: flutter build appbundle --release --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols
       - uses: actions/upload-artifact@v4
         if: steps.key.outputs.signed == 'true'
         with:
