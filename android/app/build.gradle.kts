@@ -54,7 +54,12 @@ android {
         // You can force using the value of versionCode by specifying the `-P force-version-code-ignoring-abi=true`
         // flag during build.
         // 0: normal (15 gün). Test APK'sında dakika cinsinden deneme süresi.
-        buildConfigField("int", "TRIAL_MINUTES", dartDefines["ESIK_TRIAL_MINUTES"]?.toIntOrNull()?.toString() ?: "0")
+        val trialMinutes = dartDefines["ESIK_TRIAL_MINUTES"]?.toIntOrNull() ?: 0
+        buildConfigField("int", "TRIAL_MINUTES", trialMinutes.toString())
+        // Test APK'sı ayrı bir uygulama olarak kurulur ("Eşik Test"): kendi
+        // kurulum zamanı, verileri ve Block Store kaydı olur, gerçek Eşik'e dokunmaz.
+        if (trialMinutes > 0) applicationIdSuffix = ".test"
+        manifestPlaceholders["appLabel"] = if (trialMinutes > 0) "Eşik Test" else "Eşik"
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
