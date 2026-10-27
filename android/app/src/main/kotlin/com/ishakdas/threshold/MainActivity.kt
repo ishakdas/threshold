@@ -60,6 +60,14 @@ class MainActivity : FlutterActivity() {
                 }
                 "setupHealth" -> result.success(setupHealth())
                 "syncTrial" -> TrialAnchor.sync(this) { result.success(it) }
+                "verifyPurchase" -> result.success(
+                    PurchaseVerifier.verify(
+                        call.argument<String>("json"),
+                        call.argument<String>("signature"),
+                        packageName,
+                        call.argument<String>("productId") ?: "",
+                    ),
+                )
                 "openBatterySettings" -> {
                     openBatterySettings()
                     result.success(null)
