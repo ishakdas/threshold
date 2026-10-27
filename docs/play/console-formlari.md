@@ -6,20 +6,39 @@ bağlantısı eklenirse güncellenmeli.
 
 ## Uygulama içi ürün: Eşik Plus
 
-Play Console → **Para kazanma → Ürünler → Uygulama içi ürünler → Ürün oluştur**
+Play Console → **Para kazanma → Ürünler → Tek seferlik ürünler → Tek seferlik ürün oluştur**
 
 | Alan | Değer |
 |---|---|
 | Ürün kimliği | `esik_plus` (uygulamadaki `plusProductId` ile aynı olmalı, sonradan değişmez) |
 | Ad | Eşik Plus |
 | Açıklama | Birden fazla tetikleyici; sessiz mod, Wi‑Fi ve NFC tetikleyicileri; gün seçimi; sessizde titret/çal; geçmiş. Tek seferlik. |
-| Fiyat | Türkiye: **49 TL**. Diğer ülkeler için Play'in otomatik çevirisi ya da elle (ör. 2,99 $) |
-| Tür | Tek seferlik, tüketilmeyen (non-consumable) |
+| Satın alma seçeneği kimliği | `satin-al` (tür: Satın al; "Eski sürümlerle uyumlu", uygulama yalnızca ürün kimliğini kullanır) |
+| Dijital içerik sınıfı | Dijital içerik (varsayılan); birden fazla adet satın alma kapalı |
+| Tür | Tek seferlik, tüketilmeyen (non-consumable; uygulama satın alımı tüketmez) |
 
-Ürün, uygulamanın Play'e yüklenmiş bir sürümü olmadan oluşturulamaz; önce
-dahili teste bir AAB yüklenir. Test için Play Console → **Ayarlar → Lisans
-testi** altına test hesabının e-postası eklenir; bu hesaplar ödeme yapmadan
-satın alabilir.
+Fiyatlar KDV dahil, yani kullanıcının ödediği tutardır. Toplu düzenleme
+("Set prices → Fiyatlandırmaları toplu olarak düzenle") girilen tutara KDV
+ekler; KDV dahil fiyat her ülkenin satırındaki kalemle tek tek girilir.
+Türkçe arayüzde ondalık ayırıcı virgüldür: `2.99` yazılırsa 299 olur.
+
+| Ülke/bölge | Fiyat |
+|---|---|
+| Türkiye | **19,99 TL** |
+| ABD (taban) | 2,99 $ — diğer ülkeler bundan Play'in çevirisiyle |
+| Euro bölgesi (24 ülke: Almanya, Avusturya, Belçika, Bulgaristan, Estonya, Finlandiya, Fransa, Hollanda, Hırvatistan, Kıbrıs, Letonya, Litvanya, Lüksemburg, Malta, Monako, Portekiz, San Marino, Slovakya, Slovenya, Vatikan, Yunanistan, İrlanda, İspanya, İtalya) | 2,99 € |
+| Birleşik Krallık | 2,49 £ |
+| Meksika | 39 MXN |
+| Brezilya | 9,90 BRL |
+| Hindistan | 99 INR |
+| Endonezya | 19.000 IDR |
+
+Ürün sayfası, dahili teste bir AAB yüklendikten sonra açılır. Lisans testi:
+Play Console → **Ayarlar → Lisans testi** altında `Esik-Dahili-Test` e-posta
+listesi (`developerishak@gmail.com`) seçili; bu ayar geliştirici hesabındaki
+tüm uygulamalara uygulanır. Listedeki hesaplar ödeme yapmadan satın alabilir.
+Satın alma doğrulaması için gereken Base64 RSA ortak anahtarı: **Para
+kazanma kurulumu → Lisanslama**.
 
 Deneme süresi Play'de değil, uygulamada: ilk açılıştan itibaren 15 gün
 (`plusTrialDays`, Android'de `EsikData.TRIAL_DAYS`).
@@ -32,28 +51,44 @@ URL: https://ishakdas.github.io/esik-gizlilik/ (`ishakdas/esik-gizlilik` deposu,
 
 **Hayır**, uygulama reklam içermiyor.
 
-## Uygulama erişimi
+## Oturum açma bilgileri (eski adı: Uygulama erişimi)
 
-**Tüm işlevler özel erişim gerektirmeden kullanılabilir.** (Hesap, giriş yok.)
+"Uygulamanızda kısıtlanmış bölümler var mı?": **Hayır**. Hesap ve giriş yok;
+temel özellikler ücretsiz.
+
+"Evet" seçeneği tek seferlik ürünleri de sayıyor, ama o yol "tüm özelliklere
+tam erişim sağlar" beyanı ister ve Play inceleyicileri ücretsiz denemeyi
+kullanmıyor; 15 günlük deneme bu yüzden erişim yolu sayılmıyor.
 
 ## İçerik derecelendirmesi
 
-Anket kategorisi: **Yardımcı program, verimlilik, iletişim veya diğer**
+E-posta: `developerishak@gmail.com`. Anket kategorisi: **Diğer Tüm Uygulama
+Türleri** (oyun, sosyal ya da iletişim değil). IARC Kullanım Şartları kabul
+edilir.
 
 | Soru | Cevap |
 |---|---|
-| Şiddet, cinsellik, küfür, uyuşturucu, kumar | Hayır |
-| Kullanıcılar birbiriyle iletişim kurabiliyor mu / içerik paylaşabiliyor mu | Hayır |
-| Kullanıcının konumunu paylaşıyor mu | Hayır |
-| Dijital ürün satın alımı | Hayır |
+| İndirilen pakette derecelendirmeyle ilgili içerik (cinsellik, şiddet, dil) | Hayır |
+| Kullanıcılar birbiriyle etkileşim kurabiliyor / içerik paylaşabiliyor mu | Hayır |
+| Pakette olmayan, uygulamadan erişilen çevrimiçi içerik | Hayır |
+| Yaş kısıtlamalı ürün/etkinlik (sigara, alkol, silah, kumar) tanıtımı | Hayır |
+| Kullanıcının tam konumunu paylaşıyor mu | Hayır |
+| Dijital ürün satın alımı | **Evet** (Eşik Plus) |
+| Bunlar ganimet kutusu gibi içeriği bilinmeyen alımlar mı | Hayır |
+| Nakit ödül, hediye kartı, kripto, NFT | Hayır |
+| Web tarayıcısı ya da arama motoru | Hayır |
+| Esas olarak haber ya da eğitim ürünü | Hayır |
 
-Beklenen sonuç: **3+ / Herkes**.
+Sonuç: **3+ / Herkes** (PEGI 3, ESRB Tüm yaşlar, USK Tüm yaşlar, IARC 3+);
+yalnızca Brezilya (ClassInd) **14+**. Hepsinde "Uygulama İçi Satın Alma
+İşlemleri" etiketi var.
 
 ## Hedef kitle
 
-Hedef yaş grubu: **18 ve üzeri** (ister **13+** de seçilebilir). 13 yaş
-altını seçmemek gerekir; Aile Politikası'nın ek koşulları devreye girer.
-"Uygulama çocukların ilgisini çekebilir mi?": **Hayır**.
+Hedef yaş grubu: **18 yaş ve üstü**. 13 yaş altını seçmemek gerekir; Aile
+Politikası'nın ek koşulları devreye girer. 18+ seçilince "çocukların ilgisini
+çekebilir mi" sorusu gelmiyor. Form, "Oturum açma bilgileri" tamamlanmadan
+açılmaz.
 
 ## Veri güvenliği
 
@@ -63,9 +98,8 @@ altını seçmemek gerekir; Aile Politikası'nın ek koşulları devreye girer.
 
 Satın alma Google Play üzerinden yapılır; ödeme bilgisi uygulamaya hiç
 gelmez. Uygulama yalnızca Play'den "Plus satın alındı mı" bilgisini sorar ve
-cihazda saklar; bu bilgi uygulamadan dışarı çıkmaz. Bunun "Satın alma
-geçmişi" beyanı gerektirip gerektirmediği, formu doldururken Play Console'daki
-güncel açıklamaya göre kontrol edilmeli.
+cihazda saklar; bu bilgi uygulamadan dışarı çıkmaz. Bu yüzden "Satın alma
+geçmişi" beyan edilmedi. Form, hedef kitle tamamlanmadan kaydedilmez.
 
 CI her derlemede APK'nın izin listesini yazdırır ("APK izinleri" adımı).
 
@@ -104,6 +138,13 @@ listesine uyması beklenir. Eşik'in gerekçesi:
 Reddedilirse yapılacak: izni kaldırıp pil adımını "uygulama ayarları +
 Pil → Kısıtlamasız ipucu" yoluna döndürmek (`MainActivity.openBatterySettings`).
 
+## Reklam Kimliği
+
+"Uygulamanız reklam kimliği kullanıyor mu?": **Hayır**. APK'da
+`com.google.android.gms.permission.AD_ID` izni yok.
+
 ## Haber uygulaması / COVID / finans / sağlık / devlet
 
-Hepsi **Hayır**.
+Hepsi **Hayır**. Finans formunda "Uygulamamda finans ile ilgili özellik
+sağlanmıyor", sağlık formunda "Uygulamamda sağlık özellikleri yok" işaretli;
+resmi kurum uygulaması sorusu Hayır.
