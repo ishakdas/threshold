@@ -424,6 +424,8 @@
   "waitCharging": "şarja takılması bekleniyor",
   "waitWifi": "Wi‑Fi bağlantısı bekleniyor",
   "waitLeaving": "Wi‑Fi’dan çıkış bekleniyor",
+  "waitPluggedIn": "telefonun şarjda olması bekleniyor",
+  "waitUnplug": "şarjdan çıkarılması bekleniyor",
   "waitAlarm": "sıradaki alarm {when}",
   "@waitAlarm": {
     "placeholders": {
@@ -459,6 +461,7 @@
     }
   },
   "hintCharging": "Şarja taktıktan sonra birkaç dakika içinde gelir.",
+  "hintUnplugged": "Telefon sabah aralığında şarjdayken fişi çekince birkaç dakika içinde gelir.",
   "hintAlarm": "Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.",
   "hintWifi": "Wi‑Fi’dan kopup mobil veriye geçince gelir; mobil veri açık olmalı.",
   "hintSilenced": "Ses bir kademe kısılınca gelir: sesliden titreşime, titreşimden sessize ya da Rahatsız Etmeyin açılınca.",

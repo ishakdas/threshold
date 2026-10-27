@@ -1078,6 +1078,18 @@ abstract class AppLocalizations {
   /// **'Wi‑Fi’dan çıkış bekleniyor'**
   String get waitLeaving;
 
+  /// No description provided for @waitPluggedIn.
+  ///
+  /// In tr, this message translates to:
+  /// **'telefonun şarjda olması bekleniyor'**
+  String get waitPluggedIn;
+
+  /// No description provided for @waitUnplug.
+  ///
+  /// In tr, this message translates to:
+  /// **'şarjdan çıkarılması bekleniyor'**
+  String get waitUnplug;
+
   /// No description provided for @waitAlarm.
   ///
   /// In tr, this message translates to:
@@ -1143,6 +1155,12 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Şarja taktıktan sonra birkaç dakika içinde gelir.'**
   String get hintCharging;
+
+  /// No description provided for @hintUnplugged.
+  ///
+  /// In tr, this message translates to:
+  /// **'Telefon sabah aralığında şarjdayken fişi çekince birkaç dakika içinde gelir.'**
+  String get hintUnplugged;
 
   /// No description provided for @hintAlarm.
   ///

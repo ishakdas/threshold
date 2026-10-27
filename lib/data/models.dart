@@ -68,15 +68,16 @@ enum TriggerKind {
   final EsikIcon icon;
 
   /// Android'de çalışan tetikleyiciler (android/.../Triggers.kt). Diğerleri
-  /// listede "Yakında" olarak görünür; o güne kadar yedek saat devrede.
+  /// henüz listede gösterilmez; eski ayarlarda kalmışsa yedek saat devrede.
   bool get supported => switch (this) {
     charging ||
     silenced ||
     alarmStopped ||
     unsilenced ||
     leftHomeWifi ||
+    unplugged ||
     nfcTag => true,
-    appClosed || sleepMode || airplaneMode || unplugged => false,
+    appClosed || sleepMode || airplaneMode => false,
   };
 
   /// Eşik Plus olmadan da kullanılabilir. Diğer çalışan tetikleyiciler
@@ -89,11 +90,9 @@ enum TriggerKind {
 
   bool get plusOnly => supported && !free;
 
-  /// Önce çalışanlar, "Yakında" olanlar sonda.
-  static List<TriggerKind> forMode(DayMode mode) => [
-    ...values.where((k) => k.mode == mode && k.supported),
-    ...values.where((k) => k.mode == mode && !k.supported),
-  ];
+  /// Seçilebilen (çalışan) tetikleyiciler.
+  static List<TriggerKind> forMode(DayMode mode) =>
+      values.where((k) => k.mode == mode && k.supported).toList();
 }
 
 /// Telefon sessizdeyken (sessiz, titreşim ya da Rahatsız Etmeyin) Eşik

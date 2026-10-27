@@ -26,6 +26,7 @@ Eşik saate değil, davranışına bakar. Akşam için:
 • Telefonu sessize alınca
 Sabah için:
 • Alarmı durdurunca
+• Telefonu şarjdan çıkarınca
 • Telefonu sessizden çıkarınca
 • Ev Wi‑Fi'ından çıkınca
 • Kapıdaki NFC etiketine dokununca
@@ -45,7 +46,7 @@ GEÇMİŞ
 Son iki haftada hangi akşam ve sabah kontrolü yaptığını, hangilerini yedek bildirimle tamamladığını görürsün.
 
 EŞİK PLUS
-İlk 15 gün her şey açık. Sonra şarj ve alarm tetikleyicileriyle ücretsiz devam edebilir ya da tek seferlik ödemeyle Eşik Plus'ı alabilirsin: birden fazla tetikleyici; sessiz mod, Wi‑Fi ve NFC; gün seçimi; sessizde titreşim ve geçmiş. Abonelik yok.
+İlk 15 gün her şey açık. Sonra şarj ve alarm tetikleyicileriyle ücretsiz devam edebilir ya da tek seferlik ödemeyle Eşik Plus'ı alabilirsin: birden fazla tetikleyici; sessiz mod, şarjdan çıkarma, Wi‑Fi ve NFC; gün seçimi; sessizde titreşim ve geçmiş. Abonelik yok.
 
 GİZLİLİK
 İnternet yalnızca Google Play satın alma doğrulaması için kullanılır. Listelerin, ayarların ve geçmişin yalnızca telefonunda durur; hiçbir veri toplanmaz, gönderilmez, paylaşılmaz. Reklam yok, hesap yok.
@@ -79,6 +80,6 @@ python3 tool/store_marketing.py
 
 ```
 <tr-TR>
-İlk test sürümü: akşam ve sabah kontrol listeleri, şarj, sessiz mod, alarm, Wi‑Fi ve NFC tetikleyicileri, yedek saat, geçmiş.
+İlk test sürümü: akşam ve sabah kontrol listeleri, şarj, sessiz mod, alarm, şarjdan çıkarma, Wi‑Fi ve NFC tetikleyicileri, yedek saat, geçmiş.
 </tr-TR>
 ```

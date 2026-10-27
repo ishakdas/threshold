@@ -51,6 +51,9 @@
             android:name=".BackupReceiver"
             android:exported="false" />
         <receiver
+            android:name=".UnplugCheckReceiver"
+            android:exported="false" />
+        <receiver
             android:name=".RescheduleReceiver"
             android:exported="true">
             <intent-filter>

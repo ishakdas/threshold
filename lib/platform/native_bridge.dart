@@ -189,6 +189,12 @@ enum TriggerWait {
   /// Wi‑Fi'dan kopup mobil veriye geçmeyi bekliyor.
   leaving,
 
+  /// Aralıkta telefonun şarjda olmasını bekliyor ([TriggerWaiting.at]'ten itibaren).
+  pluggedIn,
+
+  /// Telefon şarjda; fişin çekilmesini bekliyor.
+  unplug,
+
   /// Sesin bir kademe kısılmasını bekliyor (sesli → titreşim → sessiz).
   silence,
 

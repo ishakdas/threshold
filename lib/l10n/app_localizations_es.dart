@@ -582,6 +582,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get waitLeaving => 'esperando a que salgas del Wi‑Fi';
 
   @override
+  String get waitPluggedIn => 'esperando a que el teléfono esté cargando';
+
+  @override
+  String get waitUnplug => 'esperando a que lo desconectes';
+
+  @override
   String waitAlarm(String when) {
     return 'próxima alarma $when';
   }
@@ -621,6 +627,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hintCharging => 'Llega pocos minutos después de enchufarlo.';
+
+  @override
+  String get hintUnplugged =>
+      'Llega pocos minutos después de desenchufarlo, si el teléfono estaba cargando en la franja de la mañana.';
 
   @override
   String get hintAlarm =>

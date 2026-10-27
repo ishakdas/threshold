@@ -38,7 +38,7 @@ SCREENS = [
     ("1-bildirim", EVENING),
     ("2-aksam", EVENING),
     ("3-kontrol", EVENING),
-    ("4-tetikleyiciler", EVENING),
+    ("4-tetikleyiciler", MORNING),
     ("5-sabah", MORNING),
     ("6-gecmis", MORNING),
 ]

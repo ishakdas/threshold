@@ -564,6 +564,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get waitLeaving => 'Wi‑Fi’dan çıkış bekleniyor';
 
   @override
+  String get waitPluggedIn => 'telefonun şarjda olması bekleniyor';
+
+  @override
+  String get waitUnplug => 'şarjdan çıkarılması bekleniyor';
+
+  @override
   String waitAlarm(String when) {
     return 'sıradaki alarm $when';
   }
@@ -604,6 +610,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get hintCharging =>
       'Şarja taktıktan sonra birkaç dakika içinde gelir.';
+
+  @override
+  String get hintUnplugged =>
+      'Telefon sabah aralığında şarjdayken fişi çekince birkaç dakika içinde gelir.';
 
   @override
   String get hintAlarm =>

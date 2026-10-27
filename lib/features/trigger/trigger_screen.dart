@@ -436,7 +436,22 @@ class _TriggerTile extends StatelessWidget {
                 onTap: onTap,
                 child: Row(
                   children: [
-                    IconCircle(icon: kind.icon, size: 40, active: selected),
+                    // Plus'a özel tetikleyici: rozet ikonun köşesinde, başlığa
+                    // binmez; Plus olsun olmasın görünür.
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        IconCircle(icon: kind.icon, size: 40, active: selected),
+                        if (kind.plusOnly)
+                          Positioned(
+                            bottom: -6,
+                            right: -6,
+                            child: IgnorePointer(
+                              child: PlusBadge(owned: !locked, compact: true),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -473,15 +488,6 @@ class _TriggerTile extends StatelessWidget {
                 ),
               ),
             ),
-            // Plus'a özel tetikleyici: Plus olsun olmasın görünür.
-            if (kind.plusOnly)
-              Positioned(
-                top: 8,
-                right: 10,
-                child: IgnorePointer(
-                  child: PlusBadge(owned: !locked, compact: true),
-                ),
-              ),
           ],
         ),
       ),
@@ -726,6 +732,8 @@ class _StatusLine extends ConsumerWidget {
       TriggerWait.charging => from(l10n.waitCharging),
       TriggerWait.wifi => from(l10n.waitWifi),
       TriggerWait.leaving => l10n.waitLeaving,
+      TriggerWait.pluggedIn => from(l10n.waitPluggedIn),
+      TriggerWait.unplug => l10n.waitUnplug,
       TriggerWait.alarm => l10n.waitAlarm(l10n.when(at!, now)),
       TriggerWait.alarmSettling => l10n.waitAlarmSettling,
       TriggerWait.noAlarm => l10n.waitNoAlarm,
@@ -749,6 +757,7 @@ class _StatusLine extends ConsumerWidget {
         TriggerKind.silenced => l10n.hintSilenced,
         TriggerKind.unsilenced => l10n.hintUnsilenced,
         TriggerKind.nfcTag => l10n.hintNfc,
+        TriggerKind.unplugged => l10n.hintUnplugged,
         _ => l10n.hintSoon,
       };
 

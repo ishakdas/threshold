@@ -100,9 +100,9 @@ Future<void> _boot(WidgetTester t, DateTime now, String lang) async {
   final evening = defaultTriggerConfigs[DayMode.evening]!.toggle(
     TriggerKind.silenced,
   );
-  final morning = defaultTriggerConfigs[DayMode.morning]!.copyWith(
-    days: {1, 2, 3, 4, 5},
-  );
+  final morning = defaultTriggerConfigs[DayMode.morning]!
+      .toggle(TriggerKind.unplugged)
+      .copyWith(days: {1, 2, 3, 4, 5});
   // tool/ test klasörü sayılmıyor; bu dosya yine de bir test.
   // ignore: invalid_use_of_visible_for_testing_member
   SharedPreferences.setMockInitialValues({
@@ -191,8 +191,9 @@ void main() {
       await _shot(t, app, '$lang/3-kontrol');
     });
 
+    // Sabah: seçilebilecek tetikleyicilerin çoğu orada.
     testWidgets('$lang: tetikleyiciler', (t) async {
-      await _boot(t, evening, lang);
+      await _boot(t, morning, lang);
       _router(t).go('/ayarlar');
       await _settle(t);
       await t.drag(find.byType(ListView).first, const Offset(0, -330));
