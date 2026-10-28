@@ -741,5 +741,58 @@
   "plusHistoryTitle": "Geçmiş Plus ile",
   "plusHistoryBody": "Hangi akşam ve sabah kontrol yaptığını, saatlerini ve ortalamanı gör.",
   "seePlus": "Plus’a bak",
-  "oneByOne": "Tek tek bak"
+  "oneByOne": "Tek tek bak",
+  "delayTitle": "Bildirim ne zaman gelsin?",
+  "delayNow": "Hemen",
+  "delaySeconds": "{seconds} sn",
+  "@delaySeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "delayMinutes": "{minutes} dk",
+  "@delayMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "delayMinSec": "{minutes} dk {seconds} sn",
+  "@delayMinSec": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "delayCustom": "Özel",
+  "delayHintNow": "Tetikleyici olur olmaz bildirim gelir.",
+  "delayHintAfter": "Tetikleyiciden {delay} sonra gelir. O arada kontrolü yaparsan gelmez.",
+  "@delayHintAfter": {
+    "placeholders": {
+      "delay": {
+        "type": "String"
+      }
+    }
+  },
+  "delayPickerTitle": "Tetikleyiciden ne kadar sonra?",
+  "delayPickerNote": "Android birkaç saniye kaydırabilir.",
+  "delayPickerSave": "Kaydet",
+  "contactTitle": "Bize yaz",
+  "contactSubtitle": "Öneri, hata ya da soru için e-posta gönder.",
+  "contactSubject": "Eşik hakkında",
+  "contactNoApp": "E-posta uygulaması bulunamadı. Adres panoya kopyalandı: {email}",
+  "@contactNoApp": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  }
 }

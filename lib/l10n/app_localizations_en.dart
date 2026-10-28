@@ -1176,4 +1176,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oneByOne => 'Go one by one';
+
+  @override
+  String get delayTitle => 'When should it notify?';
+
+  @override
+  String get delayNow => 'Right away';
+
+  @override
+  String delaySeconds(int seconds) {
+    return '$seconds sec';
+  }
+
+  @override
+  String delayMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String delayMinSec(int minutes, int seconds) {
+    return '$minutes min $seconds sec';
+  }
+
+  @override
+  String get delayCustom => 'Custom';
+
+  @override
+  String get delayHintNow => 'You’re notified as soon as the trigger happens.';
+
+  @override
+  String delayHintAfter(String delay) {
+    return 'Arrives $delay after the trigger. If you check before then, it won’t come.';
+  }
+
+  @override
+  String get delayPickerTitle => 'How long after the trigger?';
+
+  @override
+  String get delayPickerNote => 'Android may shift it by a few seconds.';
+
+  @override
+  String get delayPickerSave => 'Save';
+
+  @override
+  String get contactTitle => 'Write to us';
+
+  @override
+  String get contactSubtitle =>
+      'Send an email with a suggestion, bug or question.';
+
+  @override
+  String get contactSubject => 'About Eşik';
+
+  @override
+  String contactNoApp(String email) {
+    return 'No email app found. Address copied: $email';
+  }
 }

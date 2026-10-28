@@ -76,6 +76,12 @@ class MainActivity : FlutterActivity() {
                     startActivitySafely(Intent(AlarmClock.ACTION_SHOW_ALARMS))
                     result.success(null)
                 }
+                "sendFeedback" -> result.success(
+                    sendFeedback(
+                        call.argument<String>("email") ?: "",
+                        call.argument<String>("subject") ?: "",
+                    ),
+                )
                 "writeNfcTag" -> writeNfcTag(result)
                 "cancelNfcTag" -> {
                     finishNfc("cancelled")
@@ -236,6 +242,17 @@ class MainActivity : FlutterActivity() {
                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")),
             )
         }
+    }
+
+    /** Telefondaki e-posta uygulamasında, sürüm ve cihaz bilgisiyle yeni ileti açar. */
+    private fun sendFeedback(email: String, subject: String): Boolean {
+        val version = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull()
+        val footer = "\n\n\n—\nEşik $version · Android ${Build.VERSION.RELEASE} · ${Build.MANUFACTURER} ${Build.MODEL}"
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
+            .putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+            .putExtra(Intent.EXTRA_SUBJECT, subject)
+            .putExtra(Intent.EXTRA_TEXT, footer)
+        return startActivitySafely(intent)
     }
 
     private fun startActivitySafely(intent: Intent): Boolean = try {

@@ -331,5 +331,20 @@
   "plusHistoryTitle": "El historial viene con Plus",
   "plusHistoryBody": "Mira qué noches y mañanas comprobaste, a qué hora y tu media.",
   "seePlus": "Ver Plus",
-  "oneByOne": "Uno por uno"
+  "oneByOne": "Uno por uno",
+  "delayTitle": "¿Cuándo avisar?",
+  "delayNow": "Al momento",
+  "delaySeconds": "{seconds} s",
+  "delayMinutes": "{minutes} min",
+  "delayMinSec": "{minutes} min {seconds} s",
+  "delayCustom": "Personalizado",
+  "delayHintNow": "Te avisa en cuanto ocurre el activador.",
+  "delayHintAfter": "Llega {delay} después del activador. Si revisas antes, no llegará.",
+  "delayPickerTitle": "¿Cuánto después del activador?",
+  "delayPickerNote": "Android puede desplazarlo unos segundos.",
+  "delayPickerSave": "Guardar",
+  "contactTitle": "Escríbenos",
+  "contactSubtitle": "Envía un correo con una sugerencia, un error o una pregunta.",
+  "contactSubject": "Sobre Eşik",
+  "contactNoApp": "No se encontró una app de correo. Dirección copiada: {email}"
 }

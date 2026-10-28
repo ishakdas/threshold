@@ -2091,6 +2091,96 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Tek tek bak'**
   String get oneByOne;
+
+  /// No description provided for @delayTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim ne zaman gelsin?'**
+  String get delayTitle;
+
+  /// No description provided for @delayNow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hemen'**
+  String get delayNow;
+
+  /// No description provided for @delaySeconds.
+  ///
+  /// In tr, this message translates to:
+  /// **'{seconds} sn'**
+  String delaySeconds(int seconds);
+
+  /// No description provided for @delayMinutes.
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dk'**
+  String delayMinutes(int minutes);
+
+  /// No description provided for @delayMinSec.
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dk {seconds} sn'**
+  String delayMinSec(int minutes, int seconds);
+
+  /// No description provided for @delayCustom.
+  ///
+  /// In tr, this message translates to:
+  /// **'Özel'**
+  String get delayCustom;
+
+  /// No description provided for @delayHintNow.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tetikleyici olur olmaz bildirim gelir.'**
+  String get delayHintNow;
+
+  /// No description provided for @delayHintAfter.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tetikleyiciden {delay} sonra gelir. O arada kontrolü yaparsan gelmez.'**
+  String delayHintAfter(String delay);
+
+  /// No description provided for @delayPickerTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tetikleyiciden ne kadar sonra?'**
+  String get delayPickerTitle;
+
+  /// No description provided for @delayPickerNote.
+  ///
+  /// In tr, this message translates to:
+  /// **'Android birkaç saniye kaydırabilir.'**
+  String get delayPickerNote;
+
+  /// No description provided for @delayPickerSave.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get delayPickerSave;
+
+  /// No description provided for @contactTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bize yaz'**
+  String get contactTitle;
+
+  /// No description provided for @contactSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Öneri, hata ya da soru için e-posta gönder.'**
+  String get contactSubtitle;
+
+  /// No description provided for @contactSubject.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşik hakkında'**
+  String get contactSubject;
+
+  /// No description provided for @contactNoApp.
+  ///
+  /// In tr, this message translates to:
+  /// **'E-posta uygulaması bulunamadı. Adres panoya kopyalandı: {email}'**
+  String contactNoApp(String email);
 }
 
 class _AppLocalizationsDelegate

@@ -331,5 +331,20 @@
   "plusHistoryTitle": "History comes with Plus",
   "plusHistoryBody": "See which evenings and mornings you checked, when, and your average.",
   "seePlus": "See Plus",
-  "oneByOne": "Go one by one"
+  "oneByOne": "Go one by one",
+  "delayTitle": "When should it notify?",
+  "delayNow": "Right away",
+  "delaySeconds": "{seconds} sec",
+  "delayMinutes": "{minutes} min",
+  "delayMinSec": "{minutes} min {seconds} sec",
+  "delayCustom": "Custom",
+  "delayHintNow": "You’re notified as soon as the trigger happens.",
+  "delayHintAfter": "Arrives {delay} after the trigger. If you check before then, it won’t come.",
+  "delayPickerTitle": "How long after the trigger?",
+  "delayPickerNote": "Android may shift it by a few seconds.",
+  "delayPickerSave": "Save",
+  "contactTitle": "Write to us",
+  "contactSubtitle": "Send an email with a suggestion, bug or question.",
+  "contactSubject": "About Eşik",
+  "contactNoApp": "No email app found. Address copied: {email}"
 }

@@ -90,6 +90,15 @@ class NativeBridge {
 
   Future<void> openBatterySettings() => _call<void>('openBatterySettings');
 
+  /// Telefondaki e-posta uygulamasında [email] adresine yeni ileti açar;
+  /// e-posta uygulaması yoksa false.
+  Future<bool> sendFeedback({
+    required String email,
+    required String subject,
+  }) async =>
+      await _call<bool>('sendFeedback', {'email': email, 'subject': subject}) ??
+      false;
+
   Future<void> openNotificationSettings() =>
       _call<void>('openNotificationSettings');
 }

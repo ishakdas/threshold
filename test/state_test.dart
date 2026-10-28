@@ -98,6 +98,25 @@ void main() {
     );
   });
 
+  test('bildirim gecikmesi kaydedilir, sınırlanır, eski kayıtta sıfırdır', () {
+    final base = defaultTriggerConfigs[DayMode.morning]!;
+    final c = base.copyWith(delay: const Duration(minutes: 2, seconds: 30));
+    expect(c.toJson()['delaySeconds'], 150);
+    expect(
+      TriggerConfig.fromJson(c.toJson(), base).delay,
+      const Duration(seconds: 150),
+    );
+    final old = Map<String, Object?>.of(c.toJson())..remove('delaySeconds');
+    expect(TriggerConfig.fromJson(old, base).delay, Duration.zero);
+    expect(
+      TriggerConfig.fromJson({
+        ...c.toJson(),
+        'delaySeconds': 99999,
+      }, base).delay,
+      TriggerConfig.maxDelay,
+    );
+  });
+
   test('her mod yalnızca kendi tetikleyicilerini sunar', () {
     expect(TriggerKind.forMode(DayMode.evening), hasLength(2));
     expect(

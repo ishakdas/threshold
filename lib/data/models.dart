@@ -124,7 +124,11 @@ class TriggerConfig {
     this.windowEnabled = true,
     this.backupEnabled = true,
     required this.backupTime,
+    this.delay = Duration.zero,
   });
+
+  /// [delay]'in üst sınırı; Android tarafı (EsikData.MAX_DELAY_SECONDS) aynı.
+  static const maxDelay = Duration(minutes: 59, seconds: 59);
 
   /// Seçili tetikleyiciler; en az biri. Hangisi önce olursa o gün o bildirir.
   final List<TriggerKind> kinds;
@@ -137,6 +141,10 @@ class TriggerConfig {
   final bool windowEnabled;
   final bool backupEnabled;
   final TimeOfDay backupTime;
+
+  /// Tetikleyiciden ne kadar sonra bildirilir; sıfır: hemen. O arada kontrol
+  /// yapılırsa bildirim gelmez. Yedek saati etkilemez.
+  final Duration delay;
 
   bool activeOn(DateTime day) => days.contains(day.weekday);
 
@@ -179,6 +187,7 @@ class TriggerConfig {
     bool? windowEnabled,
     bool? backupEnabled,
     TimeOfDay? backupTime,
+    Duration? delay,
   }) => TriggerConfig(
     kinds: kinds ?? this.kinds,
     days: days ?? this.days,
@@ -187,6 +196,7 @@ class TriggerConfig {
     windowEnabled: windowEnabled ?? this.windowEnabled,
     backupEnabled: backupEnabled ?? this.backupEnabled,
     backupTime: backupTime ?? this.backupTime,
+    delay: delay ?? this.delay,
   );
 
   Map<String, Object?> toJson() => {
@@ -197,6 +207,7 @@ class TriggerConfig {
     'windowEnabled': windowEnabled,
     'backupEnabled': backupEnabled,
     'backupTime': _timeToJson(backupTime),
+    'delaySeconds': delay.inSeconds,
   };
 
   /// [fallback], eksik ya da bozuk alanlar için kullanılır. Eski kayıtlardaki
@@ -229,6 +240,12 @@ class TriggerConfig {
       windowEnabled: json['windowEnabled'] as bool? ?? fallback.windowEnabled,
       backupEnabled: json['backupEnabled'] as bool? ?? fallback.backupEnabled,
       backupTime: _timeFromJson(json['backupTime'], fallback.backupTime),
+      delay: Duration(
+        seconds: switch (json['delaySeconds']) {
+          final int s => s.clamp(0, maxDelay.inSeconds),
+          _ => fallback.delay.inSeconds,
+        },
+      ),
     );
   }
 }

@@ -129,8 +129,17 @@ object TriggerScheduler {
     private fun job(c: Context, id: Int) =
         JobInfo.Builder(id, ComponentName(c, TriggerJobService::class.java))
 
-    /** [kind] tetikleyicisi oldu: bildirimi gönder (gerekiyorsa) ve sonucu kaydet. */
+    /**
+     * [kind] tetikleyicisi oldu. Ayarda gecikme varsa bildirim o kadar sonra
+     * gelir (DelayedNotify); yoksa hemen.
+     */
     private fun fire(c: Context, mode: Mode, kind: String) {
+        val delay = EsikData.config(c, mode).delaySeconds
+        if (delay > 0) DelayedNotify.schedule(c, mode, kind, delay) else deliver(c, mode, kind)
+    }
+
+    /** Bildirimi gönder (gerekiyorsa) ve sonucu kaydet. */
+    fun deliver(c: Context, mode: Mode, kind: String) {
         val outcome = Thresholds.notifyIfDue(c, mode, Reason.TRIGGER, kind)
         state(c).edit()
             .putLong("last.${mode.key}.at", System.currentTimeMillis())
@@ -505,6 +514,48 @@ class AlarmChangedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED) return
         TriggerScheduler.onNextAlarmChanged(context)
+    }
+}
+
+/**
+ * Tetikleyiciden sonra ayardaki gecikme kadar bekleyip bildirir. Kesin alarm
+ * izni istenmediği için Android birkaç saniye, telefon uzun süre uykudaysa
+ * birkaç dakika kaydırabilir. O arada kontrol yapılırsa bildirim gelmez.
+ */
+object DelayedNotify {
+    private const val EXTRA_KIND = "kind"
+
+    private fun pending(c: Context, mode: Mode, flags: Int, kind: String? = null): PendingIntent? =
+        PendingIntent.getBroadcast(
+            c,
+            100 + mode.ordinal,
+            Intent(c, DelayedNotifyReceiver::class.java)
+                .putExtra(EsikNotifications.EXTRA_MODE, mode.key)
+                .putExtra(EXTRA_KIND, kind),
+            PendingIntent.FLAG_IMMUTABLE or flags,
+        )
+
+    fun schedule(c: Context, mode: Mode, kind: String, seconds: Int) {
+        if (Thresholds.handledToday(c, mode)) return
+        // Aynı eşik için zaten bekleyen varsa ilk tetikleyici geçerli.
+        if (pending(c, mode, PendingIntent.FLAG_NO_CREATE) != null) return
+        c.getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + seconds * 1000L,
+            pending(c, mode, PendingIntent.FLAG_UPDATE_CURRENT, kind)!!,
+        )
+    }
+
+    fun onAlarm(c: Context, intent: Intent) {
+        val mode = Mode.of(intent.getStringExtra(EsikNotifications.EXTRA_MODE)) ?: return
+        pending(c, mode, PendingIntent.FLAG_NO_CREATE)?.cancel()
+        TriggerScheduler.deliver(c, mode, intent.getStringExtra(EXTRA_KIND) ?: return)
+    }
+}
+
+class DelayedNotifyReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        DelayedNotify.onAlarm(context, intent)
     }
 }
 

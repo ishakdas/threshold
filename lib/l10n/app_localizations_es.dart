@@ -1181,4 +1181,60 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get oneByOne => 'Uno por uno';
+
+  @override
+  String get delayTitle => '¿Cuándo avisar?';
+
+  @override
+  String get delayNow => 'Al momento';
+
+  @override
+  String delaySeconds(int seconds) {
+    return '$seconds s';
+  }
+
+  @override
+  String delayMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String delayMinSec(int minutes, int seconds) {
+    return '$minutes min $seconds s';
+  }
+
+  @override
+  String get delayCustom => 'Personalizado';
+
+  @override
+  String get delayHintNow => 'Te avisa en cuanto ocurre el activador.';
+
+  @override
+  String delayHintAfter(String delay) {
+    return 'Llega $delay después del activador. Si revisas antes, no llegará.';
+  }
+
+  @override
+  String get delayPickerTitle => '¿Cuánto después del activador?';
+
+  @override
+  String get delayPickerNote => 'Android puede desplazarlo unos segundos.';
+
+  @override
+  String get delayPickerSave => 'Guardar';
+
+  @override
+  String get contactTitle => 'Escríbenos';
+
+  @override
+  String get contactSubtitle =>
+      'Envía un correo con una sugerencia, un error o una pregunta.';
+
+  @override
+  String get contactSubject => 'Sobre Eşik';
+
+  @override
+  String contactNoApp(String email) {
+    return 'No se encontró una app de correo. Dirección copiada: $email';
+  }
 }
