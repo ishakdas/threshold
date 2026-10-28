@@ -7,21 +7,22 @@ olduğu gibi kopyalanabilir. Sınırlar parantez içinde.
 
 | Dil | Ad |
 |---|---|
-| tr-TR | **Eşik: Ütü, Ocak, Kapı Kontrolü** (30) |
-| en-US | **Eşik: Stove, Iron & Door Check** (30) |
-| es-ES | **Eşik: Fuego, Plancha y Puerta** (29) |
+| tr-TR | **Eşik: Doğru Anda Hatırlatıcı** (28) |
+| en-US | **Eşik: Right-Moment Reminder** (27) |
+| es-ES | **Eşik: Recordatorio Oportuno** (27) |
 
-Ad, uygulamanın ne işe yaradığını ilk bakışta söylemeli: evden çıkmadan ve
-yatmadan önce kontrol edilen tanıdık şeyler. Telefondaki simgenin altında
-yine yalnızca "Eşik" yazar.
+"Eşik" her dilde marka olarak kalır, çevrilmez: telefondaki simgenin altında
+(`appLabel`), uygulama içi metinlerde ve öne çıkan grafiklerde de "Eşik"
+yazar. Adın ikinci yarısı uygulamanın farkını söyler: hatırlatma saate göre
+değil, doğru anda gelir.
 
 ## Kısa açıklama (80)
 
 | Dil | Kısa açıklama |
 |---|---|
-| tr-TR | Ütü, ocak, kapı… Yatmadan ve evden çıkmadan önce tam doğru anda hatırlatır. (75) |
-| en-US | Iron, stove, door… Reminds you right before bed and right before you leave. (75) |
-| es-ES | Plancha, fuego, puerta… Te lo recuerda justo antes de dormir y antes de salir. (78) |
+| tr-TR | Kulaklık, ofis kartı, ocak… Çıkmadan ya da yatmadan önce listeni gözden geçir. (78) |
+| en-US | Earbuds, office badge, stove… Go over your list before you leave or go to bed. (78) |
+| es-ES | Auriculares, tarjeta, fuego… Revisa tu lista antes de salir o de irte a dormir. (79) |
 
 ## Tam açıklama (4000)
 
@@ -115,11 +116,18 @@ EŞİK PLUS
 Todo está desbloqueado los primeros 15 días. Después, sigue gratis con los activadores de carga y alarma, o consigue Eşik Plus con un pago único: varios activadores; modo silencio, desenchufar, Wi‑Fi y NFC; selección de días; vibración en silencio e historial. Sin suscripción.
 ```
 
-## Kategori ve etiketler
+## Kategori, etiketler ve iletişim
+
+Play Console → **Kullanıcı sayısını artırın → Mağaza ayarları**
 
 - Uygulama türü: **Uygulama**
 - Kategori: **Verimlilik**
-- Etiketler: Yapılacaklar listesi, Hatırlatıcılar, Rutinler
+- Etiketler: **Verimlilik**, **Kişisel asistan**, **Saat, alarm ve zamanlayıcı**.
+  Etiketler serbest yazılmıyor, Play'in sabit listesinden seçiliyor;
+  "Yapılacaklar listesi", "Hatırlatıcılar", "Rutinler" listede yok.
+- İletişim e-postası: `developerishak@gmail.com`
+- Yapay zekayla üretilmiş öğe beyanı (mağaza girişinin Yorum adımı):
+  **Öğeleri etiketleme**.
 
 ## Grafikler
 
@@ -139,10 +147,20 @@ flutter test tool/store_assets_test.dart --update-goldens
 python3 tool/store_marketing.py
 ```
 
-## Sürüm notu (ilk dahili test)
+## Sürüm notları
+
+İlk dahili test (29, 0.7.0):
 
 ```
 <tr-TR>
 İlk test sürümü: akşam ve sabah kontrol listeleri, şarj, sessiz mod, alarm, şarjdan çıkarma, Wi‑Fi ve NFC tetikleyicileri, yedek saat, geçmiş.
+</tr-TR>
+```
+
+Sürüm 1.0 dahili test (37, 1.0.0):
+
+```
+<tr-TR>
+Sürüm 1.0: şarjdan çıkarınca tetikleyicisi, bildirim gecikmesi ayarı, 'Bize yaz', satın alma imza doğrulaması; yeni mağaza görselleri.
 </tr-TR>
 ```

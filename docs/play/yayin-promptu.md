@@ -34,7 +34,7 @@ uyuşmuyorsa dur ve bana sor.
 ## Yapılacaklar (sırayla)
 
 1. **Uygulamayı oluştur** (yoksa):
-   - Ad: `Eşik: Ütü, Ocak, Kapı Kontrolü`
+   - Ad: `Eşik: Doğru Anda Hatırlatıcı`
    - Varsayılan dil: Türkçe (tr-TR)
    - Tür: Uygulama
    - Ücret: Ücretsiz
