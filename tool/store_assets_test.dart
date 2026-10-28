@@ -25,6 +25,8 @@ import 'package:threshold/data/store.dart';
 import 'package:threshold/theme/esik_palette.dart';
 import 'package:threshold/theme/esik_theme.dart';
 import 'package:threshold/ui/atmosphere.dart';
+import 'package:threshold/ui/components.dart';
+import 'package:threshold/ui/esik_icons.dart';
 import 'package:threshold/ui/esik_logo.dart';
 
 const _out = '../build/store_raw';
@@ -147,6 +149,8 @@ Future<void> _settle(WidgetTester t) async {
 GoRouter _router(WidgetTester t) =>
     GoRouter.of(t.element(find.byType(Scaffold).first));
 
+/// Kök görünümün sınırları fiziksel piksel olduğu için tam çözünürlük için
+/// uygulamanın kökü verilir (alt bir widget mantıksal boyutta yakalanır).
 Future<void> _shot(WidgetTester t, Finder f, String path) async {
   await _settle(t);
   await expectLater(f, matchesGoldenFile('$_out/$path.png'));
@@ -174,7 +178,25 @@ void main() {
         ),
       );
       await t.pump();
-      await _shot(t, find.byType(_LockScreen), '$lang/1-bildirim');
+      await _shot(t, find.byType(MaterialApp), '$lang/1-bildirim');
+    });
+
+    testWidgets('$lang: gizlilik', (t) async {
+      await _loadFonts();
+      _phone(t);
+      await t.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: esikTheme(DayMode.evening),
+          color: Colors.transparent,
+          home: Material(
+            type: MaterialType.transparency,
+            child: Center(child: _PrivacyPanel(lang)),
+          ),
+        ),
+      );
+      await t.pump();
+      await _shot(t, find.byType(MaterialApp), '$lang/gizlilik');
     });
 
     testWidgets('$lang: akşam', (t) async {
@@ -318,6 +340,140 @@ class _LockScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Gizlilik görseli: telefon çerçevesi olmadan, akşam zemini üstüne konur
+/// (store_marketing.py). Uygulamada böyle bir ekran yok; yalnızca mağaza için.
+class _PrivacyPanel extends StatelessWidget {
+  const _PrivacyPanel(this.lang);
+  final String lang;
+
+  static const _items = {
+    'tr': [
+      (
+        EsikIcon.lock,
+        'Verilerin yalnızca telefonunda',
+        'Hesap yok, sunucu yok, reklam yok. Listelerin ve geçmişin sende kalır.',
+      ),
+      (
+        EsikIcon.location,
+        'Konum, rehber, fotoğraf yok',
+        'Eşik bunlara erişmez, izin bile istemez.',
+      ),
+      (
+        EsikIcon.battery,
+        'Sürekli arka planda çalışmaz',
+        'Şarj, alarm gibi anları Android haber verir; Eşik yalnızca o an uyanır.',
+      ),
+      (
+        EsikIcon.bell,
+        'Bildirim yalnızca senin seçtiğin anda',
+        'Hangi an, hangi günler, hangi saat aralığı: hepsini sen belirlersin.',
+      ),
+    ],
+    'en': [
+      (
+        EsikIcon.lock,
+        'Your data stays on your phone',
+        'No account, no servers, no ads. Your lists and history stay with you.',
+      ),
+      (
+        EsikIcon.location,
+        'No location, contacts or photos',
+        'Eşik never accesses them and never asks for them.',
+      ),
+      (
+        EsikIcon.battery,
+        'Not always running in the background',
+        'Android signals moments like charging or your alarm; Eşik wakes only then.',
+      ),
+      (
+        EsikIcon.bell,
+        'Notifications only when you choose',
+        'Which moment, which days, which time window: you decide it all.',
+      ),
+    ],
+    'es': [
+      (
+        EsikIcon.lock,
+        'Tus datos, solo en tu móvil',
+        'Sin cuenta, sin servidores, sin anuncios. Tus listas e historial son tuyos.',
+      ),
+      (
+        EsikIcon.location,
+        'Sin ubicación, contactos ni fotos',
+        'Eşik no accede a ellos y ni siquiera los pide.',
+      ),
+      (
+        EsikIcon.battery,
+        'No funciona siempre en segundo plano',
+        'Android avisa de momentos como la carga o la alarma; Eşik solo despierta entonces.',
+      ),
+      (
+        EsikIcon.bell,
+        'Avisos solo cuando tú eliges',
+        'Qué momento, qué días, qué franja horaria: todo lo decides tú.',
+      ),
+    ],
+  };
+
+  static const _note = {
+    'tr': 'İnternet yalnızca Google Play satın alması için kullanılır.',
+    'en': 'The internet is used only for Google Play purchases.',
+    'es': 'Internet solo se usa para las compras de Google Play.',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    TextStyle s(double size, {FontWeight w = FontWeight.w400, Color? c}) =>
+        TextStyle(
+          fontFamily: 'Inter',
+          fontSize: size,
+          fontWeight: w,
+          color: c ?? p.text,
+          height: 1.3,
+        );
+    return SizedBox(
+      width: 360,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (icon, title, body) in _items[lang]!)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: SurfaceCard(
+                radius: 26,
+                padding: const EdgeInsets.fromLTRB(16, 16, 18, 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IconCircle(icon: icon, size: 44, active: true),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: s(17, w: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text(body, style: s(14, c: p.textMuted)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 4),
+          Text(
+            _note[lang]!,
+            textAlign: TextAlign.center,
+            style: s(13, c: p.textFaint),
+          ),
+        ],
       ),
     );
   }

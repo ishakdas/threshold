@@ -4,7 +4,7 @@ telefon çerçevesine koyup başlık ekler.
     flutter test tool/store_assets_test.dart --update-goldens
     python3 tool/store_marketing.py
 
-Çıktı: docs/play/gorseller/<dil>/1..6.png (1080×1920) ve
+Çıktı: docs/play/gorseller/<dil>/1..7.png (1080×1920) ve
 docs/play/gorseller/<dil>/one-cikan-1024x500.png.
 """
 
@@ -34,46 +34,73 @@ MORNING = {
     "bezel": (0x1C, 0x14, 0x0E),
 }
 
+# Sıra bir hikâye anlatır: ne işe yarar → akşam → sabah → nasıl seçilir →
+# kontrol → güven → geçmiş. "gizlilik" telefon çerçevesiz bir paneldir.
 SCREENS = [
     ("1-bildirim", EVENING),
     ("2-aksam", EVENING),
-    ("3-kontrol", EVENING),
-    ("4-tetikleyiciler", MORNING),
     ("5-sabah", MORNING),
+    ("4-tetikleyiciler", MORNING),
+    ("3-kontrol", EVENING),
+    ("gizlilik", EVENING),
     ("6-gecmis", MORNING),
 ]
 
 TEXTS = {
     "tr": [
-        ("Doğru anda hatırlatır", "Telefonu şarja takınca kontrol listen önüne gelir."),
-        ("Yatmadan önce, tek bakış", "Ütü, ocak, kapı… Akşam eşiğin hazır."),
-        ("Tek dokunuşla tamam", "Maddeleri işaretle ya da bildirimden “Hepsi tamam” de."),
-        ("Saat değil, an", "Şarj, alarm, sessiz mod, Wi‑Fi, NFC: hangisi önce olursa."),
-        ("Evden çıkmadan önce", "Alarmı kapatınca sabah listen önünde."),
-        ("Her gün eşiği geç", "Hangi akşam ve sabah kontrol ettiğini gör."),
+        ("Ütüyü, ocağı, kapıyı unutma",
+         "Eşik, yatmadan ve evden çıkmadan önce kendi kontrol listeni tam doğru anda hatırlatır."),
+        ("Akşam: telefonu şarja takınca",
+         "Saat kurmana gerek yok. Yatarken telefonu şarja taktığında ya da sessize aldığında akşam listen gelir."),
+        ("Sabah: alarmı kapatınca",
+         "Evden çıkmadan önce sabah listen gelir: alarmı kapatınca, şarjdan çıkarınca ya da evin Wi‑Fi'ından ayrılınca."),
+        ("Ne zaman hatırlatacağını sen seç",
+         "Birden fazla an seçebilirsin; hangisi önce olursa o gün o hatırlatır. Hiçbiri olmazsa yedek saatte hatırlatır."),
+        ("Tek dokunuşla kontrol et",
+         "Maddeleri tek tek işaretle ya da bildirimden “Hepsi tamam” de. Birkaç saniye sürer."),
+        ("Güvenli ve tamamen senin kontrolünde",
+         "Hesap yok, reklam yok, veri toplama yok."),
+        ("Her gün kontrol ettiğini gör",
+         "Hangi akşam ve sabah kontrol ettiğini, hangisini atladığını gör."),
     ],
     "en": [
-        ("Reminds you at the right moment", "Plug in your phone and your checklist appears."),
-        ("Before bed, one glance", "Iron, stove, door… Your evening check is ready."),
-        ("Done in one tap", "Tick items off, or say “All done” from the notification."),
-        ("Not a time, a moment", "Charging, alarm, silent mode, Wi‑Fi, NFC: whichever comes first."),
-        ("Before you head out", "Stop your alarm and your morning list is there."),
-        ("Cross the threshold daily", "See which evenings and mornings you checked."),
+        ("Never forget the iron, stove or door",
+         "Eşik shows your own checklist right when you go to bed and right before you leave home."),
+        ("Evening: when you plug in your phone",
+         "No alarms to set. Plug in or silence your phone at bedtime and your evening list appears."),
+        ("Morning: when you stop your alarm",
+         "Before you head out, your morning list appears: when you stop the alarm, unplug, or leave home Wi‑Fi."),
+        ("You choose when it reminds you",
+         "Pick several moments; whichever comes first reminds you that day. If none happens, a backup time steps in."),
+        ("Check in one tap",
+         "Tick items one by one, or say “All done” from the notification. It takes seconds."),
+        ("Private, and fully in your control",
+         "No account, no ads, no data collection."),
+        ("See every day you checked",
+         "See which evenings and mornings you checked, and which ones you skipped."),
     ],
     "es": [
-        ("Te avisa en el momento justo", "Pon el móvil a cargar y aparece tu lista."),
-        ("Antes de dormir, un vistazo", "Plancha, fuegos, puerta… Tu revisión nocturna, lista."),
-        ("Listo con un toque", "Marca cada punto o di «Todo listo» desde la notificación."),
-        ("No una hora, un momento", "Carga, alarma, modo silencio, Wi‑Fi, NFC: lo que ocurra primero."),
-        ("Antes de salir de casa", "Apaga la alarma y tu lista de la mañana está ahí."),
-        ("Cruza el umbral cada día", "Mira qué noches y mañanas revisaste."),
+        ("No olvides la plancha, el fuego ni la puerta",
+         "Eşik te muestra tu propia lista justo al irte a dormir y justo antes de salir de casa."),
+        ("Noche: al poner el móvil a cargar",
+         "Sin alarmas que programar. Al cargar o silenciar el móvil antes de dormir, aparece tu lista de la noche."),
+        ("Mañana: al apagar la alarma",
+         "Antes de salir, aparece tu lista de la mañana: al apagar la alarma, desenchufar el móvil o salir del Wi‑Fi de casa."),
+        ("Tú eliges cuándo te avisa",
+         "Elige varios momentos; el primero que ocurra te avisa ese día. Si no ocurre ninguno, te avisa a una hora de respaldo."),
+        ("Revisa con un toque",
+         "Marca cada punto o di «Todo listo» desde la notificación. Son segundos."),
+        ("Privado y totalmente bajo tu control",
+         "Sin cuenta, sin anuncios, sin recopilar datos."),
+        ("Mira cada día que revisaste",
+         "Mira qué noches y mañanas revisaste y cuáles te saltaste."),
     ],
 }
 
 FEATURE = {
-    "tr": ("Eşik", "Yatmadan ve evden çıkmadan önce,\ndoğru anda kontrol et."),
-    "en": ("Eşik", "Check before bed and before you leave,\nright at the moment."),
-    "es": ("Eşik", "Revisa antes de dormir y antes de salir,\njusto en el momento."),
+    "tr": ("Eşik", "Ütü, ocak, kapı…\nYatmadan ve evden çıkmadan önce\ntam doğru anda hatırlatır."),
+    "en": ("Eşik", "Iron, stove, door…\nReminds you right before bed\nand right before you leave."),
+    "es": ("Eşik", "Plancha, fuego, puerta…\nTe lo recuerda justo antes de dormir\ny justo antes de salir."),
 }
 
 
@@ -181,9 +208,10 @@ def screenshot(lang, index):
 
     d = ImageDraw.Draw(canvas)
     tf = font("SemiBold", 70)
-    while d.textlength(title, font=tf) > W - 120 and tf.size > 50:
+    # Uzun başlık önce küçülür, sığmazsa iki satıra iner.
+    while d.textlength(title, font=tf) > W - 120 and tf.size > 58:
         tf = font("SemiBold", tf.size - 2)
-    y = 120
+    y = 110
     for line in wrap(d, title, tf, W - 120):
         d.text((W // 2, y), line, font=tf, fill=theme["text"], anchor="ma")
         y += int(tf.size * 1.18)
@@ -197,6 +225,13 @@ def screenshot(lang, index):
     canvas.alpha_composite(overlay)
 
     top = max(y + 60, 430)
+    if name == "gizlilik":
+        panel = Image.open(RAW / lang / f"{name}.png").convert("RGBA")
+        panel = panel.crop(panel.getbbox())
+        scale = min((W - 100) / panel.width, (H - top - 80) / panel.height)
+        panel = panel.resize((round(panel.width * scale), round(panel.height * scale)), Image.LANCZOS)
+        canvas.alpha_composite(panel, ((W - panel.width) // 2, top + (H - top - panel.height) // 2 - 20))
+        return canvas.convert("RGB")
     body = phone(RAW / lang / f"{name}.png", theme, 760)
     shadowed(canvas, body, ((W - body.width) // 2, top))
     return canvas.convert("RGB")
@@ -210,10 +245,10 @@ def feature(lang):
 
     title, sub = FEATURE[lang]
     d = ImageDraw.Draw(canvas)
-    d.text((70, 150), title, font=font("SemiBold", 104), fill=EVENING["text"])
+    d.text((70, 120), title, font=font("SemiBold", 104), fill=EVENING["text"])
     overlay = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     ImageDraw.Draw(overlay).multiline_text(
-        (74, 290), sub, font=font("Regular", 27), fill=EVENING["muted"], spacing=12
+        (74, 270), sub, font=font("Regular", 27), fill=EVENING["muted"], spacing=12
     )
     canvas.alpha_composite(overlay)
 
