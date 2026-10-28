@@ -762,7 +762,7 @@ class _DelaySheetState extends State<_DelaySheet> {
 class _ContactCard extends ConsumerWidget {
   const _ContactCard();
 
-  static const email = 'furkan.ishack@gmail.com';
+  static const email = 'developerishak@gmail.com';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
