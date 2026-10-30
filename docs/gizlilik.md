@@ -1,6 +1,6 @@
 # Eşik — Gizlilik Politikası
 
-*Son güncelleme: 26 Ekim 2026*
+*Son güncelleme: 30 Ekim 2026*
 
 Eşik, akşam ve sabah kontrol listelerini doğru anda hatırlatan bir
 uygulamadır. Bu politika, uygulamanın hangi bilgileri nasıl kullandığını
@@ -40,6 +40,16 @@ sıradaki alarmın saatini ve Wi‑Fi ile mobil veri arasında geçişi yalnızc
 an tetikleyiciye karar vermek için okur. Bunlar kaydedilmez ve telefondan
 çıkmaz. Wi‑Fi ağının adı ve konumun okunmaz.
 
+### iPhone'da
+
+iPhone'da Eşik bu olayları kendisi okumaz. Şarja takma, alarmın durması,
+Wi‑Fi'dan ayrılma, NFC etiketi ya da uyku gibi anları senin Kestirmeler
+uygulamasında kurduğun otomasyonlar Eşik'e bildirir; Eşik yalnızca hangi
+anın olduğunu öğrenir. Ücretsiz denemenin başlangıç tarihi, uygulama silinip
+yeniden kurulduğunda sıfırlanmasın diye telefonun Anahtar Zinciri'nde
+tutulur; bu tarih de telefondan çıkmaz. Eşik Plus satın alımı App Store
+üzerinden yapılır; ödeme bilgilerin Eşik'e ulaşmaz.
+
 ## Çocuklar
 
 Eşik çocuklara yönelik değildir ve kimseden bilgi toplamaz.
@@ -56,7 +66,7 @@ Sorular için: developerishak@gmail.com
 
 # Eşik — Privacy Policy (English)
 
-*Last updated: 26 October 2026*
+*Last updated: 30 October 2026*
 
 Eşik reminds you of your evening and morning checklists at the right moment.
 
@@ -75,6 +85,11 @@ Eşik reads the charging state, the phone's sound mode, the time of the next
 alarm and the switch between Wi‑Fi and mobile data only to decide, at that
 moment, whether a trigger happened. None of this is stored or leaves the
 phone. Wi‑Fi network names and location are never read.
+
+On iPhone, Eşik does not read these events itself: automations you set up in
+the Shortcuts app tell Eşik which moment happened. The free trial's start date
+is kept in the phone's Keychain so it survives reinstalling the app; it never
+leaves the phone. Eşik Plus is purchased through the App Store.
 
 Permissions: notifications (to show your checklist), run at startup (to
 restore reminders after a reboot), battery optimization exemption (optional,
