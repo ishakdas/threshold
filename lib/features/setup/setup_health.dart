@@ -7,7 +7,7 @@ import '../../platform/native_bridge.dart';
 import '../../data/plus.dart';
 
 /// Eşik'in çalışmasını engelleyen, kullanıcının düzeltebileceği bir eksik.
-enum SetupIssue { notifications, battery, nfcOff, nfcTag, noAlarm }
+enum SetupIssue { notifications, battery, nfcOff, nfcTag, noAlarm, shortcut }
 
 extension SetupIssueText on SetupIssue {
   String label(AppLocalizations l) => switch (this) {
@@ -16,16 +16,21 @@ extension SetupIssueText on SetupIssue {
     SetupIssue.nfcOff => l.issueNfcOff,
     SetupIssue.nfcTag => l.issueNfcTag,
     SetupIssue.noAlarm => l.issueNoAlarm,
+    SetupIssue.shortcut => l.issueShortcut,
   };
 }
 
-/// Bir modun tetikleyicisine özel eksikler.
-List<SetupIssue> triggerIssues(SetupHealth h, TriggerKind kind) => [
-  if (kind == TriggerKind.nfcTag && h.nfc != NfcState.on) SetupIssue.nfcOff,
-  if (kind == TriggerKind.nfcTag && !h.nfcTagWritten) SetupIssue.nfcTag,
-  if (kind == TriggerKind.alarmStopped && h.nextAlarm == null)
-    SetupIssue.noAlarm,
-];
+/// Bir modun tetikleyicisine özel eksikler. iOS'ta tek eksik, Kestirmeler
+/// otomasyonunun henüz hiç çalışmamış olması.
+List<SetupIssue> triggerIssues(SetupHealth h, TriggerKind kind) => isIOS
+    ? [if (!h.shortcutsSeen.contains(kind)) SetupIssue.shortcut]
+    : [
+        if (kind == TriggerKind.nfcTag && h.nfc != NfcState.on)
+          SetupIssue.nfcOff,
+        if (kind == TriggerKind.nfcTag && !h.nfcTagWritten) SetupIssue.nfcTag,
+        if (kind == TriggerKind.alarmStopped && h.nextAlarm == null)
+          SetupIssue.noAlarm,
+      ];
 
 /// Bir modun bütün eksikleri: ortak olanlar ve seçili tetikleyicilere özel olanlar.
 List<SetupIssue> setupIssues(SetupHealth h, List<TriggerKind> kinds) => [

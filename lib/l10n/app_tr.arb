@@ -9,9 +9,9 @@
   "triggerAppClosedTitle": "Uygulama kapanınca",
   "triggerAppClosedSubtitle": "Instagram",
   "triggerAppClosedWhen": "Instagram’ı kapattığında",
-  "triggerSleepModeTitle": "Uyku modu",
-  "triggerSleepModeSubtitle": "Açılınca",
-  "triggerSleepModeWhen": "Uyku modu açıldığında",
+  "triggerSleepModeTitle": "Uyku başlayınca",
+  "triggerSleepModeSubtitle": "Uyku odağı",
+  "triggerSleepModeWhen": "Uyku odağı başladığında",
   "triggerAirplaneModeTitle": "Uçak modu",
   "triggerAirplaneModeSubtitle": "Açılınca",
   "triggerAirplaneModeWhen": "Uçak modunu açtığında",
@@ -794,5 +794,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "stepShortcutTitle": "Kestirmeler’de otomasyon kur",
+  "stepShortcutAction": "Kestirmeler’i aç",
+  "shortcutIntro": "iPhone uygulamaların bu anı görmesine izin vermiyor; Kestirmeler görüyor. Bir kez kur, gerisi sessizce çalışır.",
+  "shortcutCharging": "Otomasyon → + → Şarj Cihazı → “Bağlandı” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Şarja takıldı”.",
+  "shortcutUnplugged": "Otomasyon → + → Şarj Cihazı → “Bağlantısı Kesildi” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Şarjdan çıkarıldı”.",
+  "shortcutAlarm": "Otomasyon → + → Alarm → “Durduruldu” (istersen yalnızca iş alarmını seç) ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Alarm durdu”.",
+  "shortcutWifi": "Otomasyon → + → Wi‑Fi → evinin ağı → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Evden çıkıldı”.",
+  "shortcutNfc": "Otomasyon → + → NFC → “Tara” ve kapıdaki etiketi telefona yaklaştır → “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Kapı etiketi”. Herhangi bir NFC etiketi olur.",
+  "shortcutSleep": "Otomasyon → + → Uyku (ya da Odak → Uyku) → “Başladığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Uyku başladı”.",
+  "shortcutWaiting": "Otomasyon bir kez çalışınca bu adım kendiliğinden tamamlanır.",
+  "shortcutSeen": "Otomasyon çalışıyor.",
+  "issueShortcut": "Kestirmeler otomasyonu henüz çalışmadı",
+  "hintShortcut": "Kestirmeler’deki otomasyon çalışınca gelir; nasıl kurulacağı kurulum rehberinde.",
+  "plusFeatureTriggersIOS": "Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi"
 }

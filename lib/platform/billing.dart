@@ -37,7 +37,9 @@ class PlusBilling extends Notifier<BuyState> {
         onError: (Object e) => debugPrint('PlusBilling: $e'),
       );
       if (!await _iap.isAvailable()) return;
-      await _sync();
+      // iOS'ta geri yükleme Apple hesabı şifresi isteyebilir; yalnızca
+      // kullanıcı "Satın alımı geri yükle"ye basınca yapılır.
+      if (defaultTargetPlatform == TargetPlatform.android) await _sync();
     } on Object catch (e) {
       // Play Store yok (emülatör, test): uygulama yine çalışır.
       debugPrint('PlusBilling.start: $e');
@@ -130,7 +132,9 @@ class PlusBilling extends Notifier<BuyState> {
 }
 
 /// Play kaydının imzası Android tarafında (PurchaseVerifier.kt) doğrulanır.
+/// App Store işlemlerini StoreKit kendisi doğrulayıp cihaza imzalı verir.
 Future<bool> _verified(PurchaseDetails p) async {
+  if (defaultTargetPlatform == TargetPlatform.iOS) return true;
   if (p is! GooglePlayPurchaseDetails) return false;
   try {
     return await const MethodChannel('esik/native')

@@ -502,6 +502,7 @@ class _SetupCard extends ConsumerWidget {
       SetupIssue.battery => EsikIcon.battery,
       SetupIssue.nfcOff || SetupIssue.nfcTag => EsikIcon.nfc,
       SetupIssue.noAlarm => EsikIcon.alarm,
+      SetupIssue.shortcut => EsikIcon.bolt,
     };
     return Semantics(
       button: true,

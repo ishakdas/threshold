@@ -1,0 +1,36 @@
+name: iOS
+
+# İmzasız derleme: Swift kodunun derlendiğini denetler. İmzalama ve
+# TestFlight'a yükleme Mac'te Xcode ile yapılır (docs/ios/yayin.md).
+# macOS dakikaları gizli depoda 10 kat sayıldığı için yalnızca iOS'u
+# etkileyen değişikliklerde çalışır.
+on:
+  push:
+    paths:
+      - "ios/**"
+      - "lib/**"
+      - "pubspec.*"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.7"
+
+jobs:
+  build:
+    name: iOS derlemesi (imzasız)
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - run: .github/scripts/build.sh ios --release --no-codesign

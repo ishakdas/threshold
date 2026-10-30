@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart' show ProductDetails;
 
+import '../../data/models.dart' show isIOS;
 import '../../data/plus.dart';
 import '../../l10n/texts.dart';
 import '../../platform/billing.dart';
@@ -93,9 +94,12 @@ class _PlusSheetState extends ConsumerState<_PlusSheet> {
             ),
             const SizedBox(height: 14),
             feature(EsikIcon.checklist, l10n.plusFeatureMulti),
-            feature(EsikIcon.nfc, l10n.plusFeatureWifiNfc),
+            feature(
+              EsikIcon.nfc,
+              isIOS ? l10n.plusFeatureTriggersIOS : l10n.plusFeatureWifiNfc,
+            ),
             feature(EsikIcon.clock, l10n.plusFeatureDays),
-            feature(EsikIcon.vibrate, l10n.plusFeatureSilent),
+            if (!isIOS) feature(EsikIcon.vibrate, l10n.plusFeatureSilent),
             feature(EsikIcon.history, l10n.plusFeatureHistory),
             const SizedBox(height: 14),
             Text(

@@ -37,13 +37,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get triggerAppClosedWhen => 'Instagram’ı kapattığında';
 
   @override
-  String get triggerSleepModeTitle => 'Uyku modu';
+  String get triggerSleepModeTitle => 'Uyku başlayınca';
 
   @override
-  String get triggerSleepModeSubtitle => 'Açılınca';
+  String get triggerSleepModeSubtitle => 'Uyku odağı';
 
   @override
-  String get triggerSleepModeWhen => 'Uyku modu açıldığında';
+  String get triggerSleepModeWhen => 'Uyku odağı başladığında';
 
   @override
   String get triggerAirplaneModeTitle => 'Uçak modu';
@@ -1204,4 +1204,56 @@ class AppLocalizationsTr extends AppLocalizations {
   String contactNoApp(String email) {
     return 'E-posta uygulaması bulunamadı. Adres panoya kopyalandı: $email';
   }
+
+  @override
+  String get stepShortcutTitle => 'Kestirmeler’de otomasyon kur';
+
+  @override
+  String get stepShortcutAction => 'Kestirmeler’i aç';
+
+  @override
+  String get shortcutIntro =>
+      'iPhone uygulamaların bu anı görmesine izin vermiyor; Kestirmeler görüyor. Bir kez kur, gerisi sessizce çalışır.';
+
+  @override
+  String get shortcutCharging =>
+      'Otomasyon → + → Şarj Cihazı → “Bağlandı” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Şarja takıldı”.';
+
+  @override
+  String get shortcutUnplugged =>
+      'Otomasyon → + → Şarj Cihazı → “Bağlantısı Kesildi” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Şarjdan çıkarıldı”.';
+
+  @override
+  String get shortcutAlarm =>
+      'Otomasyon → + → Alarm → “Durduruldu” (istersen yalnızca iş alarmını seç) ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Alarm durdu”.';
+
+  @override
+  String get shortcutWifi =>
+      'Otomasyon → + → Wi‑Fi → evinin ağı → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Evden çıkıldı”.';
+
+  @override
+  String get shortcutNfc =>
+      'Otomasyon → + → NFC → “Tara” ve kapıdaki etiketi telefona yaklaştır → “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Kapı etiketi”. Herhangi bir NFC etiketi olur.';
+
+  @override
+  String get shortcutSleep =>
+      'Otomasyon → + → Uyku (ya da Odak → Uyku) → “Başladığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Uyku başladı”.';
+
+  @override
+  String get shortcutWaiting =>
+      'Otomasyon bir kez çalışınca bu adım kendiliğinden tamamlanır.';
+
+  @override
+  String get shortcutSeen => 'Otomasyon çalışıyor.';
+
+  @override
+  String get issueShortcut => 'Kestirmeler otomasyonu henüz çalışmadı';
+
+  @override
+  String get hintShortcut =>
+      'Kestirmeler’deki otomasyon çalışınca gelir; nasıl kurulacağı kurulum rehberinde.';
+
+  @override
+  String get plusFeatureTriggersIOS =>
+      'Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi';
 }

@@ -1,7 +1,13 @@
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart' show TimeOfDay;
 
 import '../core/day_mode.dart';
 import '../ui/esik_icons.dart';
+
+/// iOS'ta tetikleyiciler uygulamanın kendisinde değil, Kestirmeler
+/// otomasyonlarında çalışır (ios/Runner/EsikIntents.swift).
+bool get isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
 /// Kontrol listesindeki tek bir madde ("Ütünün fişini çektim mi?").
 class CheckItem {
@@ -67,9 +73,23 @@ enum TriggerKind {
   final DayMode mode;
   final EsikIcon icon;
 
-  /// Android'de çalışan tetikleyiciler (android/.../Triggers.kt). Diğerleri
-  /// henüz listede gösterilmez; eski ayarlarda kalmışsa yedek saat devrede.
-  bool get supported => switch (this) {
+  /// Bu platformda çalışan tetikleyiciler. Android'de uygulama kendisi
+  /// yakalar (android/.../Triggers.kt); iOS'ta yalnızca Kestirmeler'in
+  /// otomasyon sunduğu anlar (sessiz mod düğmesi için otomasyon yok).
+  /// Diğerleri listede gösterilmez; eski ayarlarda kalmışsa yedek saat devrede.
+  bool get supported => isIOS ? _supportedIOS : _supportedAndroid;
+
+  bool get _supportedIOS => switch (this) {
+    charging ||
+    sleepMode ||
+    alarmStopped ||
+    unplugged ||
+    leftHomeWifi ||
+    nfcTag => true,
+    _ => false,
+  };
+
+  bool get _supportedAndroid => switch (this) {
     charging ||
     silenced ||
     alarmStopped ||

@@ -37,13 +37,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get triggerAppClosedWhen => 'When you close Instagram';
 
   @override
-  String get triggerSleepModeTitle => 'Sleep mode';
+  String get triggerSleepModeTitle => 'When sleep starts';
 
   @override
-  String get triggerSleepModeSubtitle => 'When it turns on';
+  String get triggerSleepModeSubtitle => 'Sleep Focus';
 
   @override
-  String get triggerSleepModeWhen => 'When sleep mode turns on';
+  String get triggerSleepModeWhen => 'When Sleep Focus starts';
 
   @override
   String get triggerAirplaneModeTitle => 'Airplane mode';
@@ -1232,4 +1232,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String contactNoApp(String email) {
     return 'No email app found. Address copied: $email';
   }
+
+  @override
+  String get stepShortcutTitle => 'Set up an automation in Shortcuts';
+
+  @override
+  String get stepShortcutAction => 'Open Shortcuts';
+
+  @override
+  String get shortcutIntro =>
+      'iPhone doesn’t let apps see this moment, but Shortcuts can. Set it up once and it runs quietly.';
+
+  @override
+  String get shortcutCharging =>
+      'Automation → + → Charger → “Is Connected” and “Run Immediately” → Next → search “Eşik” → “Plugged in”.';
+
+  @override
+  String get shortcutUnplugged =>
+      'Automation → + → Charger → “Is Disconnected” and “Run Immediately” → Next → search “Eşik” → “Unplugged”.';
+
+  @override
+  String get shortcutAlarm =>
+      'Automation → + → Alarm → “Is Stopped” (pick just your work alarm if you like) and “Run Immediately” → Next → search “Eşik” → “Alarm stopped”.';
+
+  @override
+  String get shortcutWifi =>
+      'Automation → + → Wi‑Fi → your home network → “Leaves” and “Run Immediately” → Next → search “Eşik” → “Left home”.';
+
+  @override
+  String get shortcutNfc =>
+      'Automation → + → NFC → “Scan” and hold the door tag to your phone → “Run Immediately” → Next → search “Eşik” → “Door tag”. Any NFC tag works.';
+
+  @override
+  String get shortcutSleep =>
+      'Automation → + → Sleep (or Focus → Sleep) → “When Starts” and “Run Immediately” → Next → search “Eşik” → “Sleep started”.';
+
+  @override
+  String get shortcutWaiting =>
+      'This step completes on its own once the automation runs.';
+
+  @override
+  String get shortcutSeen => 'The automation is working.';
+
+  @override
+  String get issueShortcut => 'The Shortcuts automation hasn’t run yet';
+
+  @override
+  String get hintShortcut =>
+      'Arrives when your Shortcuts automation runs; the setup guide shows how.';
+
+  @override
+  String get plusFeatureTriggersIOS =>
+      'Sleep, unplugging, Wi‑Fi and the NFC tag';
 }

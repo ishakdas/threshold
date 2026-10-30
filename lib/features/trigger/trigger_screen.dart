@@ -327,8 +327,11 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               ),
               _StatusLine(mode: _mode),
               const SizedBox(height: 10),
-              const _SilentAlertCard(),
-              const SizedBox(height: 10),
+              // iOS'ta bildirim telefonun sessiz ayarını aşamaz.
+              if (!isIOS) ...[
+                const _SilentAlertCard(),
+                const SizedBox(height: 10),
+              ],
               const _LanguageCard(),
               const SizedBox(height: 10),
               const _ContactCard(),
@@ -739,10 +742,12 @@ class _DelaySheetState extends State<_DelaySheet> {
               ),
             ),
           ),
-          Text(
-            l10n.delayPickerNote,
-            style: t.labelSmall?.copyWith(fontSize: 12, color: p.textFaint),
-          ),
+          // iOS yerel bildirimi saniyesinde gelir.
+          if (!isIOS)
+            Text(
+              l10n.delayPickerNote,
+              style: t.labelSmall?.copyWith(fontSize: 12, color: p.textFaint),
+            ),
           const SizedBox(height: 14),
           PrimaryPillButton(
             label: l10n.delayPickerSave,
@@ -951,17 +956,18 @@ class _StatusLine extends ConsumerWidget {
   }
 
   /// Tetikleyicinin çalışması için bilinmesi gereken tek şey.
-  static String _hint(AppLocalizations l10n, TriggerKind kind) =>
-      switch (kind) {
-        TriggerKind.charging => l10n.hintCharging,
-        TriggerKind.alarmStopped => l10n.hintAlarm,
-        TriggerKind.leftHomeWifi => l10n.hintWifi,
-        TriggerKind.silenced => l10n.hintSilenced,
-        TriggerKind.unsilenced => l10n.hintUnsilenced,
-        TriggerKind.nfcTag => l10n.hintNfc,
-        TriggerKind.unplugged => l10n.hintUnplugged,
-        _ => l10n.hintSoon,
-      };
+  static String _hint(AppLocalizations l10n, TriggerKind kind) => isIOS
+      ? l10n.hintShortcut
+      : switch (kind) {
+          TriggerKind.charging => l10n.hintCharging,
+          TriggerKind.alarmStopped => l10n.hintAlarm,
+          TriggerKind.leftHomeWifi => l10n.hintWifi,
+          TriggerKind.silenced => l10n.hintSilenced,
+          TriggerKind.unsilenced => l10n.hintUnsilenced,
+          TriggerKind.nfcTag => l10n.hintNfc,
+          TriggerKind.unplugged => l10n.hintUnplugged,
+          _ => l10n.hintSoon,
+        };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

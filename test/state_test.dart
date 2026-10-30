@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,8 @@ import 'package:threshold/data/app_state.dart';
 import 'package:threshold/data/models.dart';
 import 'package:threshold/l10n/texts.dart';
 import 'package:threshold/features/setup/setup_guide_screen.dart';
+import 'package:threshold/features/setup/setup_health.dart';
+import 'package:threshold/platform/native_bridge.dart';
 import 'package:threshold/features/trigger/arc_range_picker.dart';
 import 'package:threshold/ui/esik_icons.dart';
 
@@ -115,6 +118,42 @@ void main() {
       }, base).delay,
       TriggerConfig.maxDelay,
     );
+  });
+
+  group('iOS', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('yalnızca Kestirmeler otomasyonu olan tetikleyiciler sunulur', () {
+      expect(TriggerKind.forMode(DayMode.evening), [
+        TriggerKind.charging,
+        TriggerKind.sleepMode,
+      ]);
+      expect(TriggerKind.forMode(DayMode.morning), [
+        TriggerKind.alarmStopped,
+        TriggerKind.unplugged,
+        TriggerKind.leftHomeWifi,
+        TriggerKind.nfcTag,
+      ]);
+    });
+
+    test('kurulum: bildirim, her tetikleyiciye bir otomasyon, deneme', () {
+      final steps = setupStepsFor(trL10n, [
+        TriggerKind.charging,
+        TriggerKind.sleepMode,
+      ]);
+      expect(steps.map((s) => s.title), [
+        'Bildirimlere izin ver',
+        'Kestirmeler’de otomasyon kur',
+        'Kestirmeler’de otomasyon kur',
+        'Dene',
+      ]);
+      const seen = SetupHealth(shortcutsSeen: {TriggerKind.charging});
+      expect(stepDone(steps[1], seen), isTrue);
+      expect(stepDone(steps[2], seen), isFalse);
+      expect(setupIssues(seen, [TriggerKind.charging]), isEmpty);
+      expect(setupIssues(seen, [TriggerKind.sleepMode]), [SetupIssue.shortcut]);
+    });
   });
 
   test('her mod yalnızca kendi tetikleyicilerini sunar', () {

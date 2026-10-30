@@ -64,6 +64,9 @@ class NativeBridge {
 
   Future<void> openNfcSettings() => _call<void>('openNfcSettings');
 
+  /// iOS: Kestirmeler uygulaması (otomasyon kurmak için).
+  Future<void> openShortcuts() => _call<void>('openShortcuts');
+
   /// Saat uygulamasının alarm listesi.
   Future<void> openClock() => _call<void>('openClock');
 
@@ -232,6 +235,7 @@ class SetupHealth {
     this.nfcTagWritten = false,
     this.nextAlarm,
     this.alarmVolume = 1,
+    this.shortcutsSeen = const {},
   });
 
   final bool notificationPermission;
@@ -247,6 +251,9 @@ class SetupHealth {
   /// Saat uygulamasındaki sıradaki alarm; yoksa null.
   final DateTime? nextAlarm;
   final int alarmVolume;
+
+  /// iOS: Kestirmeler otomasyonu en az bir kez çalışmış tetikleyiciler.
+  final Set<TriggerKind> shortcutsSeen;
 
   bool get notifications => notificationPermission && notificationsEnabled;
 
@@ -267,6 +274,11 @@ class SetupHealth {
       alarmVolume: switch (raw['alarmVolume']) {
         final int v => v,
         _ => 1,
+      },
+      shortcutsSeen: {
+        if (raw['shortcutsSeen'] case final List seen)
+          for (final kind in TriggerKind.values)
+            if (seen.contains(kind.name)) kind,
       },
     );
   }

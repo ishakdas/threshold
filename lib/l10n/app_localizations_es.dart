@@ -37,13 +37,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get triggerAppClosedWhen => 'Cuando cierres Instagram';
 
   @override
-  String get triggerSleepModeTitle => 'Modo descanso';
+  String get triggerSleepModeTitle => 'Al empezar el descanso';
 
   @override
-  String get triggerSleepModeSubtitle => 'Al activarse';
+  String get triggerSleepModeSubtitle => 'Concentración Descanso';
 
   @override
-  String get triggerSleepModeWhen => 'Cuando se active el modo descanso';
+  String get triggerSleepModeWhen => 'Cuando empieza el modo Descanso';
 
   @override
   String get triggerAirplaneModeTitle => 'Modo avión';
@@ -1237,4 +1237,57 @@ class AppLocalizationsEs extends AppLocalizations {
   String contactNoApp(String email) {
     return 'No se encontró una app de correo. Dirección copiada: $email';
   }
+
+  @override
+  String get stepShortcutTitle => 'Crea una automatización en Atajos';
+
+  @override
+  String get stepShortcutAction => 'Abrir Atajos';
+
+  @override
+  String get shortcutIntro =>
+      'El iPhone no deja que las apps vean este momento, pero Atajos sí. Configúralo una vez y funcionará en silencio.';
+
+  @override
+  String get shortcutCharging =>
+      'Automatización → + → Cargador → “Se conecta” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Enchufado”.';
+
+  @override
+  String get shortcutUnplugged =>
+      'Automatización → + → Cargador → “Se desconecta” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Desenchufado”.';
+
+  @override
+  String get shortcutAlarm =>
+      'Automatización → + → Alarma → “Se detiene” (puedes elegir solo la del trabajo) y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Alarma apagada”.';
+
+  @override
+  String get shortcutWifi =>
+      'Automatización → + → Wi‑Fi → la red de casa → “Al salir” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Salí de casa”.';
+
+  @override
+  String get shortcutNfc =>
+      'Automatización → + → NFC → “Escanear” y acerca la etiqueta de la puerta → “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Etiqueta de la puerta”. Sirve cualquier etiqueta NFC.';
+
+  @override
+  String get shortcutSleep =>
+      'Automatización → + → Descanso (o Concentración → Descanso) → “Al empezar” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Empieza el descanso”.';
+
+  @override
+  String get shortcutWaiting =>
+      'Este paso se completa solo cuando la automatización se ejecute.';
+
+  @override
+  String get shortcutSeen => 'La automatización funciona.';
+
+  @override
+  String get issueShortcut =>
+      'La automatización de Atajos aún no se ha ejecutado';
+
+  @override
+  String get hintShortcut =>
+      'Llega cuando se ejecuta tu automatización de Atajos; la guía te muestra cómo.';
+
+  @override
+  String get plusFeatureTriggersIOS =>
+      'Descanso, desenchufar, Wi‑Fi y etiqueta NFC';
 }

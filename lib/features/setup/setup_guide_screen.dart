@@ -112,6 +112,22 @@ List<SetupStep> setupStepsFor(AppLocalizations l, List<TriggerKind> kinds) {
     ),
     _ => null,
   }?._forTrigger(kind);
+  // iOS: her tetikleyici bir Kestirmeler otomasyonu; pil adımı yok.
+  SetupStep shortcut(TriggerKind kind) => SetupStep(
+    kind: SetupStepKind.trigger,
+    title: l.stepShortcutTitle,
+    detail: switch (kind) {
+      TriggerKind.charging => l.shortcutCharging,
+      TriggerKind.unplugged => l.shortcutUnplugged,
+      TriggerKind.alarmStopped => l.shortcutAlarm,
+      TriggerKind.leftHomeWifi => l.shortcutWifi,
+      TriggerKind.nfcTag => l.shortcutNfc,
+      _ => l.shortcutSleep,
+    },
+    action: l.stepShortcutAction,
+    icon: kind.icon,
+    trigger: kind,
+  );
   final only = kinds.length == 1 ? kinds.single : null;
   final test = SetupStep(
     kind: SetupStepKind.test,
@@ -126,9 +142,10 @@ List<SetupStep> setupStepsFor(AppLocalizations l, List<TriggerKind> kinds) {
       null => l.stepTestMany,
       _ => l.stepTestOther,
     },
-    action: only == TriggerKind.nfcTag ? l.finish : l.sendTest,
+    action: only == TriggerKind.nfcTag && !isIOS ? l.finish : l.sendTest,
     icon: kinds.first.icon,
   );
+  if (isIOS) return [notifications, for (final k in kinds) shortcut(k), test];
   return [notifications, battery, for (final k in kinds) ?specific(k), test];
 }
 
@@ -139,6 +156,7 @@ bool? stepDone(SetupStep step, SetupHealth? h) {
   return switch (step.kind) {
     SetupStepKind.notifications => h.notifications,
     SetupStepKind.battery => h.battery,
+    SetupStepKind.trigger when isIOS => h.shortcutsSeen.contains(step.trigger),
     SetupStepKind.trigger => switch (step.trigger) {
       TriggerKind.nfcTag => h.nfc == NfcState.on && h.nfcTagWritten,
       TriggerKind.alarmStopped => h.nextAlarm != null,
@@ -224,6 +242,8 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
           }
         case SetupStepKind.battery:
           await viaSettings(bridge.openBatterySettings);
+        case SetupStepKind.trigger when isIOS:
+          await viaSettings(bridge.openShortcuts);
         case SetupStepKind.trigger:
           if (kind == TriggerKind.nfcTag && health?.nfc == NfcState.off) {
             await viaSettings(bridge.openNfcSettings);
@@ -234,7 +254,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
             await viaSettings(bridge.openClock);
           }
         case SetupStepKind.test:
-          if (kind == TriggerKind.nfcTag) break;
+          if (kind == TriggerKind.nfcTag && !isIOS) break;
           if (!await bridge.showTestNotification(mode)) {
             advance = false;
             _snack(
@@ -260,6 +280,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   String _actionLabel(SetupStep step, SetupHealth? h, TriggerKind kind) {
     final l10n = context.l10n;
     if (stepDone(step, h) == true) return l10n.continueLabel;
+    if (isIOS) return step.action;
     return switch (step.kind) {
       SetupStepKind.notifications
           when _permissionDenied || h?.notificationPermission == true =>
@@ -279,6 +300,11 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
     if (h == null) return step.detail;
     final l10n = context.l10n;
     final now = ref.read(clockProvider)();
+    if (isIOS && step.kind == SetupStepKind.trigger) {
+      return h.shortcutsSeen.contains(kind)
+          ? l10n.shortcutSeen
+          : '${l10n.shortcutIntro}\n\n${step.detail}\n\n${l10n.shortcutWaiting}';
+    }
     return switch (step.kind) {
       SetupStepKind.notifications when h.notifications => l10n.detailNotifOn,
       SetupStepKind.notifications when h.notificationPermission =>

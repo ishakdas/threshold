@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/day_mode.dart';
 import 'data/app_state.dart';
+import 'data/models.dart' show isIOS;
 import 'data/plus.dart';
 import 'l10n/app_localizations.dart';
 import 'platform/billing.dart';
@@ -92,6 +93,13 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     ref.listen(triggerConfigProvider, (_, _) => _reschedule());
     // Plus açılınca ya da kapanınca Android tetikleyicileri buna göre kurulur.
     ref.listen(plusProvider.select((p) => p.active), (_, _) => _reschedule());
+    // iOS'ta yedek saat bildirimleri önceden kurulur; kontrol yapılınca,
+    // liste ya da dil değişince yeniden kurulmalı.
+    if (isIOS) {
+      ref.listen(checkLogProvider, (_, _) => _reschedule());
+      ref.listen(checklistProvider, (_, _) => _reschedule());
+      ref.listen(languageProvider, (_, _) => _reschedule());
+    }
     final mode = ref.watch(dayModeProvider);
     return MaterialApp.router(
       title: 'Eşik',

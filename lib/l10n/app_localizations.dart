@@ -157,19 +157,19 @@ abstract class AppLocalizations {
   /// No description provided for @triggerSleepModeTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Uyku modu'**
+  /// **'Uyku başlayınca'**
   String get triggerSleepModeTitle;
 
   /// No description provided for @triggerSleepModeSubtitle.
   ///
   /// In tr, this message translates to:
-  /// **'Açılınca'**
+  /// **'Uyku odağı'**
   String get triggerSleepModeSubtitle;
 
   /// No description provided for @triggerSleepModeWhen.
   ///
   /// In tr, this message translates to:
-  /// **'Uyku modu açıldığında'**
+  /// **'Uyku odağı başladığında'**
   String get triggerSleepModeWhen;
 
   /// No description provided for @triggerAirplaneModeTitle.
@@ -2181,6 +2181,90 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'E-posta uygulaması bulunamadı. Adres panoya kopyalandı: {email}'**
   String contactNoApp(String email);
+
+  /// No description provided for @stepShortcutTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kestirmeler’de otomasyon kur'**
+  String get stepShortcutTitle;
+
+  /// No description provided for @stepShortcutAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kestirmeler’i aç'**
+  String get stepShortcutAction;
+
+  /// No description provided for @shortcutIntro.
+  ///
+  /// In tr, this message translates to:
+  /// **'iPhone uygulamaların bu anı görmesine izin vermiyor; Kestirmeler görüyor. Bir kez kur, gerisi sessizce çalışır.'**
+  String get shortcutIntro;
+
+  /// No description provided for @shortcutCharging.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → Şarj Cihazı → “Bağlandı” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Şarja takıldı”.'**
+  String get shortcutCharging;
+
+  /// No description provided for @shortcutUnplugged.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → Şarj Cihazı → “Bağlantısı Kesildi” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Şarjdan çıkarıldı”.'**
+  String get shortcutUnplugged;
+
+  /// No description provided for @shortcutAlarm.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → Alarm → “Durduruldu” (istersen yalnızca iş alarmını seç) ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Alarm durdu”.'**
+  String get shortcutAlarm;
+
+  /// No description provided for @shortcutWifi.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → Wi‑Fi → evinin ağı → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Evden çıkıldı”.'**
+  String get shortcutWifi;
+
+  /// No description provided for @shortcutNfc.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → NFC → “Tara” ve kapıdaki etiketi telefona yaklaştır → “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Kapı etiketi”. Herhangi bir NFC etiketi olur.'**
+  String get shortcutNfc;
+
+  /// No description provided for @shortcutSleep.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → Uyku (ya da Odak → Uyku) → “Başladığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “Uyku başladı”.'**
+  String get shortcutSleep;
+
+  /// No description provided for @shortcutWaiting.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon bir kez çalışınca bu adım kendiliğinden tamamlanır.'**
+  String get shortcutWaiting;
+
+  /// No description provided for @shortcutSeen.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon çalışıyor.'**
+  String get shortcutSeen;
+
+  /// No description provided for @issueShortcut.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kestirmeler otomasyonu henüz çalışmadı'**
+  String get issueShortcut;
+
+  /// No description provided for @hintShortcut.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kestirmeler’deki otomasyon çalışınca gelir; nasıl kurulacağı kurulum rehberinde.'**
+  String get hintShortcut;
+
+  /// No description provided for @plusFeatureTriggersIOS.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi'**
+  String get plusFeatureTriggersIOS;
 }
 
 class _AppLocalizationsDelegate
