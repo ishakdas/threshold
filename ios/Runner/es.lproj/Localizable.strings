@@ -1,4 +1,4 @@
-/* Bildirim metinleri ve Kestirmeler eylemleri. Android karşılığı: res/values*/strings.xml. */
+/* Bildirim metinleri ve Kestirmeler eylemleri. Android karşılığı: res/values-xx/strings.xml. */
 
 "mode_evening" = "Umbral de la noche";
 "mode_morning" = "Umbral de la mañana";
