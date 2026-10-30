@@ -11,6 +11,7 @@ on:
       - "lib/**"
       - "pubspec.*"
       - ".github/workflows/ios.yml"
+      - ".github/scripts/**"
   workflow_dispatch:
 
 concurrency:
