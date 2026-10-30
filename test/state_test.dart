@@ -79,8 +79,8 @@ void main() {
     expect(c.read(todayProgressProvider)[DayMode.evening]!.checked, isEmpty);
   });
 
-  test('çalışan tetikleyiciler önce, sessiz mod ikisi de çalışır', () {
-    expect(TriggerKind.forMode(DayMode.evening).take(2), [
+  test('yalnızca çalışan tetikleyiciler sunulur', () {
+    expect(TriggerKind.forMode(DayMode.evening), [
       TriggerKind.charging,
       TriggerKind.silenced,
     ]);
@@ -88,11 +88,37 @@ void main() {
       TriggerKind.alarmStopped,
       TriggerKind.unsilenced,
     ]);
-    expect(TriggerKind.forMode(DayMode.morning).last.supported, isFalse);
+    expect(
+      TriggerKind.forMode(DayMode.morning),
+      contains(TriggerKind.unplugged),
+    );
+    expect(
+      TriggerKind.forMode(DayMode.morning).every((k) => k.supported),
+      isTrue,
+    );
+  });
+
+  test('bildirim gecikmesi kaydedilir, sınırlanır, eski kayıtta sıfırdır', () {
+    final base = defaultTriggerConfigs[DayMode.morning]!;
+    final c = base.copyWith(delay: const Duration(minutes: 2, seconds: 30));
+    expect(c.toJson()['delaySeconds'], 150);
+    expect(
+      TriggerConfig.fromJson(c.toJson(), base).delay,
+      const Duration(seconds: 150),
+    );
+    final old = Map<String, Object?>.of(c.toJson())..remove('delaySeconds');
+    expect(TriggerConfig.fromJson(old, base).delay, Duration.zero);
+    expect(
+      TriggerConfig.fromJson({
+        ...c.toJson(),
+        'delaySeconds': 99999,
+      }, base).delay,
+      TriggerConfig.maxDelay,
+    );
   });
 
   test('her mod yalnızca kendi tetikleyicilerini sunar', () {
-    expect(TriggerKind.forMode(DayMode.evening), hasLength(5));
+    expect(TriggerKind.forMode(DayMode.evening), hasLength(2));
     expect(
       TriggerKind.forMode(DayMode.morning)
           .every((k) => k.mode == DayMode.morning),

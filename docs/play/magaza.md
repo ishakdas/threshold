@@ -5,139 +5,115 @@ olduğu gibi kopyalanabilir. Sınırlar parantez içinde.
 
 ## Uygulama adı (30)
 
-**Eşik: Akşam ve Sabah Kontrolü** (29)
+| Dil | Ad |
+|---|---|
+| tr-TR | **Eşik: Doğru Anda Hatırlatıcı** (28) |
+| en-US | **Eşik: Right-Moment Reminder** (27) |
+| es-ES | **Eşik: Recordatorio Oportuno** (27) |
 
-Alternatifler: "Eşik — Çıkmadan Önce Kontrol" (28), "Eşik: Kontrol Listesi" (21)
+"Eşik" her dilde marka olarak kalır, çevrilmez: telefondaki simgenin altında
+(`appLabel`), uygulama içi metinlerde ve öne çıkan grafiklerde de "Eşik"
+yazar. Adın ikinci yarısı uygulamanın farkını söyler: hatırlatma saate göre
+değil, doğru anda gelir.
 
 ## Kısa açıklama (80)
 
-Ütü, ocak, kapı… Yatmadan ve evden çıkmadan önce doğru anda kontrol et. (71)
+| Dil | Kısa açıklama |
+|---|---|
+| tr-TR | Kulaklık, ofis kartı, ocak… Çıkmadan ya da yatmadan önce listeni gözden geçir. (78) |
+| en-US | Earbuds, office badge, stove… Go over your list before you leave or go to bed. (78) |
+| es-ES | Auriculares, tarjeta, fuego… Revisa tu lista antes de salir o de irte a dormir. (79) |
 
 ## Tam açıklama (4000)
 
+### tr-TR
+
 ```
-Ütünün fişini çektim mi? Kapıyı kilitledim mi? Şarj aletini çantaya koydum mu?
+Ütünün fişini çektim mi? Ocağı kapattım mı? Kapıyı kilitledim mi?
 
-Eşik, günün iki geçiş anında, yatmadan önce ve evden çıkmadan önce, kendi kontrol listeni önüne getirir. Hatırlatma sabit bir saatte değil, sen o eşikteyken gelir.
+Eşik, yatmadan önce ve evden çıkmadan önce yapman gerekenleri tam doğru anda hatırlatan bir kontrol listesi uygulamasıdır. Listeyi sen yazarsın; Eşik onu saat kurmana gerek kalmadan, sen o andayken önüne getirir.
 
-DOĞRU ANDA
-Eşik saate değil, davranışına bakar. Akşam için:
-• Telefonu şarja takınca
-• Telefonu sessize alınca
-Sabah için:
-• Alarmı durdurunca
-• Telefonu sessizden çıkarınca
-• Ev Wi‑Fi'ından çıkınca
-• Kapıdaki NFC etiketine dokununca
-
+NASIL ÇALIŞIR
+Akşam, telefonu şarja taktığında ya da sessize aldığında akşam listen gelir.
+Sabah, alarmı kapattığında, telefonu şarjdan çıkardığında, evin Wi‑Fi'ından ayrıldığında ya da kapıdaki NFC etiketine dokunduğunda sabah listen gelir.
 Birden fazlasını seçebilirsin; hangisi önce olursa o gün o hatırlatır. Hiçbiri olmazsa seçtiğin yedek saatte hatırlatır.
 
-TEK DOKUNUŞ
-Bildirimden "Hepsi tamam" de, ya da maddelere tek tek bak. Kontrol birkaç saniye sürer.
+TEK DOKUNUŞLA KONTROL
+Bildirimden "Hepsi tamam" de ya da maddeleri tek tek işaretle. Kontrol birkaç saniye sürer.
 
-SENİN GÜNLERİN, SENİN SAATLERİN
-Eşiğin hangi günler ve hangi saat aralığında çalışacağını sen seçersin. Hafta sonu sabah eşiğini kapatabilirsin.
+TAMAMEN SENİN KONTROLÜNDE
+• Hangi anlarda, hangi günlerde ve hangi saat aralığında hatırlatacağını sen seçersin.
+• Telefon sessizdeyken bile titreşimle ya da Eşik'in kendi sesiyle haber vermesini seçebilirsin.
+• Son iki haftada hangi akşam ve sabah kontrol ettiğini, hangisini atladığını görürsün.
 
-SESSİZDEYKEN DE
-Telefon sessizdeyken bile titreşimle ya da Eşik'in kendi sesiyle haber vermesini seçebilirsin.
-
-GEÇMİŞ
-Son iki haftada hangi akşam ve sabah kontrolü yaptığını, hangilerini yedek bildirimle tamamladığını görürsün.
+GÜVENLİ VE ÖZEL
+• Hesap yok, reklam yok, sunucu yok. Listelerin, ayarların ve geçmişin yalnızca telefonunda durur.
+• Konum, rehber, fotoğraf, mikrofon iznine ihtiyaç duymaz.
+• Sürekli arka planda çalışmaz: şarj, alarm gibi anları Android haber verir, Eşik yalnızca o an uyanır.
+• İnternet yalnızca Google Play satın alma doğrulaması için kullanılır; hiçbir veri toplanmaz ya da paylaşılmaz.
 
 EŞİK PLUS
-İlk 15 gün her şey açık. Sonra şarj ve alarm tetikleyicileriyle ücretsiz devam edebilir ya da tek seferlik ödemeyle Eşik Plus'ı alabilirsin: birden fazla tetikleyici; sessiz mod, Wi‑Fi ve NFC; gün seçimi; sessizde titreşim ve geçmiş. Abonelik yok.
-
-GİZLİLİK
-İnternet yalnızca Google Play satın alma doğrulaması için kullanılır. Listelerin, ayarların ve geçmişin yalnızca telefonunda durur; hiçbir veri toplanmaz, gönderilmez, paylaşılmaz. Reklam yok, hesap yok.
+İlk 15 gün her şey açık. Sonra şarj ve alarm tetikleyicileriyle ücretsiz devam edebilir ya da tek seferlik ödemeyle Eşik Plus'ı alabilirsin: birden fazla tetikleyici; sessiz mod, şarjdan çıkarma, Wi‑Fi ve NFC; gün seçimi; sessizde titreşim ve geçmiş. Abonelik yok.
 ```
-
-## Çeviriler (en-US, es-ES)
-
-Uygulamanın adı her dilde "Eşik" kalır. Mağaza girişinde dil seçici →
-**Dilleri yönet** ile eklenir.
 
 ### en-US
 
-Ad: **Eşik: Evening & Morning Check** (29)
-
-Kısa açıklama: Iron, stove, door… Check at the right moment before bed and before heading out. (79)
-
 ```
-Did I unplug the iron? Did I lock the door? Did I pack the charger?
+Did I unplug the iron? Turn off the stove? Lock the door?
 
-Eşik brings your own checklist to you at the two transitions of your day: before bed and before you leave home. The reminder doesn't come at a fixed time; it comes when you're at that threshold.
+Eşik is a checklist app that reminds you of what to do before bed and before you leave home, right at the moment. You write the list; Eşik puts it in front of you when you are there, with no alarms to set.
 
-AT THE RIGHT MOMENT
-Eşik watches what you do, not the clock. In the evening:
-• When you plug in your phone to charge
-• When you switch your phone to silent
-In the morning:
-• When you dismiss your alarm
-• When you turn silent mode off
-• When you leave your home Wi‑Fi
-• When you tap the NFC tag by your door
+HOW IT WORKS
+In the evening, your evening list appears when you plug in or silence your phone.
+In the morning, your morning list appears when you stop your alarm, unplug your phone, leave your home Wi‑Fi or tap the NFC tag on your door.
+Pick several; whichever comes first reminds you that day. If none happens, it reminds you at a backup time you choose.
 
-You can pick more than one; whichever happens first reminds you that day. If none happens, you get a reminder at the backup time you chose.
+CHECK IN ONE TAP
+Say "All done" from the notification, or tick items one by one. It takes seconds.
 
-ONE TAP
-Say "All done" right from the notification, or go through the items one by one. A check takes just a few seconds.
+FULLY IN YOUR CONTROL
+• You choose the moments, the days and the time window.
+• Even when your phone is silent, it can vibrate or play Eşik's own sound.
+• See which evenings and mornings you checked in the last two weeks, and which you skipped.
 
-YOUR DAYS, YOUR HOURS
-You choose which days and which time window each threshold is active. You can turn off the morning threshold on weekends.
-
-EVEN ON SILENT
-Even when your phone is on silent, you can choose to be alerted by vibration or by Eşik's own sound.
-
-HISTORY
-See which evening and morning checks you did over the last two weeks, and which ones you completed from the backup notification.
+PRIVATE AND SAFE
+• No account, no ads, no servers. Your lists, settings and history stay on your phone.
+• No location, contacts, photos or microphone access needed.
+• Not always running in the background: Android signals moments like charging or your alarm, and Eşik wakes only then.
+• The internet is used only to verify Google Play purchases; no data is collected or shared.
 
 EŞİK PLUS
-Everything is unlocked for the first 15 days. After that, keep using it for free with the charging and alarm triggers, or get Eşik Plus with a one-time payment: multiple triggers; silent mode, Wi‑Fi and NFC; day selection; vibration on silent and history. No subscription.
-
-PRIVACY
-The internet is used only to verify Google Play purchases. Your lists, settings and history stay on your phone only; no data is collected, sent or shared. No ads, no account.
+Everything is unlocked for the first 15 days. Then keep using the charging and alarm triggers for free, or get Eşik Plus with a one‑time payment: multiple triggers; silent mode, unplugging, Wi‑Fi and NFC; day selection; vibrate when silent; and history. No subscription.
 ```
 
 ### es-ES
 
-Ad: **Eşik: Control noche y mañana** (28)
-
-Kısa açıklama: Plancha, fogón, puerta… Revisa en el momento justo antes de dormir y de salir. (78)
-
 ```
-¿Desenchufé la plancha? ¿Cerré la puerta con llave? ¿Metí el cargador en la mochila?
+¿Desenchufé la plancha? ¿Apagué el fuego? ¿Cerré la puerta con llave?
 
-Eşik te muestra tu propia lista en los dos momentos de cambio del día: antes de dormir y antes de salir de casa. El recordatorio no llega a una hora fija, sino cuando estás en ese umbral.
+Eşik es una app de listas de revisión que te recuerda lo que tienes que hacer antes de dormir y antes de salir de casa, justo en el momento. Tú escribes la lista; Eşik te la muestra cuando estás ahí, sin programar alarmas.
 
-EN EL MOMENTO JUSTO
-Eşik se fija en lo que haces, no en el reloj. Por la noche:
-• Al poner el teléfono a cargar
-• Al activar el modo silencio
-Por la mañana:
-• Al detener la alarma
-• Al quitar el modo silencio
-• Al salir del Wi‑Fi de casa
-• Al tocar la etiqueta NFC de la puerta
+CÓMO FUNCIONA
+Por la noche, tu lista aparece al poner el móvil a cargar o al silenciarlo.
+Por la mañana, tu lista aparece al apagar la alarma, desenchufar el móvil, salir del Wi‑Fi de casa o tocar la etiqueta NFC de la puerta.
+Elige varios; el primero que ocurra te avisa ese día. Si no ocurre ninguno, te avisa a una hora de respaldo que tú eliges.
 
-Puedes elegir varios; el que ocurra primero ese día es el que te avisa. Si no ocurre ninguno, te avisa a la hora de respaldo que elijas.
+REVISA CON UN TOQUE
+Di "Todo listo" desde la notificación o marca cada punto. Son segundos.
 
-UN SOLO TOQUE
-Responde "Todo listo" desde la notificación o revisa los elementos uno por uno. La revisión dura unos segundos.
+TOTALMENTE BAJO TU CONTROL
+• Tú eliges los momentos, los días y la franja horaria.
+• Aunque el móvil esté en silencio, puede vibrar o sonar con el sonido propio de Eşik.
+• Mira qué noches y mañanas revisaste en las últimas dos semanas y cuáles te saltaste.
 
-TUS DÍAS, TUS HORARIOS
-Tú decides qué días y en qué franja horaria funciona cada umbral. Puedes desactivar el de la mañana los fines de semana.
-
-TAMBIÉN EN SILENCIO
-Aunque el teléfono esté en silencio, puedes elegir que te avise con vibración o con el sonido propio de Eşik.
-
-HISTORIAL
-Consulta qué revisiones de noche y de mañana hiciste en las últimas dos semanas y cuáles completaste con la notificación de respaldo.
+PRIVADO Y SEGURO
+• Sin cuenta, sin anuncios, sin servidores. Tus listas, ajustes e historial se quedan en tu móvil.
+• No necesita acceso a ubicación, contactos, fotos ni micrófono.
+• No funciona siempre en segundo plano: Android avisa de momentos como la carga o la alarma, y Eşik solo despierta entonces.
+• Internet solo se usa para verificar las compras de Google Play; no se recopilan ni comparten datos.
 
 EŞİK PLUS
-Los primeros 15 días todo está desbloqueado. Después puedes seguir gratis con los activadores de carga y alarma, o conseguir Eşik Plus con un pago único: varios activadores; modo silencio, Wi‑Fi y NFC; elección de días; vibración en silencio e historial. Sin suscripción.
-
-PRIVACIDAD
-Internet se usa solo para verificar las compras de Google Play. Tus listas, ajustes e historial se quedan solo en tu teléfono; no se recopila, envía ni comparte ningún dato. Sin anuncios, sin cuenta.
+Todo está desbloqueado los primeros 15 días. Después, sigue gratis con los activadores de carga y alarma, o consigue Eşik Plus con un pago único: varios activadores; modo silencio, desenchufar, Wi‑Fi y NFC; selección de días; vibración en silencio e historial. Sin suscripción.
 ```
 
 ## Kategori, etiketler ve iletişim
@@ -162,7 +138,7 @@ Play Console → **Kullanıcı sayısını artırın → Mağaza ayarları**
 |---|---|
 | `ikon-512.png` | Uygulama simgesi (512×512) |
 | `<dil>/one-cikan-1024x500.png` | Öne çıkan grafik (1024×500) |
-| `<dil>/1.png` … `<dil>/6.png` | Telefon ekran görüntüleri (1080×1920), sırayla |
+| `<dil>/1.png` … `<dil>/7.png` | Telefon ekran görüntüleri (1080×1920), sırayla |
 
 `<dil>`: `tr`, `en`, `es`. Her dil Play Console'da o dilin mağaza girişine
 yüklenir. Yeniden üretmek için:
@@ -172,10 +148,20 @@ flutter test tool/store_assets_test.dart --update-goldens
 python3 tool/store_marketing.py
 ```
 
-## Sürüm notu (ilk dahili test)
+## Sürüm notları
+
+İlk dahili test (29, 0.7.0):
 
 ```
 <tr-TR>
-İlk test sürümü: akşam ve sabah kontrol listeleri, şarj, sessiz mod, alarm, Wi‑Fi ve NFC tetikleyicileri, yedek saat, geçmiş.
+İlk test sürümü: akşam ve sabah kontrol listeleri, şarj, sessiz mod, alarm, şarjdan çıkarma, Wi‑Fi ve NFC tetikleyicileri, yedek saat, geçmiş.
+</tr-TR>
+```
+
+Sürüm 1.0 dahili test (37, 1.0.0):
+
+```
+<tr-TR>
+Sürüm 1.0: şarjdan çıkarınca tetikleyicisi, bildirim gecikmesi ayarı, 'Bize yaz', satın alma imza doğrulaması; yeni mağaza görselleri.
 </tr-TR>
 ```

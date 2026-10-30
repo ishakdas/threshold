@@ -2,6 +2,7 @@ package com.ishakdas.threshold
 
 import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -10,6 +11,8 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import android.media.AudioManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -96,6 +99,10 @@ object Thresholds {
  *   Ses üç kademedir (sesli → titreşim → sessiz); bir kademe kısılması
  *   akşamı, bir kademe açılması sabahı tetikler. Böylece gün içinde titreşimde
  *   duran telefonun gece sessize alınması da sayılır.
+ * - Şarjdan çıkarınca: aralıkta telefon şarjdayken "kurulur" (JobScheduler'ın
+ *   şarjda koşulu), sonra kısa aralıklı alarmlarla fişin çekilmesine bakılır.
+ *   Şarjdayken telefon derin uykuya (Doze) girmediği için bu alarmlar zamanında
+ *   çalar; fiş çekilince en geç [UNPLUG_CHECK_MS] içinde fark edilir.
  * - Kapıdaki etiket: etiket uygulamayı doğrudan açar (MainActivity), iş yok.
  */
 object TriggerScheduler {
@@ -104,6 +111,10 @@ object TriggerScheduler {
     const val JOB_WIFI_ARM = 43
     const val JOB_WIFI_LEFT = 44
     const val JOB_SILENCE = 45
+    const val JOB_UNPLUG_ARM = 46
+
+    /** Şarjdaki telefonun fişinin çekilip çekilmediğine bu aralıkla bakılır. */
+    private const val UNPLUG_CHECK_MS = 2 * 60_000L
 
     /** Çalan alarmdan bu kadar sonra bakılır: kullanıcı alarmı kapatmış ya da ertelemiş olur. */
     private const val ALARM_SETTLE_MS = 90_000L
@@ -118,8 +129,17 @@ object TriggerScheduler {
     private fun job(c: Context, id: Int) =
         JobInfo.Builder(id, ComponentName(c, TriggerJobService::class.java))
 
-    /** [kind] tetikleyicisi oldu: bildirimi gönder (gerekiyorsa) ve sonucu kaydet. */
+    /**
+     * [kind] tetikleyicisi oldu. Ayarda gecikme varsa bildirim o kadar sonra
+     * gelir (DelayedNotify); yoksa hemen.
+     */
     private fun fire(c: Context, mode: Mode, kind: String) {
+        val delay = EsikData.config(c, mode).delaySeconds
+        if (delay > 0) DelayedNotify.schedule(c, mode, kind, delay) else deliver(c, mode, kind)
+    }
+
+    /** Bildirimi gönder (gerekiyorsa) ve sonucu kaydet. */
+    fun deliver(c: Context, mode: Mode, kind: String) {
         val outcome = Thresholds.notifyIfDue(c, mode, Reason.TRIGGER, kind)
         state(c).edit()
             .putLong("last.${mode.key}.at", System.currentTimeMillis())
@@ -159,6 +179,16 @@ object TriggerScheduler {
             jobs(c).cancel(JOB_SILENCE)
         }
         if (!morning.has("alarmStopped")) jobs(c).cancel(JOB_ALARM)
+        if (morning.has("unplugged")) {
+            // Fiş takibi sürüyorsa bozma; yoksa şarjda olmayı bekle.
+            if (unplugCheck(c, PendingIntent.FLAG_NO_CREATE) == null) {
+                val skip = Thresholds.handledToday(c, Mode.MORNING)
+                scheduleUnplugArm(c, Window.of(morning).delayUntilOpen(now, skip))
+            }
+        } else {
+            jobs(c).cancel(JOB_UNPLUG_ARM)
+            cancelUnplugCheck(c)
+        }
         if (morning.has("leftHomeWifi")) {
             val window = Window.of(morning)
             val skip = Thresholds.handledToday(c, Mode.MORNING)
@@ -178,6 +208,60 @@ object TriggerScheduler {
         jobs(c).schedule(
             job(c, JOB_CHARGING).setRequiresCharging(true).setMinimumLatency(delay).build(),
         )
+    }
+
+    private fun scheduleUnplugArm(c: Context, delay: Long) {
+        rememberFrom(c, JOB_UNPLUG_ARM, delay)
+        cancelUnplugCheck(c)
+        jobs(c).schedule(
+            job(c, JOB_UNPLUG_ARM).setRequiresCharging(true).setMinimumLatency(delay).build(),
+        )
+    }
+
+    private fun unplugCheck(c: Context, flags: Int): PendingIntent? = PendingIntent.getBroadcast(
+        c,
+        0,
+        Intent(c, UnplugCheckReceiver::class.java),
+        PendingIntent.FLAG_IMMUTABLE or flags,
+    )
+
+    private fun scheduleUnplugCheck(c: Context) {
+        val pi = unplugCheck(c, PendingIntent.FLAG_UPDATE_CURRENT)!!
+        c.getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + UNPLUG_CHECK_MS,
+            pi,
+        )
+    }
+
+    private fun cancelUnplugCheck(c: Context) {
+        unplugCheck(c, PendingIntent.FLAG_NO_CREATE)?.let {
+            c.getSystemService(AlarmManager::class.java).cancel(it)
+            it.cancel()
+        }
+    }
+
+    /** Fiş takılı mı (dolu pil de sayılır). */
+    private fun pluggedIn(c: Context): Boolean =
+        (c.applicationContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            ?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0) != 0
+
+    /** UnplugCheckReceiver'dan: fiş çekildiyse bildir, değilse biraz sonra yine bak. */
+    fun onUnplugCheck(c: Context) {
+        val config = EsikData.config(c, Mode.MORNING)
+        unplugCheck(c, PendingIntent.FLAG_NO_CREATE)?.cancel()
+        if (!config.has("unplugged")) return
+        val now = LocalDateTime.now()
+        val window = Window.of(config)
+        val open = window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)
+        when {
+            open && pluggedIn(c) -> scheduleUnplugCheck(c)
+            open -> {
+                fire(c, Mode.MORNING, "unplugged")
+                scheduleUnplugArm(c, window.delayUntilOpen(now, true))
+            }
+            else -> scheduleUnplugArm(c, window.delayUntilOpen(now, true))
+        }
     }
 
     private fun scheduleWifiArm(c: Context, delay: Long) {
@@ -283,6 +367,11 @@ object TriggerScheduler {
                     soundLevel(c) == LEVEL_SOUND -> "notSilent" to null
                     else -> "unsilence" to null
                 }
+                mode == Mode.MORNING && kind == "unplugged" -> when {
+                    unplugCheck(c, PendingIntent.FLAG_NO_CREATE) != null -> "unplug" to null
+                    pending(JOB_UNPLUG_ARM) -> "pluggedIn" to from(c, JOB_UNPLUG_ARM)
+                    else -> "none" to null
+                }
                 mode == Mode.MORNING && kind == "leftHomeWifi" -> when {
                     pending(JOB_WIFI_LEFT) -> "leaving" to null
                     pending(JOB_WIFI_ARM) -> "wifi" to from(c, JOB_WIFI_ARM)
@@ -371,6 +460,16 @@ object TriggerScheduler {
                 }
                 later { scheduleSilence(c) }
             }
+            JOB_UNPLUG_ARM -> {
+                val config = EsikData.config(c, Mode.MORNING)
+                val window = Window.of(config)
+                if (!config.has("unplugged")) return
+                if (window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)) {
+                    scheduleUnplugCheck(c)
+                } else {
+                    later { scheduleUnplugArm(c, window.delayUntilOpen(now, true)) }
+                }
+            }
             JOB_WIFI_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val window = Window.of(config)
@@ -415,6 +514,55 @@ class AlarmChangedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED) return
         TriggerScheduler.onNextAlarmChanged(context)
+    }
+}
+
+/**
+ * Tetikleyiciden sonra ayardaki gecikme kadar bekleyip bildirir. Kesin alarm
+ * izni istenmediği için Android birkaç saniye, telefon uzun süre uykudaysa
+ * birkaç dakika kaydırabilir. O arada kontrol yapılırsa bildirim gelmez.
+ */
+object DelayedNotify {
+    private const val EXTRA_KIND = "kind"
+
+    private fun pending(c: Context, mode: Mode, flags: Int, kind: String? = null): PendingIntent? =
+        PendingIntent.getBroadcast(
+            c,
+            100 + mode.ordinal,
+            Intent(c, DelayedNotifyReceiver::class.java)
+                .putExtra(EsikNotifications.EXTRA_MODE, mode.key)
+                .putExtra(EXTRA_KIND, kind),
+            PendingIntent.FLAG_IMMUTABLE or flags,
+        )
+
+    fun schedule(c: Context, mode: Mode, kind: String, seconds: Int) {
+        if (Thresholds.handledToday(c, mode)) return
+        // Aynı eşik için zaten bekleyen varsa ilk tetikleyici geçerli.
+        if (pending(c, mode, PendingIntent.FLAG_NO_CREATE) != null) return
+        c.getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + seconds * 1000L,
+            pending(c, mode, PendingIntent.FLAG_UPDATE_CURRENT, kind)!!,
+        )
+    }
+
+    fun onAlarm(c: Context, intent: Intent) {
+        val mode = Mode.of(intent.getStringExtra(EsikNotifications.EXTRA_MODE)) ?: return
+        pending(c, mode, PendingIntent.FLAG_NO_CREATE)?.cancel()
+        TriggerScheduler.deliver(c, mode, intent.getStringExtra(EXTRA_KIND) ?: return)
+    }
+}
+
+class DelayedNotifyReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        DelayedNotify.onAlarm(context, intent)
+    }
+}
+
+/** Şarjdan çıkarınca tetikleyicisinin kısa aralıklı denetimi. */
+class UnplugCheckReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        TriggerScheduler.onUnplugCheck(context)
     }
 }
 

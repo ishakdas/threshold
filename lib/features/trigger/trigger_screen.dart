@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -249,6 +250,11 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
+              _DelayCard(
+                delay: c.delay,
+                onChanged: (d) => _update(c.copyWith(delay: d)),
+              ),
               const SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -324,6 +330,8 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const _SilentAlertCard(),
               const SizedBox(height: 10),
               const _LanguageCard(),
+              const SizedBox(height: 10),
+              const _ContactCard(),
               const SizedBox(height: 16),
               PrimaryPillButton(
                 label: switch (issueCount) {
@@ -436,7 +444,22 @@ class _TriggerTile extends StatelessWidget {
                 onTap: onTap,
                 child: Row(
                   children: [
-                    IconCircle(icon: kind.icon, size: 40, active: selected),
+                    // Plus'a özel tetikleyici: rozet ikonun köşesinde, başlığa
+                    // binmez; Plus olsun olmasın görünür.
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        IconCircle(icon: kind.icon, size: 40, active: selected),
+                        if (kind.plusOnly)
+                          Positioned(
+                            bottom: -6,
+                            right: -6,
+                            child: IgnorePointer(
+                              child: PlusBadge(owned: !locked, compact: true),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -473,15 +496,6 @@ class _TriggerTile extends StatelessWidget {
                 ),
               ),
             ),
-            // Plus'a özel tetikleyici: Plus olsun olmasın görünür.
-            if (kind.plusOnly)
-              Positioned(
-                top: 8,
-                right: 10,
-                child: IgnorePointer(
-                  child: PlusBadge(owned: !locked, compact: true),
-                ),
-              ),
           ],
         ),
       ),
@@ -595,6 +609,200 @@ class _PlusCard extends ConsumerWidget {
           ),
           if (!plus.owned)
             EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
+        ],
+      ),
+    );
+  }
+}
+
+/// Tetikleyiciden ne kadar sonra bildirileceği: hazır seçenekler ya da
+/// dakika ve saniyeyle özel bir süre.
+class _DelayCard extends StatelessWidget {
+  const _DelayCard({required this.delay, required this.onChanged});
+  final Duration delay;
+  final ValueChanged<Duration> onChanged;
+
+  /// Hazır seçenekler (saniye); -1 özel süreyi açar.
+  static const _presets = [0, 30, 60, 300, 900];
+  static const _custom = -1;
+
+  Future<void> _pickCustom(BuildContext context) async {
+    final picked = await showModalBottomSheet<Duration>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _DelaySheet(initial: delay),
+    );
+    if (picked != null) onChanged(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final seconds = delay.inSeconds;
+    final preset = _presets.contains(seconds);
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              EsikIconView(EsikIcon.clock, size: 18, color: p.text),
+              const SizedBox(width: 10),
+              Expanded(child: Text(l10n.delayTitle, style: t.bodyMedium)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ChoicePills<int>(
+            values: const [..._presets, _custom],
+            value: preset ? seconds : _custom,
+            label: (v) => switch (v) {
+              _custom when !preset => l10n.delay(delay),
+              _custom => l10n.delayCustom,
+              _ => l10n.delay(Duration(seconds: v)),
+            },
+            expand: false,
+            onChanged: (v) => v == _custom
+                ? _pickCustom(context)
+                : onChanged(Duration(seconds: v)),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            seconds == 0
+                ? l10n.delayHintNow
+                : l10n.delayHintAfter(l10n.delay(delay)),
+            style: t.labelMedium?.copyWith(
+              fontWeight: FontWeight.w300,
+              color: p.textMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Dakika ve saniye seçici (en fazla 59:59).
+class _DelaySheet extends StatefulWidget {
+  const _DelaySheet({required this.initial});
+  final Duration initial;
+
+  @override
+  State<_DelaySheet> createState() => _DelaySheetState();
+}
+
+class _DelaySheetState extends State<_DelaySheet> {
+  late Duration _value = widget.initial;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: p.backgroundGradient.first,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        border: Border.all(color: p.surfaceBorder),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        22,
+        18,
+        22,
+        16 + MediaQuery.paddingOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(l10n.delayPickerTitle, style: t.titleMedium),
+          const SizedBox(height: 8),
+          CupertinoTheme(
+            data: CupertinoThemeData(
+              brightness: Theme.of(context).brightness,
+              textTheme: CupertinoTextThemeData(
+                pickerTextStyle: TextStyle(
+                  fontFamily: 'Inter',
+                  color: p.text,
+                  fontSize: 21,
+                ),
+              ),
+            ),
+            child: SizedBox(
+              height: 190,
+              child: CupertinoTimerPicker(
+                mode: CupertinoTimerPickerMode.ms,
+                initialTimerDuration: _value,
+                onTimerDurationChanged: (d) => setState(() => _value = d),
+              ),
+            ),
+          ),
+          Text(
+            l10n.delayPickerNote,
+            style: t.labelSmall?.copyWith(fontSize: 12, color: p.textFaint),
+          ),
+          const SizedBox(height: 14),
+          PrimaryPillButton(
+            label: l10n.delayPickerSave,
+            expand: true,
+            onPressed: () => Navigator.pop(
+              context,
+              _value > TriggerConfig.maxDelay ? TriggerConfig.maxDelay : _value,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Geliştiriciye e-posta: telefondaki e-posta uygulamasını açar.
+class _ContactCard extends ConsumerWidget {
+  const _ContactCard();
+
+  static const email = 'developerishak@gmail.com';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+      onTap: () async {
+        final opened = await ref
+            .read(nativeBridgeProvider)
+            .sendFeedback(email: email, subject: l10n.contactSubject);
+        if (opened || !context.mounted) return;
+        await Clipboard.setData(const ClipboardData(text: email));
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.contactNoApp(email))));
+      },
+      child: Row(
+        children: [
+          EsikIconView(EsikIcon.mail, size: 18, color: p.text),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.contactTitle, style: t.bodyMedium),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.contactSubtitle,
+                  style: t.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: p.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
         ],
       ),
     );
@@ -726,6 +934,8 @@ class _StatusLine extends ConsumerWidget {
       TriggerWait.charging => from(l10n.waitCharging),
       TriggerWait.wifi => from(l10n.waitWifi),
       TriggerWait.leaving => l10n.waitLeaving,
+      TriggerWait.pluggedIn => from(l10n.waitPluggedIn),
+      TriggerWait.unplug => l10n.waitUnplug,
       TriggerWait.alarm => l10n.waitAlarm(l10n.when(at!, now)),
       TriggerWait.alarmSettling => l10n.waitAlarmSettling,
       TriggerWait.noAlarm => l10n.waitNoAlarm,
@@ -749,6 +959,7 @@ class _StatusLine extends ConsumerWidget {
         TriggerKind.silenced => l10n.hintSilenced,
         TriggerKind.unsilenced => l10n.hintUnsilenced,
         TriggerKind.nfcTag => l10n.hintNfc,
+        TriggerKind.unplugged => l10n.hintUnplugged,
         _ => l10n.hintSoon,
       };
 

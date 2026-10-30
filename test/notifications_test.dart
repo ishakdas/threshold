@@ -389,19 +389,15 @@ void main() {
     );
   });
 
-  testWidgets('henüz desteklenmeyen tetikleyici seçilemez', (tester) async {
+  testWidgets('henüz desteklenmeyen tetikleyici listede yok', (tester) async {
     await pumpApp(tester);
     final element = tester.element(find.text('Eşik'));
     GoRouter.of(element).go('/ayarlar');
     await tester.pumpAndSettle();
 
-    expect(find.text('Yakında'), findsWidgets);
-    await tester.tap(find.text('Uyku modu'));
-    await tester.pumpAndSettle();
-    final c = ProviderScope.containerOf(element);
-    expect(c.read(triggerConfigProvider)[DayMode.evening]!.kinds, [
-      TriggerKind.charging,
-    ]);
+    expect(find.text('Yakında'), findsNothing);
+    expect(find.text('Uyku modu'), findsNothing);
+    expect(find.text('Şarja takınca'), findsWidgets);
   });
 
   testWidgets('bildirimden açılış yönlendirmesi hızlı kontrolü açar', (

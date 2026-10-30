@@ -424,6 +424,8 @@
   "waitCharging": "şarja takılması bekleniyor",
   "waitWifi": "Wi‑Fi bağlantısı bekleniyor",
   "waitLeaving": "Wi‑Fi’dan çıkış bekleniyor",
+  "waitPluggedIn": "telefonun şarjda olması bekleniyor",
+  "waitUnplug": "şarjdan çıkarılması bekleniyor",
   "waitAlarm": "sıradaki alarm {when}",
   "@waitAlarm": {
     "placeholders": {
@@ -459,6 +461,7 @@
     }
   },
   "hintCharging": "Şarja taktıktan sonra birkaç dakika içinde gelir.",
+  "hintUnplugged": "Telefon sabah aralığında şarjdayken fişi çekince birkaç dakika içinde gelir.",
   "hintAlarm": "Saat uygulamasındaki alarm çalıp kapanınca gelir. Ertelersen bekler.",
   "hintWifi": "Wi‑Fi’dan kopup mobil veriye geçince gelir; mobil veri açık olmalı.",
   "hintSilenced": "Ses bir kademe kısılınca gelir: sesliden titreşime, titreşimden sessize ya da Rahatsız Etmeyin açılınca.",
@@ -738,5 +741,58 @@
   "plusHistoryTitle": "Geçmiş Plus ile",
   "plusHistoryBody": "Hangi akşam ve sabah kontrol yaptığını, saatlerini ve ortalamanı gör.",
   "seePlus": "Plus’a bak",
-  "oneByOne": "Tek tek bak"
+  "oneByOne": "Tek tek bak",
+  "delayTitle": "Bildirim ne zaman gelsin?",
+  "delayNow": "Hemen",
+  "delaySeconds": "{seconds} sn",
+  "@delaySeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "delayMinutes": "{minutes} dk",
+  "@delayMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "delayMinSec": "{minutes} dk {seconds} sn",
+  "@delayMinSec": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "delayCustom": "Özel",
+  "delayHintNow": "Tetikleyici olur olmaz bildirim gelir.",
+  "delayHintAfter": "Tetikleyiciden {delay} sonra gelir. O arada kontrolü yaparsan gelmez.",
+  "@delayHintAfter": {
+    "placeholders": {
+      "delay": {
+        "type": "String"
+      }
+    }
+  },
+  "delayPickerTitle": "Tetikleyiciden ne kadar sonra?",
+  "delayPickerNote": "Android birkaç saniye kaydırabilir.",
+  "delayPickerSave": "Kaydet",
+  "contactTitle": "Bize yaz",
+  "contactSubtitle": "Öneri, hata ya da soru için e-posta gönder.",
+  "contactSubject": "Eşik hakkında",
+  "contactNoApp": "E-posta uygulaması bulunamadı. Adres panoya kopyalandı: {email}",
+  "@contactNoApp": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  }
 }

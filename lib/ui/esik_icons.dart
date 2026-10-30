@@ -87,6 +87,7 @@ enum EsikIcon {
     'M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3',
   ),
   trendUp('M3 17l6-6 4 4 8-8M15 7h6v6'),
+  mail('M3 6.5h18v11H3zM3.5 7l8.5 6 8.5-6'),
   external(
     'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   );

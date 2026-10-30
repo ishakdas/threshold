@@ -564,6 +564,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get waitLeaving => 'Wi‑Fi’dan çıkış bekleniyor';
 
   @override
+  String get waitPluggedIn => 'telefonun şarjda olması bekleniyor';
+
+  @override
+  String get waitUnplug => 'şarjdan çıkarılması bekleniyor';
+
+  @override
   String waitAlarm(String when) {
     return 'sıradaki alarm $when';
   }
@@ -604,6 +610,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get hintCharging =>
       'Şarja taktıktan sonra birkaç dakika içinde gelir.';
+
+  @override
+  String get hintUnplugged =>
+      'Telefon sabah aralığında şarjdayken fişi çekince birkaç dakika içinde gelir.';
 
   @override
   String get hintAlarm =>
@@ -1139,4 +1149,59 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get oneByOne => 'Tek tek bak';
+
+  @override
+  String get delayTitle => 'Bildirim ne zaman gelsin?';
+
+  @override
+  String get delayNow => 'Hemen';
+
+  @override
+  String delaySeconds(int seconds) {
+    return '$seconds sn';
+  }
+
+  @override
+  String delayMinutes(int minutes) {
+    return '$minutes dk';
+  }
+
+  @override
+  String delayMinSec(int minutes, int seconds) {
+    return '$minutes dk $seconds sn';
+  }
+
+  @override
+  String get delayCustom => 'Özel';
+
+  @override
+  String get delayHintNow => 'Tetikleyici olur olmaz bildirim gelir.';
+
+  @override
+  String delayHintAfter(String delay) {
+    return 'Tetikleyiciden $delay sonra gelir. O arada kontrolü yaparsan gelmez.';
+  }
+
+  @override
+  String get delayPickerTitle => 'Tetikleyiciden ne kadar sonra?';
+
+  @override
+  String get delayPickerNote => 'Android birkaç saniye kaydırabilir.';
+
+  @override
+  String get delayPickerSave => 'Kaydet';
+
+  @override
+  String get contactTitle => 'Bize yaz';
+
+  @override
+  String get contactSubtitle => 'Öneri, hata ya da soru için e-posta gönder.';
+
+  @override
+  String get contactSubject => 'Eşik hakkında';
+
+  @override
+  String contactNoApp(String email) {
+    return 'E-posta uygulaması bulunamadı. Adres panoya kopyalandı: $email';
+  }
 }

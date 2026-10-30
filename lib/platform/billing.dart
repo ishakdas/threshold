@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
@@ -11,7 +12,8 @@ import '../data/plus.dart';
 enum BuyState { idle, pending, error }
 
 /// Eşik Plus'ı Google Play'den satın alma ve geri yükleme. Satın alma
-/// onaylanınca (acknowledge) [plusOwnedProvider] güncellenir. Play, onaylanmayan
+/// imzası lisans anahtarıyla doğrulanıp onaylanınca (acknowledge)
+/// [plusOwnedProvider] güncellenir; imzası tutmayan kayıt yok sayılır. Play, onaylanmayan
 /// satın almayı üç gün içinde iade ettiği için onay her açılışta yeniden denenir.
 class PlusBilling extends Notifier<BuyState> {
   StreamSubscription<List<PurchaseDetails>>? _sub;
@@ -51,10 +53,13 @@ class PlusBilling extends Notifier<BuyState> {
         .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
     final past = await android.queryPastPurchases();
     if (past.error != null) return;
-    final plus = past.pastPurchases.where(
-      (p) =>
-          p.productID == plusProductId && p.status == PurchaseStatus.purchased,
-    );
+    final plus = [
+      for (final p in past.pastPurchases)
+        if (p.productID == plusProductId &&
+            p.status == PurchaseStatus.purchased &&
+            await _verified(p))
+          p,
+    ];
     ref.read(plusOwnedProvider.notifier).set(plus.isNotEmpty);
     for (final p in plus.where((p) => p.pendingCompletePurchase)) {
       await _iap.completePurchase(p);
@@ -106,6 +111,10 @@ class PlusBilling extends Notifier<BuyState> {
     for (final p in purchases.where((p) => p.productID == plusProductId)) {
       switch (p.status) {
         case PurchaseStatus.purchased || PurchaseStatus.restored:
+          if (!await _verified(p)) {
+            state = BuyState.error;
+            continue;
+          }
           ref.read(plusOwnedProvider.notifier).set(true);
           state = BuyState.idle;
         case PurchaseStatus.pending:
@@ -117,6 +126,23 @@ class PlusBilling extends Notifier<BuyState> {
       }
       if (p.pendingCompletePurchase) await _iap.completePurchase(p);
     }
+  }
+}
+
+/// Play kaydının imzası Android tarafında (PurchaseVerifier.kt) doğrulanır.
+Future<bool> _verified(PurchaseDetails p) async {
+  if (p is! GooglePlayPurchaseDetails) return false;
+  try {
+    return await const MethodChannel('esik/native')
+            .invokeMethod<bool>('verifyPurchase', {
+              'json': p.billingClientPurchase.originalJson,
+              'signature': p.billingClientPurchase.signature,
+              'productId': plusProductId,
+            }) ??
+        false;
+  } on PlatformException catch (e) {
+    debugPrint('PlusBilling.verify: $e');
+    return false;
   }
 }
 

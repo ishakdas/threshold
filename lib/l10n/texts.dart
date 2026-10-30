@@ -43,6 +43,18 @@ extension L10nHelpers on AppLocalizations {
   }
 }
 
+extension DelayText on AppLocalizations {
+  /// "30 sn", "5 dk", "2 dk 30 sn"; sıfırsa "Hemen".
+  String delay(Duration d) {
+    final m = d.inMinutes;
+    final s = d.inSeconds % 60;
+    if (m == 0 && s == 0) return delayNow;
+    if (m == 0) return delaySeconds(s);
+    if (s == 0) return delayMinutes(m);
+    return delayMinSec(m, s);
+  }
+}
+
 extension TriggerKindText on TriggerKind {
   String title(AppLocalizations l) => switch (this) {
     TriggerKind.charging => l.triggerChargingTitle,

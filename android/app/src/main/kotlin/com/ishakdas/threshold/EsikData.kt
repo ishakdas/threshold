@@ -31,6 +31,8 @@ data class TriggerConfig(
     val windowEnabled: Boolean,
     val backupEnabled: Boolean,
     val backupTime: LocalTime,
+    /** Tetikleyiciden kaç saniye sonra bildirilir; 0: hemen. */
+    val delaySeconds: Int = 0,
 ) {
     fun has(kind: String): Boolean = kind in kinds
 
@@ -52,6 +54,9 @@ object EsikData {
     private const val LOG = "log.v1"
 
     private val ALL_DAYS = (1..7).toSet()
+
+    /** Dart'taki TriggerConfig.maxDelay ile aynı. */
+    const val MAX_DELAY_SECONDS = 3599
 
     private val isoLocal: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
 
@@ -141,6 +146,7 @@ object EsikData {
             windowEnabled = o.optBoolean("windowEnabled", d.windowEnabled),
             backupEnabled = o.optBoolean("backupEnabled", d.backupEnabled),
             backupTime = time(o.optString("backupTime", ""), d.backupTime),
+            delaySeconds = o.optInt("delaySeconds", 0).coerceIn(0, MAX_DELAY_SECONDS),
         )
     }
 

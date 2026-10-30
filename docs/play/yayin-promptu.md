@@ -11,7 +11,7 @@ Proje bilgisayarımda: `threshold` deposu (GitHub Desktop ile klonlu, `esik-plus
   reklamlar, uygulama erişimi, içerik derecelendirmesi, hedef kitle, veri
   güvenliği, hassas izinler (pil optimizasyonu gerekçesi)
 - `docs/play/gorseller/`: `ikon-512.png` (simge) ve her dil için
-  `tr/`, `en/`, `es/` klasörlerinde `1.png`…`6.png` (telefon ekran görüntüleri,
+  `tr/`, `en/`, `es/` klasörlerinde `1.png`…`7.png` (telefon ekran görüntüleri,
   bu sırayla) ve `one-cikan-1024x500.png` (öne çıkan grafik)
 
 Bu dosyalardaki cevaplar kesindir; formlarda onlara uy, kendi tahminini
@@ -34,7 +34,7 @@ uyuşmuyorsa dur ve bana sor.
 ## Yapılacaklar (sırayla)
 
 1. **Uygulamayı oluştur** (yoksa):
-   - Ad: `Eşik: Akşam ve Sabah Kontrolü`
+   - Ad: `Eşik: Doğru Anda Hatırlatıcı`
    - Varsayılan dil: Türkçe (tr-TR)
    - Tür: Uygulama
    - Ücret: Ücretsiz
@@ -48,10 +48,9 @@ uyuşmuyorsa dur ve bana sor.
    Kategori: Verimlilik. Etiketleri de ekle. İletişim e-postası:
    `developerishak@gmail.com`.
 
-3. **Çeviriler: en-US ve es-ES mağaza girişleri.** Türkçe metni doğal bir
-   dille çevir. Sınırlar: ad 30, kısa açıklama 80 karakter. Uygulamanın adı
-   her dilde "Eşik" kalır. Grafikler `gorseller/en/` ve `gorseller/es/`.
-   Metinleri girmeden önce bana göster.
+3. **Çeviriler: en-US ve es-ES mağaza girişleri.** Ad, kısa ve tam açıklama
+   `magaza.md` dosyasında her dil için hazır; olduğu gibi gir. Grafikler
+   `gorseller/en/` ve `gorseller/es/`.
 
 4. **Uygulama içeriği formları:** `console-formlari.md` dosyasına göre
    gizlilik politikası, reklamlar, uygulama erişimi, içerik
@@ -72,7 +71,7 @@ uyuşmuyorsa dur ve bana sor.
 
 6. **Uygulama içi ürün:** Para kazanma → Ürünler → Uygulama içi ürünler.
    `esik_plus` ürününü `console-formlari.md` dosyasındaki bilgilerle oluştur
-   (49 TL, tek seferlik) ve etkinleştir. Ödeme profili tamamlanmadığı için
+   (19,99 TL, tek seferlik) ve etkinleştir. Ödeme profili tamamlanmadığı için
    bu ekran açılmıyorsa dur ve bana söyle.
 
 7. **Lisans testi:** Ayarlar → Lisans testi altına kendi Gmail adresimi ekle
