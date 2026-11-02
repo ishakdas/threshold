@@ -54,24 +54,46 @@ void main() {
     expect(prefs.getBool('onboarding_seen'), isTrue);
   });
 
-  testWidgets('onboarding üç sayfa, son sayfa kuruluma götürür', (
-    tester,
-  ) async {
-    await pumpApp(tester, onboardingSeen: false);
+  testWidgets(
+    'onboarding dört sayfa: düzen ve paket seçilir, kuruluma götürür',
+    (tester) async {
+      await pumpApp(tester, onboardingSeen: false);
 
-    await tester.tap(find.bySemanticsLabel('İleri'));
-    await tester.pumpAndSettle();
-    expect(find.text('Saat değil, an.'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('İleri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Saat değil, an.'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel('İleri'));
-    await tester.pumpAndSettle();
-    expect(find.text('Kuruluma başla'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('İleri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Günün nasıl geçiyor?'), findsOneWidget);
+      await tester.tap(find.text('Hafta içi iş, hafta sonu rahat'));
+      await tester.scrollUntilVisible(
+        find.text('Havaya göre'),
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -200));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Havaya göre'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Kuruluma başla'));
-    await tester.pumpAndSettle();
-    expect(find.text('Kurulum'), findsOneWidget);
-    expect(find.text('Bildirimlere izin ver'), findsWidgets);
-  });
+      await tester.tap(find.bySemanticsLabel('İleri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kuruluma başla'), findsOneWidget);
+
+      await tester.tap(find.text('Kuruluma başla'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kurulum'), findsOneWidget);
+      expect(find.text('Bildirimlere izin ver'), findsWidgets);
+
+      final c = ProviderScope.containerOf(tester.element(find.text('Kurulum')));
+      expect(c.read(thresholdsProvider)[DayMode.morning], hasLength(2));
+      expect(
+        c.read(checklistProvider)[DayMode.morning]!.map((i) => i.title),
+        contains('Şemsiyemi aldım mı?'),
+      );
+    },
+  );
 
   testWidgets('sekmeler: liste, geçmiş, ayarlar', (tester) async {
     await pumpApp(tester);

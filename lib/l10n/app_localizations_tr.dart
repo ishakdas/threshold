@@ -1076,7 +1076,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get plusFeatureWifiNfc => 'Sessiz mod, Wi‑Fi ve NFC etiketi';
 
   @override
-  String get plusFeatureDays => 'Çalışacağı günleri seçme';
+  String get plusFeatureDays =>
+      'Günlere göre farklı eşikler (hafta içi, hafta sonu…)';
 
   @override
   String get plusFeatureSilent => 'Sessizdeyken titret ya da çal';

@@ -6,7 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
+import '../../data/templates.dart';
+import '../../data/threshold_templates.dart';
+import '../trigger/threshold_widgets.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
@@ -15,7 +19,8 @@ import '../../ui/esik_logo.dart';
 import '../../ui/threshold_door.dart';
 import '../../l10n/texts.dart';
 
-/// İlk açılışta gösterilen üç sayfa: ne yapar, örnek senaryo, bildirim izni.
+/// İlk açılışta gösterilen dört sayfa: ne yapar, örnek senaryo, düzen ve
+/// hazır maddeler, bildirim izni.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -26,6 +31,11 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pages = PageController();
   int _index = 0;
+  static const _count = 4;
+
+  /// Girişte seçilen hazır düzen ve madde paketleri; bitirince uygulanır.
+  ThresholdTemplate _template = thresholdTemplates.first;
+  final _packs = <ChecklistTemplate>{};
 
   @override
   void dispose() {
@@ -33,7 +43,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  Future<void> _finish(String to) async {
+  /// [apply]: seçilen düzen ve paketler kurulsun mu ("Atla"da kurulmaz).
+  Future<void> _finish(String to, {bool apply = true}) async {
+    if (apply) {
+      ref.read(thresholdsProvider.notifier).replaceAll({
+        for (final mode in DayMode.values) mode: _template.thresholds[mode]!,
+      });
+      final l10n = context.l10n;
+      final checklist = ref.read(checklistProvider.notifier);
+      for (final pack in _packs) {
+        for (final e in pack.build(l10n).entries) {
+          if (e.value.isNotEmpty) checklist.addAll(e.key, e.value);
+        }
+      }
+    }
     await ref.read(onboardingSeenProvider.notifier).complete();
     if (mounted) context.go(to);
   }
@@ -52,7 +75,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final last = _index == 2;
+    final last = _index == _count - 1;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -76,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 16),
                         child: TextButton(
-                          onPressed: () => _finish('/bugun'),
+                          onPressed: () => _finish('/bugun', apply: false),
                           style: TextButton.styleFrom(
                             foregroundColor: p.text,
                             backgroundColor: p.chip,
@@ -95,10 +118,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: PageView(
                   controller: _pages,
                   onPageChanged: (i) => setState(() => _index = i),
-                  children: const [
-                    _IntroPage(),
-                    _ScenarioPage(),
-                    _NotifyPage(),
+                  children: [
+                    const _IntroPage(),
+                    const _ScenarioPage(),
+                    _SetupPage(
+                      template: _template,
+                      packs: _packs,
+                      onTemplate: (t) => setState(() => _template = t),
+                      onPack: (pack) => setState(
+                        () => _packs.contains(pack)
+                            ? _packs.remove(pack)
+                            : _packs.add(pack),
+                      ),
+                    ),
+                    const _NotifyPage(),
                   ],
                 ),
               ),
@@ -165,11 +198,11 @@ class _Dots extends StatelessWidget {
     final l10n = context.l10n;
     final p = context.palette;
     return Semantics(
-      label: l10n.pageOf(index + 1, 3),
+      label: l10n.pageOf(index + 1, _OnboardingScreenState._count),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          for (var i = 0; i < 3; i++)
+          for (var i = 0; i < _OnboardingScreenState._count; i++)
             AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               margin: const EdgeInsets.only(right: 6),
@@ -439,6 +472,75 @@ class _GhostWithCallouts extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Hazır düzen ve hazır maddeler. Her düzen için Plus denemesi açık olduğundan
+/// çok eşikli düzen de seçilebilir; deneme bitince ilk eşik kalır.
+class _SetupPage extends StatelessWidget {
+  const _SetupPage({
+    required this.template,
+    required this.packs,
+    required this.onTemplate,
+    required this.onPack,
+  });
+
+  final ThresholdTemplate template;
+  final Set<ChecklistTemplate> packs;
+  final ValueChanged<ThresholdTemplate> onTemplate;
+  final ValueChanged<ChecklistTemplate> onPack;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        DotLabel(l10n.onbSetupKicker),
+        const SizedBox(height: 10),
+        Text(l10n.onbSetupTitle, style: t.headlineMedium),
+        const SizedBox(height: 8),
+        Text(
+          l10n.onbSetupBody,
+          style: t.bodyMedium?.copyWith(color: p.textMuted),
+        ),
+        const SizedBox(height: 16),
+        for (final tpl in thresholdTemplates)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: ThresholdTemplateCard(
+              template: tpl,
+              selected: tpl == template,
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onTemplate(tpl);
+              },
+            ),
+          ),
+        const SizedBox(height: 8),
+        Text(l10n.onbPacksTitle, style: t.titleMedium),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final pack in checklistTemplates)
+              FilterChip(
+                selected: packs.contains(pack),
+                avatar: EsikIconView(pack.icon, size: 16, color: p.text),
+                label: Text(pack.title(l10n)),
+                onSelected: (_) {
+                  HapticFeedback.selectionClick();
+                  onPack(pack);
+                },
+              ),
+          ],
+        ),
+        const SizedBox(height: 32),
+      ],
     );
   }
 }

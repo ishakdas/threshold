@@ -1096,7 +1096,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get plusFeatureWifiNfc => 'Modo silencio, Wi‑Fi y etiqueta NFC';
 
   @override
-  String get plusFeatureDays => 'Elegir qué días funciona';
+  String get plusFeatureDays =>
+      'Umbrales distintos según el día (entre semana, fin de semana…)';
 
   @override
   String get plusFeatureSilent => 'Vibrar o sonar en silencio';

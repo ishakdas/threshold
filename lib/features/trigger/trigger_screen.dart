@@ -62,8 +62,10 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final list = _list;
     final weekend = _mode == DayMode.evening ? {5, 6} : {6, 7};
     final owner = list.indexWhere((c) => c.days.containsAll(weekend));
+    final free = !list.any((c) => c.days.intersection(weekend).isNotEmpty);
     final Set<int> days;
-    if (owner >= 0 && list[owner].days.length > weekend.length) {
+    // Hafta sonu ya hiçbir eşikte değil ya da daha büyük bir eşiğin parçası.
+    if (free || (owner >= 0 && list[owner].days.length > weekend.length)) {
       days = weekend;
     } else {
       final biggest = list.reduce(

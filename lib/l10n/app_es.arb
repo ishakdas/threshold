@@ -311,7 +311,7 @@
   "plusTagline": "Configura tus umbrales a tu manera.",
   "plusFeatureMulti": "Varios disparadores a la vez",
   "plusFeatureWifiNfc": "Modo silencio, Wi‑Fi y etiqueta NFC",
-  "plusFeatureDays": "Elegir qué días funciona",
+  "plusFeatureDays": "Umbrales distintos según el día (entre semana, fin de semana…)",
   "plusFeatureSilent": "Vibrar o sonar en silencio",
   "plusFeatureHistory": "Historial y estadísticas",
   "plusOnce": "Pago único, sin suscripción. Sin anuncios.",

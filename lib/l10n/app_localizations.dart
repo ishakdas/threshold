@@ -1969,7 +1969,7 @@ abstract class AppLocalizations {
   /// No description provided for @plusFeatureDays.
   ///
   /// In tr, this message translates to:
-  /// **'Çalışacağı günleri seçme'**
+  /// **'Günlere göre farklı eşikler (hafta içi, hafta sonu…)'**
   String get plusFeatureDays;
 
   /// No description provided for @plusFeatureSilent.

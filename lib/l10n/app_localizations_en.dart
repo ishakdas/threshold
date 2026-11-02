@@ -1092,7 +1092,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get plusFeatureWifiNfc => 'Silent mode, Wi‑Fi and the NFC tag';
 
   @override
-  String get plusFeatureDays => 'Choose which days it works';
+  String get plusFeatureDays =>
+      'Different thresholds by day (weekdays, weekends…)';
 
   @override
   String get plusFeatureSilent => 'Vibrate or ring when silent';

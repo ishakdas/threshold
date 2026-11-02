@@ -202,7 +202,7 @@ class _ReminderCard extends ConsumerWidget {
           ChoicePills<int>(
             values: const [1, 2, 3, 4, 5],
             value: r.max,
-            label: (n) => n == 1 ? l10n.remindOnce : '$n',
+            label: (n) => '$n',
             onChanged: (n) =>
                 notifier.set(ReminderSettings(max: n, minutes: r.minutes)),
           ),
