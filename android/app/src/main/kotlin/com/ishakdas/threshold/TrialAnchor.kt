@@ -30,7 +30,7 @@ object TrialAnchor {
     private const val PREF = "flutter.trial_start"
 
     /** Sunucunun adresi (server/worker.js). Boşken sunucuya gidilmez. */
-    private const val SERVER = ""
+    private const val SERVER = "https://esik-api.furkan-ishack.workers.dev"
 
     private fun prefs(c: Context) = c.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
 

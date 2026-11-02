@@ -33,3 +33,16 @@ jobs:
           workingDirectory: server
       - name: Adres
         run: echo "::notice title=Sunucu adresi::${{ steps.deploy.outputs.deployment-url }}"
+      # Aynı kimlik ikinci kez sorulunca ilk başlangıç dönmeli; bozuk istek 400.
+      - name: Deneme
+        env:
+          URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          sleep 5
+          id=$(echo "ci-$GITHUB_RUN_ID" | sha256sum | cut -c1-64)
+          now=$(($(date +%s) * 1000))
+          a=$(curl -sf -X POST "$URL/v1/trial" -H 'content-type: application/json' -d "{\"id\":\"$id\",\"localStart\":$((now - 86400000))}")
+          b=$(curl -sf -X POST "$URL/v1/trial" -H 'content-type: application/json' -d "{\"id\":\"$id\",\"localStart\":$now}")
+          bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$URL/v1/trial" -d '{"id":"x"}')
+          echo "::notice title=Sunucu denemesi::ilk=$a ikinci=$b bozuk=$bad"
+          [ "$a" = "$b" ] && [ "$bad" = "400" ]
