@@ -4,7 +4,7 @@ name: Sunucu
 # CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_KV_TRIAL_ID.
 on:
   push:
-    branches: [main]
+    branches: [main, ozellikler]
     paths:
       - "server/**"
       - ".github/workflows/server.yml"
@@ -26,7 +26,10 @@ jobs:
           fi
           sed -i "s/KV_TRIAL_ID/$KV_ID/" server/wrangler.toml
       - uses: cloudflare/wrangler-action@v3
+        id: deploy
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: server
+      - name: Adres
+        run: echo "::notice title=Sunucu adresi::${{ steps.deploy.outputs.deployment-url }}"
