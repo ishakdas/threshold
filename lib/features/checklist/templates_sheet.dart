@@ -95,13 +95,27 @@ class _TemplatesSheet extends ConsumerWidget {
                             const SizedBox(height: 4),
                             for (final item in template.items)
                               Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  '${item.mode == DayMode.evening ? '☾' : '☀'}  ${item.title(l10n)}',
-                                  style: t.labelMedium?.copyWith(
-                                    fontWeight: FontWeight.w300,
-                                    color: p.textMuted,
-                                  ),
+                                padding: const EdgeInsets.only(top: 3),
+                                child: Row(
+                                  children: [
+                                    EsikIconView(
+                                      item.mode == DayMode.evening
+                                          ? EsikIcon.moon
+                                          : EsikIcon.sun,
+                                      size: 12,
+                                      color: p.textMuted,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        item.title(l10n),
+                                        style: t.labelMedium?.copyWith(
+                                          fontWeight: FontWeight.w300,
+                                          color: p.textMuted,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                           ],
