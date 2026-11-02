@@ -1,0 +1,9 @@
+# Cloudflare Workers ayarı. KV_TRIAL_ID, CI'da GitHub secret'ından yazılır
+# (.github/workflows/server.yml); depoya gerçek kimlik girmez.
+name = "esik-api"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[[kv_namespaces]]
+binding = "TRIAL"
+id = "KV_TRIAL_ID"

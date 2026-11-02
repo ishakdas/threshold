@@ -1,6 +1,13 @@
 package com.ishakdas.threshold
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URI
+import java.security.MessageDigest
 import com.google.android.gms.auth.blockstore.Blockstore
 import com.google.android.gms.auth.blockstore.BlockstoreClient
 import com.google.android.gms.auth.blockstore.RetrieveBytesRequest
@@ -16,9 +23,14 @@ import java.nio.ByteBuffer
  *   uygulama kaldırılınca gider.
  * - Google Block Store: Google yedeklemesi açıksa uygulama kaldırılıp yeniden
  *   kurulsa da kalır.
+ * - Eşik sunucusu ([SERVER]): cihaz kimliğinin özetiyle; yedekleme kapalıyken
+ *   uygulama yeniden kurulsa da kalır. Adres boşsa atlanır.
  */
 object TrialAnchor {
     private const val PREF = "flutter.trial_start"
+
+    /** Sunucunun adresi (server/worker.js). Boşken sunucuya gidilmez. */
+    private const val SERVER = ""
 
     private fun prefs(c: Context) = c.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
 
@@ -41,7 +53,15 @@ object TrialAnchor {
             val start = minOf(local, remote ?: Long.MAX_VALUE)
             prefs(c).edit().putLong(PREF, start).apply()
             if (remote == null || remote > start) store(c, start)
-            done(start)
+            // Sunucu varsa onunla da eşitle; yanıt gelmezse telefondaki geçerli.
+            askServer(c, start) { server ->
+                val earliest = minOf(start, server ?: Long.MAX_VALUE)
+                if (earliest < start) {
+                    prefs(c).edit().putLong(PREF, earliest).apply()
+                    store(c, earliest)
+                }
+                done(earliest)
+            }
         }
         try {
             val request = RetrieveBytesRequest.Builder()
@@ -57,6 +77,40 @@ object TrialAnchor {
             // Google Play hizmetleri yok: yalnızca telefondaki kayıtlar.
             finish(null)
         }
+    }
+
+    /** Uygulamaya özel cihaz kimliğinin (ANDROID_ID) özeti; ham kimlik gönderilmez. */
+    private fun deviceHash(c: Context): String? {
+        val androidId = Settings.Secure.getString(c.contentResolver, Settings.Secure.ANDROID_ID) ?: return null
+        val digest = MessageDigest.getInstance("SHA-256").digest("esik-trial:$androidId".toByteArray())
+        return digest.joinToString("") { "%02x".format(it) }
+    }
+
+    /** Sunucudaki başlangıç (ms); adres yoksa ya da ulaşılamazsa null. [done] ana iş parçacığında. */
+    private fun askServer(c: Context, local: Long, done: (Long?) -> Unit) {
+        val main = Handler(Looper.getMainLooper())
+        val id = deviceHash(c)
+        if (SERVER.isEmpty() || id == null) {
+            main.post { done(null) }
+            return
+        }
+        Thread {
+            val start = runCatching {
+                val conn = URI.create("$SERVER/v1/trial").toURL().openConnection() as HttpURLConnection
+                conn.connectTimeout = 5_000
+                conn.readTimeout = 5_000
+                conn.requestMethod = "POST"
+                conn.doOutput = true
+                conn.setRequestProperty("content-type", "application/json")
+                conn.outputStream.use {
+                    it.write(JSONObject().put("id", id).put("localStart", local).toString().toByteArray())
+                }
+                val body = conn.inputStream.bufferedReader().use { it.readText() }
+                conn.disconnect()
+                JSONObject(body).optLong("start", 0L).takeIf { it > 0 }
+            }.getOrNull()
+            main.post { done(start) }
+        }.start()
     }
 
     private fun store(c: Context, start: Long) {

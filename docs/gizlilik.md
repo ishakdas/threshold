@@ -1,6 +1,6 @@
 # Eşik — Gizlilik Politikası
 
-*Son güncelleme: 30 Ekim 2026*
+*Son güncelleme: 3 Kasım 2026*
 
 Eşik, akşam ve sabah kontrol listelerini doğru anda hatırlatan bir
 uygulamadır. Bu politika, uygulamanın hangi bilgileri nasıl kullandığını
@@ -8,10 +8,17 @@ anlatır.
 
 ## Kısaca
 
-- Eşik **hiçbir kişisel veri toplamaz, göndermez ya da paylaşmaz.**
-- İnternet yalnızca Google Play satın alma doğrulaması için kullanılır;
-  Eşik hiçbir veri toplamaz ve kendi sunucusu yoktur.
-- Hesap, reklam, analitik ya da üçüncü taraf takip aracı yoktur.
+- Listelerin, ayarların, geçmişin ve "Kilitledim mi?" fotoğrafların yalnızca
+  telefonunda durur; hiçbir sunucuya gönderilmez.
+- Telefondan çıkan yalnızca iki şey var:
+  - **Deneme süresi kaydı (Android):** Ücretsiz denemenin, uygulama silinip
+    yeniden kurulunca baştan başlamaması için telefonun uygulamaya özel
+    kimliğinin tek yönlü özeti (geri çevrilemez) ve denemenin başladığı an
+    Eşik'in sunucusunda saklanır. Bunun dışında hiçbir şey saklanmaz.
+  - **Hava durumu (isteğe bağlı):** Şehir seçersen, tahmin için yalnızca o
+    şehrin koordinatları Open-Meteo'ya (open-meteo.com) gönderilir. Konum
+    iznin istenmez; şehir seçmezsen hiçbir şey gönderilmez.
+- Hesap, reklam, analitik ya da takip aracı yoktur.
 - Eşik Plus satın alımı Google Play üzerinden yapılır; ödeme bilgilerin
   Eşik'e hiç ulaşmaz. Eşik yalnızca Play'den Plus'ın satın alınıp
   alınmadığını öğrenir ve bunu telefonunda saklar.
@@ -24,6 +31,8 @@ durur ve uygulamayı kaldırdığında silinir:
 - Kontrol listelerin (madde adları ve ikonları)
 - Eşik ayarların: seçtiğin tetikleyiciler, günler, saat aralıkları, yedek saat
 - Kontrol geçmişin: hangi gün hangi kontrolü ne zaman tamamladığın (en fazla 400 gün)
+- "Fotoğrafla kontrol" açık maddelerde çektiğin fotoğraflar (14 gün sonra silinir)
+- Hava durumu için seçtiğin şehir ve son tahmin
 
 ## İzinler ve neden gerektikleri
 
@@ -34,6 +43,9 @@ durur ve uygulamayı kaldırdığında silinir:
 | Pil optimizasyonundan muafiyet (isteğe bağlı) | Telefon uyurken tetikleyicilerin kaçmaması için. |
 | NFC (isteğe bağlı) | Kapıdaki etikete Eşik'in bağlantısını yazmak ve okumak için. |
 | Titreşim | "Telefon sessizdeyken titret / çal" seçeneği için. |
+| Kamera (isteğe bağlı) | "Fotoğrafla kontrol" açık maddeyi işaretlerken fotoğraf çekmek için. |
+| İnternet | Deneme süresi kaydı, hava tahmini ve satın alma için. |
+| Ağ ve Wi‑Fi durumu | "İnterneti kapatınca" ve "Wi‑Fi'dan çıkınca" tetikleyicileri için. |
 
 Eşik; şarj durumunu, telefonun ses kademesini (sesli / titreşim / sessiz),
 sıradaki alarmın saatini ve Wi‑Fi ile mobil veri arasında geçişi yalnızca o
@@ -70,9 +82,13 @@ Sorular için: developerishak@gmail.com
 
 Eşik reminds you of your evening and morning checklists at the right moment.
 
-- Eşik **does not collect, transmit or share any personal data.**
-- The internet is used only for Google Play purchase verification; Eşik
-  collects no data and has no servers of its own.
+- Your lists, settings, history and "Did I lock it?" photos stay on your
+  phone and are never uploaded.
+- Only two things leave the phone: (1) on Android, a one‑way hash of the
+  app‑specific device ID and the trial start time, stored on Eşik's server so
+  the free trial doesn't restart after reinstalling; (2) if you choose a city
+  for the weather, only that city's coordinates are sent to Open-Meteo
+  (open-meteo.com). No location permission is requested.
 - There are no accounts, ads, analytics or third‑party trackers.
 - Eşik Plus is purchased through Google Play; your payment details never
   reach Eşik. The app only asks Google Play whether Plus was purchased and

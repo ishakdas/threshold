@@ -94,7 +94,23 @@ açılmaz.
 
 | Soru | Cevap |
 |---|---|
-| Uygulamanız gerekli kullanıcı veri türlerinden herhangi birini topluyor veya paylaşıyor mu? | **Hayır** |
+| Uygulamanız gerekli kullanıcı veri türlerinden herhangi birini topluyor veya paylaşıyor mu? | **Evet** |
+| Aktarılan tüm veriler şifreleniyor mu? | **Evet** (HTTPS) |
+| Kullanıcılar verilerinin silinmesini isteyebilir mi? | **Evet**, e-postayla |
+
+Beyan edilecek veri türleri (sürüm 1.1'den itibaren):
+
+| Veri türü | Toplanıyor / paylaşılıyor | Amaç | İsteğe bağlı mı |
+|---|---|---|---|
+| **Cihaz veya diğer kimlikler** | Toplanıyor, paylaşılmıyor | Dolandırıcılığı önleme (ücretsiz deneme tekrar başlamasın) | Hayır |
+| **Yaklaşık konum** | Toplanıyor (geçici işleniyor), paylaşılmıyor | Uygulama işlevi (hava durumuna göre madde) | Evet, şehir seçilirse |
+
+- Cihaz kimliği: ANDROID_ID'nin SHA-256 özeti ve deneme başlangıcı,
+  Cloudflare'deki Eşik sunucusunda (`server/worker.js`).
+- Konum: kullanıcının elle seçtiği şehrin koordinatları Open-Meteo'ya gider,
+  Eşik'te saklanmaz. Konum izni yok; yine de Play bunu "yaklaşık konum"
+  sayabilir, bu yüzden beyan edilir ("geçici olarak işleniyor" işaretli).
+- Fotoğraflar telefondan çıkmadığı için beyan edilmez.
 
 Satın alma Google Play üzerinden yapılır; ödeme bilgisi uygulamaya hiç
 gelmez. Uygulama yalnızca Play'den "Plus satın alındı mı" bilgisini sorar ve
@@ -103,14 +119,11 @@ geçmişi" beyan edilmedi. Form, hedef kitle tamamlanmadan kaydedilmez.
 
 CI her derlemede APK'nın izin listesini yazdırır ("APK izinleri" adımı).
 
-Gerekçe: Sürüm APK'sındaki `INTERNET` izni Google Play ödeme kütüphanesinden
-geliyor ve yalnızca Play satın alma doğrulaması için kullanılıyor; Eşik'in
-kendi sunucusu ya da ağ isteği yok. Listeler, ayarlar ve geçmiş yalnızca cihazda,
+Ağ istekleri: Google Play satın alma, Eşik sunucusu (deneme kaydı) ve
+Open-Meteo (hava, şehir seçildiyse). Listeler, ayarlar ve geçmiş yalnızca cihazda,
 uygulamanın özel depolamasında (SharedPreferences) tutuluyor. Şarj, ses
 kademesi, sıradaki alarm ve ağ türü yalnızca o an karar için okunuyor,
 saklanmıyor ve cihazdan çıkmıyor.
-
-"Hayır" seçilince şifreleme ve silme talebi soruları sorulmaz.
 
 ## Hassas izinler
 
