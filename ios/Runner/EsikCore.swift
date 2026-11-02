@@ -139,14 +139,46 @@ final class EsikCore {
     return (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
   }
 
-  /// Kontrol listesi: (başlık, ikon adı).
-  func items(_ mode: EsikMode) -> [(id: String, title: String, icon: String)] {
+  /// [day] gününün listesi: maddenin günleri ve hava koşulu süzülmüş hâli
+  /// (Dart'taki todayItemsProvider). Hava bilinmiyorsa koşul sayılmaz.
+  func items(_ mode: EsikMode, day: Date = EsikCore.thresholdDay())
+    -> [(id: String, title: String, icon: String)]
+  {
     let list = json("checklist.v1")?[mode.rawValue] as? [[String: Any]] ?? []
+    // Sabah o günün, akşam ertesi günün havasına bakılır.
+    let weatherDay =
+      mode == .morning ? day : Calendar.current.date(byAdding: .day, value: 1, to: day)!
+    let forecast = (json("weather.v1")?["days"] as? [String: Any])?[Self.dayKey(weatherDay)]
+      as? [String: Any]
     return list.compactMap { o in
       guard let id = o["id"] as? String, !id.isEmpty else { return nil }
+      if let days = o["days"] as? [Int], !days.isEmpty, !days.contains(Self.isoWeekday(day)) {
+        return nil
+      }
+      if let f = forecast, let rain = f["rain"] as? Double ?? (f["rain"] as? Int).map(Double.init),
+        let low = f["min"] as? Double, let high = f["max"] as? Double
+      {
+        switch o["weather"] as? String {
+        case "rain" where rain < 50: return nil
+        case "cold" where low > 5: return nil
+        case "hot" where high < 28: return nil
+        default: break
+        }
+      }
       return (id, o["title"] as? String ?? "", o["icon"] as? String ?? "")
     }
   }
+
+  /// Israrcı hatırlatma: toplam bildirim sayısı ve aralık (Dart'taki ReminderSettings).
+  func reminders() -> (count: Int, minutes: Int) {
+    let o = json("reminders.v1")
+    let count = Swift.min(Swift.max(o?["max"] as? Int ?? 5, 1), 5)
+    let saved = o?["minutes"] as? Int ?? 0
+    return (count, [5, 10, 15, 30].contains(saved) ? saved : 10)
+  }
+
+  /// [base] bildiriminin tekrarlarının kimlikleri.
+  private func repeatIds(_ base: String) -> [String] { (2...5).map { "\(base).r\($0)" } }
 
   private func rawConfig(_ mode: EsikMode) -> EsikConfig {
     let d = Self.fallbacks[mode]!
@@ -346,11 +378,11 @@ final class EsikCore {
     return status == .authorized || status == .provisional || status == .ephemeral
   }
 
-  private func content(_ mode: EsikMode, reason: EsikReason, kind: String?)
-    -> UNMutableNotificationContent
-  {
+  private func content(
+    _ mode: EsikMode, reason: EsikReason, kind: String?, day: Date = EsikCore.thresholdDay()
+  ) -> UNMutableNotificationContent {
     let s = EsikStrings(language: language())
-    let items = self.items(mode)
+    let items = self.items(mode, day: day)
     let labels =
       NSOrderedSet(array: items.compactMap { s.iconLabel($0.icon) }).array as? [String] ?? []
     let summary: String
@@ -391,11 +423,12 @@ final class EsikCore {
     registerCategories()
     let trigger =
       delay > 0 ? UNTimeIntervalNotificationTrigger(timeInterval: Double(delay), repeats: false) : nil
+    let body = content(mode, reason: reason, kind: kind)
     let request = UNNotificationRequest(
-      identifier: Self.requestId(mode), content: content(mode, reason: reason, kind: kind),
-      trigger: trigger)
+      identifier: Self.requestId(mode), content: body, trigger: trigger)
+    let center = UNUserNotificationCenter.current()
     do {
-      try await UNUserNotificationCenter.current().add(request)
+      try await center.add(request)
     } catch {
       return false
     }
@@ -403,8 +436,21 @@ final class EsikCore {
       let day = Self.thresholdDay()
       markNotified(day, mode)
       // Bugün bildirim geldi: o günün yedeği gerekmez.
-      UNUserNotificationCenter.current().removePendingNotificationRequests(
-        withIdentifiers: [Self.backupId(mode, day)])
+      let backup = Self.backupId(mode, day)
+      center.removePendingNotificationRequests(withIdentifiers: [backup] + repeatIds(backup))
+      // Israrcı hatırlatma: kontrol yapılınca clear() kaldırır.
+      let (count, minutes) = reminders()
+      let ids = repeatIds(Self.requestId(mode))
+      center.removePendingNotificationRequests(withIdentifiers: ids)
+      if count > 1 {
+        for n in 2...count {
+          let after = Double(Swift.max(delay, 1) + (n - 1) * minutes * 60)
+          try? await center.add(
+            UNNotificationRequest(
+              identifier: ids[n - 2], content: body,
+              trigger: UNTimeIntervalNotificationTrigger(timeInterval: after, repeats: false)))
+        }
+      }
     }
     return true
   }
@@ -412,7 +458,8 @@ final class EsikCore {
   /// Kontrol yapıldı: bekleyen ve gösterilen bildirimleri kaldırır.
   func clear(_ mode: EsikMode) {
     let center = UNUserNotificationCenter.current()
-    let ids = [Self.requestId(mode), Self.backupId(mode, Self.thresholdDay())]
+    let bases = [Self.requestId(mode), Self.backupId(mode, Self.thresholdDay())]
+    let ids = bases + bases.flatMap(repeatIds)
     center.removePendingNotificationRequests(withIdentifiers: ids)
     center.removeDeliveredNotifications(withIdentifiers: ids)
   }
@@ -452,10 +499,25 @@ final class EsikCore {
         else { continue }
         let parts = Calendar.current.dateComponents(
           [.year, .month, .day, .hour, .minute], from: at)
+        let id = Self.backupId(mode, day)
+        let body = content(mode, reason: .backup, kind: nil, day: day)
         let request = UNNotificationRequest(
-          identifier: Self.backupId(mode, day), content: content(mode, reason: .backup, kind: nil),
+          identifier: id, content: body,
           trigger: UNCalendarNotificationTrigger(dateMatching: parts, repeats: false))
         try? await center.add(request)
+        // Yedeğin tekrarları da önceden kurulur; kontrol yapılınca kalkar.
+        let (count, minutes) = reminders()
+        if count > 1 {
+          for n in 2...count {
+            let later = at.addingTimeInterval(Double((n - 1) * minutes * 60))
+            let laterParts = Calendar.current.dateComponents(
+              [.year, .month, .day, .hour, .minute], from: later)
+            try? await center.add(
+              UNNotificationRequest(
+                identifier: "\(id).r\(n)", content: body,
+                trigger: UNCalendarNotificationTrigger(dateMatching: laterParts, repeats: false)))
+          }
+        }
         next = next ?? at
       }
       if let next { native.set(next.timeIntervalSince1970 * 1000, forKey: "next.\(mode.rawValue)") }

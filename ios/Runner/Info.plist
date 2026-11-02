@@ -59,6 +59,8 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSCameraUsageDescription</key>
+	<string>“Kilitledim mi?” güvencesi için kapı ya da ocak gibi maddeleri işaretlerken fotoğraf çekersin. Fotoğraflar yalnızca telefonunda kalır.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>UISupportedInterfaceOrientations</key>

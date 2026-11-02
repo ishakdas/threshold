@@ -89,7 +89,8 @@ object EsikNotifications {
 
     /** Bildirim gönderilebildiyse true. */
     /** [kind]: bildirimi gönderen tetikleyici (yalnızca [Reason.TRIGGER] için). */
-    fun show(c: Context, mode: Mode, reason: Reason, kind: String? = null): Boolean {
+    /** [repeat]: ısrarcı hatırlatmanın kaçıncı bildirimi (1: ilki). */
+    fun show(c: Context, mode: Mode, reason: Reason, kind: String? = null, repeat: Int = 1): Boolean {
         if (!hasPermission(c)) return false
         ensureChannel(c)
         val items = EsikData.items(c, mode)
@@ -154,9 +155,15 @@ object EsikNotifications {
         }
         builder.addAction(Notification.Action.Builder(icon, res.getString(R.string.action_one_by_one), open).build())
 
-        c.getSystemService(NotificationManager::class.java).notify(notificationId(mode), builder.build())
+        val nm = c.getSystemService(NotificationManager::class.java)
+        // Tekrar: aynı bildirim yeniden ses versin (setOnlyAlertOnce'ı aşmak için).
+        if (repeat > 1) nm.cancel(notificationId(mode))
+        nm.notify(notificationId(mode), builder.build())
         SilentAlerter.alertIfSilent(c)
-        if (reason != Reason.TEST) EsikData.markNotified(c, EsikData.thresholdDay(), mode)
+        if (reason != Reason.TEST) {
+            EsikData.markNotified(c, EsikData.thresholdDay(), mode)
+            ReminderScheduler.next(c, mode, reason, kind, repeat)
+        }
         return true
     }
 

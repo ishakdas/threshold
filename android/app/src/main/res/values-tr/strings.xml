@@ -33,6 +33,8 @@
     <string name="summary_empty">Kontrol listen boş. Madde eklemek için dokun.</string>
     <string name="action_all_done">Hepsi tamam</string>
     <string name="action_one_by_one">Tek tek bak</string>
+    <string name="widget_not_done">yapılmadı</string>
+    <string name="widget_description">Bugünkü akşam ve sabah kontrolün</string>
     <string name="battery_hint">Pil’e dokun ve “Kısıtlamasız”ı seç</string>
     <plurals name="summary_ready">
         <item quantity="one">%1$d maddelik kontrolün hazır.</item>

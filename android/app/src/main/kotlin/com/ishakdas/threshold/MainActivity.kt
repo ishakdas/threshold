@@ -82,6 +82,12 @@ class MainActivity : FlutterActivity() {
                         call.argument<String>("subject") ?: "",
                     ),
                 )
+                "photosDir" -> result.success(java.io.File(filesDir, "photos").absolutePath)
+                "pinWidget" -> result.success(EsikWidget.requestPin(this))
+                "updateWidget" -> {
+                    EsikWidget.update(this)
+                    result.success(null)
+                }
                 "writeNfcTag" -> writeNfcTag(result)
                 "cancelNfcTag" -> {
                     finishNfc("cancelled")

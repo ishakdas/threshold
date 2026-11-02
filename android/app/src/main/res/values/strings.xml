@@ -33,6 +33,8 @@
     <string name="summary_empty">Your checklist is empty. Tap to add items.</string>
     <string name="action_all_done">All done</string>
     <string name="action_one_by_one">Go one by one</string>
+    <string name="widget_not_done">not done</string>
+    <string name="widget_description">Today’s evening and morning checks</string>
     <string name="battery_hint">Tap Battery and choose “Unrestricted”</string>
     <plurals name="summary_ready">
         <item quantity="one">Your 1-item check is ready.</item>

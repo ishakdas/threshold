@@ -46,6 +46,7 @@ class RescheduleReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         BackupScheduler.schedule(context)
         TriggerScheduler.schedule(context)
+        EsikWidget.update(context)
     }
 }
 
@@ -106,5 +107,60 @@ object BackupScheduler {
             // için birkaç dakikalık gecikme kabul edilebilir. Bu alarm Doze'da da çalışır.
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
         }
+    }
+}
+
+/**
+ * Israrcı hatırlatma: kontrol yapılmadıysa bildirim ayardaki aralıkla,
+ * toplam en fazla ayardaki sayı kadar yeniden gelir.
+ */
+object ReminderScheduler {
+    private const val EXTRA_REPEAT = "repeat"
+    private const val EXTRA_KIND = "kind"
+
+    private fun pending(c: Context, mode: Mode, intent: Intent? = null, flags: Int): PendingIntent? =
+        PendingIntent.getBroadcast(
+            c,
+            if (mode == Mode.EVENING) 61 else 62,
+            intent ?: Intent(c, ReminderReceiver::class.java),
+            PendingIntent.FLAG_IMMUTABLE or flags,
+        )
+
+    /** [shown]. bildirim gösterildi; sıradakini kur. */
+    fun next(c: Context, mode: Mode, reason: Reason, kind: String?, shown: Int) {
+        val (max, minutes) = EsikData.reminders(c)
+        if (shown >= max) return
+        val intent = Intent(c, ReminderReceiver::class.java)
+            .putExtra(EsikNotifications.EXTRA_MODE, mode.key)
+            .putExtra(EsikNotifications.EXTRA_SOURCE, reason.source)
+            .putExtra(EXTRA_KIND, kind)
+            .putExtra(EXTRA_REPEAT, shown + 1)
+        c.getSystemService(AlarmManager::class.java).setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis() + minutes * 60_000L,
+            pending(c, mode, intent, PendingIntent.FLAG_UPDATE_CURRENT)!!,
+        )
+    }
+
+    fun onAlarm(c: Context, intent: Intent) {
+        val mode = Mode.of(intent.getStringExtra(EsikNotifications.EXTRA_MODE)) ?: return
+        // Kontrol yapıldıysa ya da gün değiştiyse tekrar yok.
+        if (EsikData.isComplete(c, EsikData.thresholdDay(), mode)) return
+        if (!EsikData.wasNotified(c, EsikData.thresholdDay(), mode)) return
+        val reason = Reason.entries.firstOrNull { it.source == intent.getStringExtra(EsikNotifications.EXTRA_SOURCE) }
+            ?: Reason.TRIGGER
+        EsikNotifications.show(
+            c,
+            mode,
+            reason,
+            intent.getStringExtra(EXTRA_KIND),
+            intent.getIntExtra(EXTRA_REPEAT, 2),
+        )
+    }
+}
+
+class ReminderReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        ReminderScheduler.onAlarm(context, intent)
     }
 }

@@ -22,6 +22,7 @@
 		E51C0000000000000000A006 /* EsikIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E51C0000000000000000A003 /* EsikIntents.swift */; };
 		E51C0000000000000000A008 /* esik_chime.caf in Resources */ = {isa = PBXBuildFile; fileRef = E51C0000000000000000A007 /* esik_chime.caf */; };
 		E51C0000000000000000A00A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = E51C0000000000000000A009 /* Localizable.strings */; };
+		E51C0000000000000000B002 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E51C0000000000000000B001 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +74,9 @@
 		E51C0000000000000000A00B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E51C0000000000000000A00C /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E51C0000000000000000A00D /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E51C0000000000000000B003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E51C0000000000000000B004 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		E51C0000000000000000B005 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +156,7 @@
 				E51C0000000000000000A003 /* EsikIntents.swift */,
 				E51C0000000000000000A007 /* esik_chime.caf */,
 				E51C0000000000000000A009 /* Localizable.strings */,
+				E51C0000000000000000B001 /* InfoPlist.strings */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 			);
 			path = Runner;
@@ -256,6 +261,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E51C0000000000000000B002 /* InfoPlist.strings in Resources */,
 				E51C0000000000000000A008 /* esik_chime.caf in Resources */,
 				E51C0000000000000000A00A /* Localizable.strings in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
@@ -358,6 +364,16 @@
 				E51C0000000000000000A00D /* es */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		E51C0000000000000000B001 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E51C0000000000000000B003 /* en */,
+				E51C0000000000000000B004 /* tr */,
+				E51C0000000000000000B005 /* es */,
+			);
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

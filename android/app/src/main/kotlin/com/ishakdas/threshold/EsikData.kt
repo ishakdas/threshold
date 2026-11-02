@@ -85,13 +85,54 @@ object EsikData {
         }
     }
 
-    fun items(c: Context, mode: Mode): List<CheckItem> {
+    /**
+     * O eşik gününün listesi: maddenin günleri ve hava koşulu süzülmüş hâli
+     * (Dart'taki todayItemsProvider). Hava bilinmiyorsa koşul sayılmaz.
+     */
+    fun items(c: Context, mode: Mode, day: LocalDate = thresholdDay()): List<CheckItem> {
         val list = readJson(c, CHECKLIST)?.optJSONArray(mode.key) ?: return emptyList()
+        // Sabah o günün, akşam ertesi günün havasına bakılır.
+        val forecast = weather(c, if (mode == Mode.MORNING) day else day.plusDays(1))
         return (0 until list.length()).mapNotNull { i ->
             val o = list.optJSONObject(i) ?: return@mapNotNull null
             val id = o.optString("id")
-            if (id.isEmpty()) null else CheckItem(id, o.optString("title"), o.optString("icon"))
+            if (id.isEmpty()) return@mapNotNull null
+            val days = o.optJSONArray("days")?.let { a -> (0 until a.length()).map { a.optInt(it) }.toSet() }
+            if (days != null && days.isNotEmpty() && day.dayOfWeek.value !in days) return@mapNotNull null
+            if (forecast != null && !forecast.matches(o.optString("weather", "always"))) return@mapNotNull null
+            CheckItem(id, o.optString("title"), o.optString("icon"))
         }
+    }
+
+    /** Dart'ın kaydettiği hava tahmini (lib/data/weather.dart). */
+    private class Forecast(val rain: Int, val min: Double, val max: Double) {
+        fun matches(need: String): Boolean = when (need) {
+            "rain" -> rain >= 50
+            "cold" -> min <= 5.0
+            "hot" -> max >= 28.0
+            else -> true
+        }
+    }
+
+    private fun weather(c: Context, day: LocalDate): Forecast? {
+        val o = readJson(c, "weather.v1")?.optJSONObject("days")?.optJSONObject(day.toString()) ?: return null
+        if (!o.has("rain") || !o.has("min") || !o.has("max")) return null
+        return Forecast(o.optInt("rain"), o.optDouble("min"), o.optDouble("max"))
+    }
+
+    /** Israrcı hatırlatma: toplam bildirim sayısı ve aralık (Dart'taki ReminderSettings). */
+    fun reminders(c: Context): Pair<Int, Int> {
+        val o = readJson(c, "reminders.v1")
+        val max = (o?.optInt("max", 5) ?: 5).coerceIn(1, 5)
+        val minutes = o?.optInt("minutes", 10)?.takeIf { it in listOf(5, 10, 15, 30) } ?: 10
+        return max to minutes
+    }
+
+    /** Bugünkü kontrolün bitiş anı ("HH:mm"); yapılmadıysa null. Widget için. */
+    fun completedAt(c: Context, day: LocalDate, mode: Mode): String? {
+        val raw = readJson(c, LOG)?.optJSONObject(day.toString())?.optJSONObject(mode.key)
+            ?.optString("completedAt", "")?.takeIf { it.isNotEmpty() } ?: return null
+        return runCatching { LocalDateTime.parse(raw.take(19)).toLocalTime().toString().take(5) }.getOrNull()
     }
 
     private fun time(v: String?, fallback: LocalTime): LocalTime = try {
@@ -179,6 +220,7 @@ object EsikData {
         )
         log.put(day, modes)
         prefs(c).edit().putString(PREFIX + LOG, log.toString()).commit()
+        EsikWidget.update(c)
     }
 
     // Bildirim gönderildi mi? Yalnızca Android tarafı kullanır; ayrı dosyada durur.

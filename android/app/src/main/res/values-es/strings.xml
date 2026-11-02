@@ -33,6 +33,8 @@
     <string name="summary_empty">Tu lista está vacía. Toca para añadir elementos.</string>
     <string name="action_all_done">Todo listo</string>
     <string name="action_one_by_one">Uno por uno</string>
+    <string name="widget_not_done">pendiente</string>
+    <string name="widget_description">Los controles de hoy</string>
     <string name="battery_hint">Toca Batería y elige “Sin restricciones”</string>
     <plurals name="summary_ready">
         <item quantity="one">Tu control de 1 elemento está listo.</item>

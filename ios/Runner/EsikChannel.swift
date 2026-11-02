@@ -83,6 +83,14 @@ final class EsikChannel {
       sendFeedback(
         email: args?["email"] as? String ?? "", subject: args?["subject"] as? String ?? ""
       ) { opened in result(opened) }
+    case "photosDir":
+      let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+      result(docs.appendingPathComponent("photos").path)
+    case "pinWidget":
+      // iOS widget'ı ayrı bir eklenti gerektiriyor; henüz yok.
+      result(false)
+    case "updateWidget":
+      result(nil)
     case "writeNfcTag":
       result("unsupported")
     case "cancelNfcTag", "openNfcSettings", "openBatterySettings", "openClock":
