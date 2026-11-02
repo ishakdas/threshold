@@ -90,15 +90,18 @@ void main() {
       (tester) async {
         FakePlusBilling.buyCount = 0;
         await pumpApp(tester, now: morningNow, prefs: expired);
-        // Plus durumu Uygulama ayarları'nda.
+        // Plus alınmadıysa durum her ana ekranın üstünde.
         await tester.tap(find.bySemanticsLabel('Eşikler'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('Uygulama ayarları'));
-        await tester.pumpAndSettle();
         expect(find.text('Ücretsiz sürüm'), findsOneWidget);
-        GoRouter.of(tester.element(find.text('Ücretsiz sürüm'))).pop();
-        await tester.pumpAndSettle();
 
+        await tester.tap(find.text('Düzenle').last);
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.textContaining('Wi‑Fi’ından çıkınca'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.tap(find.textContaining('Wi‑Fi’ından çıkınca'));
         await tester.pumpAndSettle();
         expect(find.text('Eşik Plus'), findsWidgets);
@@ -115,11 +118,18 @@ void main() {
       await pumpApp(tester, prefs: expired);
       await tester.tap(find.bySemanticsLabel('Eşikler'));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Düzenle').first);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Sessize alınca'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(find.text('Sessize alınca'));
       await tester.pumpAndSettle();
       expect(find.text('Birden fazla tetikleyici'), findsOneWidget);
       final c = ProviderScope.containerOf(
-        tester.element(find.text('Eşiklerim')),
+        tester.element(find.text('Birden fazla tetikleyici')),
       );
       expect(c.read(thresholdsProvider)[DayMode.evening]!.first.kinds, [
         TriggerKind.charging,

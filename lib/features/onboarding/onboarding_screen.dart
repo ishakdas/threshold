@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
+import '../../data/models.dart';
 import '../../data/templates.dart';
 import '../../data/threshold_templates.dart';
 import '../trigger/threshold_widgets.dart';
@@ -31,11 +32,12 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pages = PageController();
   int _index = 0;
-  static const _count = 4;
+  static const _count = 6;
 
   /// Girişte seçilen hazır düzen ve madde paketleri; bitirince uygulanır.
   ThresholdTemplate _template = thresholdTemplates.first;
-  final _packs = <ChecklistTemplate>{};
+  // İlk iki paket (ev güvenliği, evden çıkarken) baştan seçili.
+  final _packs = <ChecklistTemplate>{...checklistTemplates.take(2)};
 
   @override
   void dispose() {
@@ -49,17 +51,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ref.read(thresholdsProvider.notifier).replaceAll({
         for (final mode in DayMode.values) mode: _template.thresholds[mode]!,
       });
-      final l10n = context.l10n;
-      final checklist = ref.read(checklistProvider.notifier);
-      for (final pack in _packs) {
-        for (final e in pack.build(l10n).entries) {
-          if (e.value.isNotEmpty) checklist.addAll(e.key, e.value);
-        }
-      }
+      ref
+          .read(checklistProvider.notifier)
+          .replaceFromPacks(_packItems(context.l10n));
     }
     await ref.read(onboardingSeenProvider.notifier).complete();
     if (mounted) context.go(to);
   }
+
+  /// Seçilen paketlerin maddeleri, moda göre.
+  Map<DayMode, List<CheckItem>> _packItems(AppLocalizations l10n) => {
+    for (final mode in DayMode.values)
+      mode: [
+        for (final pack in checklistTemplates)
+          if (_packs.contains(pack)) ...pack.build(l10n)[mode]!,
+      ],
+  };
 
   void _go(int i) {
     HapticFeedback.selectionClick();
@@ -123,14 +130,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const _ScenarioPage(),
                     _SetupPage(
                       template: _template,
-                      packs: _packs,
                       onTemplate: (t) => setState(() => _template = t),
+                    ),
+                    _PacksPage(
+                      packs: _packs,
                       onPack: (pack) => setState(
                         () => _packs.contains(pack)
                             ? _packs.remove(pack)
                             : _packs.add(pack),
                       ),
                     ),
+                    _ReviewPage(template: _template, items: _packItems(l10n)),
                     const _NotifyPage(),
                   ],
                 ),
@@ -476,20 +486,13 @@ class _GhostWithCallouts extends StatelessWidget {
   }
 }
 
-/// Hazır düzen ve hazır maddeler. Her düzen için Plus denemesi açık olduğundan
-/// çok eşikli düzen de seçilebilir; deneme bitince ilk eşik kalır.
+/// Haftalık rutin: hazır düzen seçimi. Plus denemesi açık olduğundan çok
+/// eşikli düzen de seçilebilir; deneme bitince ilk eşik kalır.
 class _SetupPage extends StatelessWidget {
-  const _SetupPage({
-    required this.template,
-    required this.packs,
-    required this.onTemplate,
-    required this.onPack,
-  });
+  const _SetupPage({required this.template, required this.onTemplate});
 
   final ThresholdTemplate template;
-  final Set<ChecklistTemplate> packs;
   final ValueChanged<ThresholdTemplate> onTemplate;
-  final ValueChanged<ChecklistTemplate> onPack;
 
   @override
   Widget build(BuildContext context) {
@@ -497,7 +500,7 @@ class _SetupPage extends StatelessWidget {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
       children: [
         DotLabel(l10n.onbSetupKicker),
         const SizedBox(height: 10),
@@ -520,26 +523,252 @@ class _SetupPage extends StatelessWidget {
               },
             ),
           ),
-        const SizedBox(height: 8),
-        Text(l10n.onbPacksTitle, style: t.titleMedium),
+      ],
+    );
+  }
+}
+
+/// Hazır madde paketleri: büyük kartlar, seçili olan yeşil ve işaretli.
+class _PacksPage extends StatelessWidget {
+  const _PacksPage({required this.packs, required this.onPack});
+
+  final Set<ChecklistTemplate> packs;
+  final ValueChanged<ChecklistTemplate> onPack;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      children: [
+        DotLabel(l10n.onbSetupKicker),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
+        Text(l10n.onbPacksTitle, style: t.headlineMedium),
+        const SizedBox(height: 8),
+        Text(
+          l10n.onbPacksBody,
+          style: t.bodyMedium?.copyWith(color: p.textMuted),
+        ),
+        const SizedBox(height: 16),
+        GridView(
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            mainAxisExtent: 200,
+          ),
           children: [
             for (final pack in checklistTemplates)
-              FilterChip(
+              _PackCard(
+                pack: pack,
                 selected: packs.contains(pack),
-                avatar: EsikIconView(pack.icon, size: 16, color: p.text),
-                label: Text(pack.title(l10n)),
-                onSelected: (_) {
+                onTap: () {
                   HapticFeedback.selectionClick();
                   onPack(pack);
                 },
               ),
           ],
         ),
-        const SizedBox(height: 32),
+      ],
+    );
+  }
+}
+
+class _PackCard extends StatelessWidget {
+  const _PackCard({
+    required this.pack,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ChecklistTemplate pack;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: pack.title(l10n),
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: selected
+                ? p.success.withValues(alpha: 0.16)
+                : p.chip.withValues(alpha: 0.35),
+            border: Border.all(
+              color: selected ? p.success : p.chipBorder,
+              width: selected ? 1.6 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconCircle(
+                    icon: pack.icon,
+                    size: 40,
+                    active: true,
+                    gradient: selected ? p.successGradient : null,
+                  ),
+                  const Spacer(),
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: selected ? 1 : 0.35,
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: selected ? p.success : Colors.transparent,
+                        border: Border.all(
+                          color: selected ? p.success : p.textMuted,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: selected
+                          ? const Center(
+                              child: EsikIconView(
+                                EsikIcon.check,
+                                size: 16,
+                                color: Colors.white,
+                                strokeWidth: 2.2,
+                              ),
+                            )
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(pack.title(l10n), style: t.titleMedium),
+              const SizedBox(height: 4),
+              Text(
+                [
+                  l10n.onbPackItems(pack.items.length),
+                  pack.items.first.title(l10n),
+                ].join(' · '),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: t.labelSmall?.copyWith(fontSize: 12, color: p.textMuted),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Özet: seçilen düzenle Eşik'in ne zaman ne getireceği ve listedeki maddeler.
+class _ReviewPage extends ConsumerWidget {
+  const _ReviewPage({required this.template, required this.items});
+
+  final ThresholdTemplate template;
+
+  /// Paketlerden gelen maddeler; bir modda yoksa mevcut liste kullanılır.
+  final Map<DayMode, List<CheckItem>> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final current = ref.watch(checklistProvider);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      children: [
+        DotLabel(l10n.onbReviewKicker),
+        const SizedBox(height: 10),
+        Text(l10n.onbReviewTitle, style: t.headlineMedium),
+        const SizedBox(height: 8),
+        Text(
+          l10n.onbReviewBody,
+          style: t.bodyMedium?.copyWith(color: p.textMuted),
+        ),
+        const SizedBox(height: 16),
+        for (final mode in DayMode.values) ...[
+          () {
+            final list = items[mode]!.isNotEmpty
+                ? items[mode]!
+                : current[mode]!;
+            final evening = mode == DayMode.evening;
+            return SurfaceCard(
+              radius: 24,
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionTitle(
+                    evening ? l10n.eveningThresholds : l10n.morningThresholds,
+                    icon: evening ? EsikIcon.moon : EsikIcon.sun,
+                  ),
+                  const SizedBox(height: 8),
+                  for (final c in template.thresholds[mode]!)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        l10n.onbReviewWhen(
+                          c.daysLabel(l10n),
+                          c.windowEnabled
+                              ? '${formatTime(c.windowStart)}–${formatTime(c.windowEnd)}'
+                              : l10n.anyTime,
+                          l10n.lower(c.when(l10n)),
+                          list.length,
+                        ),
+                        style: t.bodyMedium,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.onbReviewItems,
+                    style: t.labelMedium?.copyWith(color: p.textMuted),
+                  ),
+                  const SizedBox(height: 4),
+                  for (final item in list)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Row(
+                        children: [
+                          EsikIconView(item.icon, size: 15, color: p.success),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(item.title, style: t.labelLarge),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (items[mode]!.isEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.onbReviewDefault,
+                      style: t.labelSmall?.copyWith(
+                        fontSize: 12,
+                        color: p.textFaint,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }(),
+          const SizedBox(height: 10),
+        ],
       ],
     );
   }

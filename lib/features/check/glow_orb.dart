@@ -54,7 +54,7 @@ class _GlowOrbState extends State<GlowOrb> with SingleTickerProviderStateMixin {
               painter: _RingPainter(
                 progress: f,
                 track: p.text.withValues(alpha: 0.16),
-                color: p.text,
+                color: Color.lerp(p.text, p.success, f)!,
               ),
             ),
             ScaleTransition(
@@ -68,20 +68,22 @@ class _GlowOrbState extends State<GlowOrb> with SingleTickerProviderStateMixin {
                   height: orb,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: const RadialGradient(
-                      center: Alignment(-0.24, -0.36),
+                    // Maddeler işaretlendikçe amberden yeşile döner.
+                    gradient: RadialGradient(
+                      center: const Alignment(-0.24, -0.36),
                       radius: 0.75,
                       colors: [
-                        Color(0xFFFFE9C8),
-                        Color(0xFFFFB262),
-                        Color(0xFFD9682A),
+                        for (final (a, b) in _blend) Color.lerp(a, b, f)!,
                       ],
-                      stops: [0, 0.42, 1],
+                      stops: const [0, 0.42, 1],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFFA050)
-                            .withValues(alpha: 0.35 + 0.35 * f),
+                        color: Color.lerp(
+                          const Color(0xFFFFA050),
+                          const Color(0xFF5FC08A),
+                          f,
+                        )!.withValues(alpha: 0.35 + 0.35 * f),
                         blurRadius: 60 + 50 * f,
                       ),
                     ],
@@ -96,6 +98,13 @@ class _GlowOrbState extends State<GlowOrb> with SingleTickerProviderStateMixin {
     );
   }
 }
+
+/// Kürenin amber (başta) ve yeşil (bitince) renkleri.
+const _blend = [
+  (Color(0xFFFFE9C8), Color(0xFFE4F6E7)),
+  (Color(0xFFFFB262), Color(0xFF8FD6A5)),
+  (Color(0xFFD9682A), Color(0xFF3E9A6A)),
+];
 
 class _RingPainter extends CustomPainter {
   _RingPainter({

@@ -986,7 +986,64 @@
   "ttHomeTitle": "Evden çalışanlar",
   "ttHomeSubtitle": "Akşam kontrolü öne çıkar; sabah yalnızca alarm durunca, yedek saat yok.",
   "onbSetupKicker": "Başlarken",
-  "onbSetupTitle": "Günün nasıl geçiyor?",
-  "onbSetupBody": "Bir düzen seç; istediğin zaman Eşikler sekmesinden değiştirirsin.",
-  "onbPacksTitle": "Listene hazır maddeler ekle"
+  "onbSetupTitle": "Haftalık rutinin nasıl?",
+  "onbSetupBody": "Sana uyan şablonu seç; Eşik ona göre kurulu gelsin. İstediğin zaman Eşikler sekmesinden değiştirebilirsin.",
+  "onbPacksTitle": "Kontrol listeni hazırla",
+  "onbPacksBody": "Neleri kontrol etmek istersin? Seçtiğin paketlerdeki maddeler listene eklenir; sonra dilediğini silebilir ya da yenisini yazabilirsin.",
+  "onbPackItems": "{count} madde",
+  "@onbPackItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbReviewKicker": "Hazır",
+  "onbReviewTitle": "Eşik böyle çalışacak",
+  "onbReviewBody": "Her şeyi sonradan Eşikler ve Liste sekmelerinden değiştirebilirsin.",
+  "onbReviewWhen": "{days}: {window} arası {trigger} → {count} maddelik liste",
+  "@onbReviewWhen": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "window": {
+        "type": "String"
+      },
+      "trigger": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onbReviewItems": "Listende",
+  "onbReviewDefault": "Paket seçmedin; örnek liste kullanılacak.",
+  "appSettingsShort": "Ayarlar",
+  "eveningThresholds": "Akşam eşikleri",
+  "morningThresholds": "Sabah eşikleri",
+  "eveningThresholdsHint": "Yatmadan önceki kontrol. Günlere göre ayrı eşik ekleyebilirsin.",
+  "morningThresholdsHint": "Evden çıkmadan önceki kontrol. Günlere göre ayrı eşik ekleyebilirsin.",
+  "addEveningThreshold": "Akşam eşiği ekle",
+  "addMorningThreshold": "Sabah eşiği ekle",
+  "editThreshold": "Eşiği düzenle",
+  "edit": "Düzenle",
+  "backupShort": "Yedek {time}",
+  "@backupShort": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "backupOffShort": "Yedek saat kapalı",
+  "nameHoliday": "Tatil",
+  "thresholdNameLabel": "Eşiğin adı",
+  "thresholdNameHint": "Bu eşiği tanıyacağın bir ad ver. Sonra hangi günler ve nasıl çalışacağını seçeceksin.",
+  "thresholdCreate": "Eşiği oluştur",
+  "thresholdNeedsDay": "En az bir gün seç.",
+  "whichHours": "Hangi saatlerde?",
+  "backupTitle": "Hiçbiri olmazsa",
+  "thresholdTemplatesShort": "Hafta içi iş, erken kalkış gibi hazır düzenlerden birini kur."
 }

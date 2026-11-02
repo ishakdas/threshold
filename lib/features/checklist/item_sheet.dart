@@ -61,8 +61,8 @@ class _ItemSheetState extends ConsumerState<_ItemSheet> {
     final place = ref.watch(weatherProvider).place;
 
     Widget label(String text) => Padding(
-      padding: const EdgeInsets.fromLTRB(4, 18, 4, 10),
-      child: DotLabel(text),
+      padding: const EdgeInsets.fromLTRB(2, 20, 2, 10),
+      child: SectionTitle(text),
     );
 
     return Container(

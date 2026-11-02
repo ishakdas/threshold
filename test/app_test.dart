@@ -55,7 +55,7 @@ void main() {
   });
 
   testWidgets(
-    'onboarding dört sayfa: düzen ve paket seçilir, kuruluma götürür',
+    'onboarding: düzen ve paket seçilir, özet gösterilir, kuruluma götürür',
     (tester) async {
       await pumpApp(tester, onboardingSeen: false);
 
@@ -65,17 +65,27 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('İleri'));
       await tester.pumpAndSettle();
-      expect(find.text('Günün nasıl geçiyor?'), findsOneWidget);
+      expect(find.text('Haftalık rutinin nasıl?'), findsOneWidget);
       await tester.tap(find.text('Hafta içi iş, hafta sonu rahat'));
+      await tester.pumpAndSettle();
+
+      // Paketler: ilk ikisi seçili gelir; "Havaya göre" de eklenir.
+      await tester.tap(find.bySemanticsLabel('İleri'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kontrol listeni hazırla'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('Havaya göre'),
+        find.bySemanticsLabel('Havaya göre'),
         200,
         scrollable: find.byType(Scrollable).last,
       );
-      await tester.drag(find.byType(Scrollable).last, const Offset(0, -200));
+      await tester.tap(find.bySemanticsLabel('Havaya göre'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Havaya göre'));
+
+      // Özet: ne zaman ve hangi maddeler.
+      await tester.tap(find.bySemanticsLabel('İleri'));
       await tester.pumpAndSettle();
+      expect(find.text('Eşik böyle çalışacak'), findsOneWidget);
+      expect(find.text('Şemsiyemi aldım mı?'), findsOneWidget);
 
       await tester.tap(find.bySemanticsLabel('İleri'));
       await tester.pumpAndSettle();
@@ -88,10 +98,13 @@ void main() {
 
       final c = ProviderScope.containerOf(tester.element(find.text('Kurulum')));
       expect(c.read(thresholdsProvider)[DayMode.morning], hasLength(2));
-      expect(
-        c.read(checklistProvider)[DayMode.morning]!.map((i) => i.title),
-        contains('Şemsiyemi aldım mı?'),
-      );
+      final morning = c
+          .read(checklistProvider)[DayMode.morning]!
+          .map((i) => i.title);
+      expect(morning, contains('Şemsiyemi aldım mı?'));
+      expect(morning, contains('Anahtarlarım yanımda mı?'));
+      // Paket seçilince örnek liste kalkar.
+      expect(morning, isNot(contains('Çantama şarj aletini koydum mu?')));
     },
   );
 
@@ -112,10 +125,18 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Eşikler'));
     await tester.pumpAndSettle();
     expect(find.text('Eşiklerim'), findsOneWidget);
-    expect(find.text('22:00'), findsOneWidget);
-    expect(find.text('02:00'), findsOneWidget);
+    expect(find.text('Akşam eşikleri'), findsOneWidget);
+    expect(find.text('22:00–02:00'), findsOneWidget);
 
-    // Saate dokununca saat seçici açılır.
+    // Düzenle: eşiğin ekranı; saate dokununca saat seçici açılır.
+    await tester.tap(find.text('Düzenle').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Eşiği düzenle'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('22:00'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(find.text('22:00'));
     await tester.pumpAndSettle();
     expect(find.text('Aralığın başlangıcı'), findsOneWidget);
@@ -127,8 +148,17 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.bySemanticsLabel('Eşikler'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Düzenle').first);
+    await tester.pumpAndSettle();
 
     final picker = find.byType(ArcRangePicker);
+    await tester.scrollUntilVisible(
+      picker,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -150));
+    await tester.pumpAndSettle();
     final box = tester.renderObject<RenderBox>(picker);
     final w = box.size.width;
     final r = (w - 40) / 2;
@@ -146,6 +176,13 @@ void main() {
 
     expect(tester.state<ScrollableState>(list).position.pixels, before);
     final c = ProviderScope.containerOf(tester.element(picker));
+    // Kaydedilene kadar ayar değişmez.
+    expect(
+      c.read(thresholdsProvider)[DayMode.evening]!.first.windowEnd,
+      const TimeOfDay(hour: 2, minute: 0),
+    );
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
     expect(
       c.read(thresholdsProvider)[DayMode.evening]!.first.windowEnd,
       isNot(const TimeOfDay(hour: 2, minute: 0)),

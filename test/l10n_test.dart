@@ -41,13 +41,16 @@ void main() {
     // Dil, Eşikler sekmesindeki dişliden açılan Uygulama ayarları'nda.
     await tester.tap(find.bySemanticsLabel('Eşikler'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Uygulama ayarları'));
+    await tester.tap(find.text('Ayarlar').last);
     await tester.pumpAndSettle();
+    expect(find.text('Uygulama ayarları'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Español'),
       300,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: find.byType(Scrollable).last,
     );
+    await tester.drag(find.byType(Scrollable).last, const Offset(0, -150));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Español'));
     await tester.pumpAndSettle();
     // Kart başlığı da İspanyolca oldu (sayfanın üstü kaydırılmış durumda).

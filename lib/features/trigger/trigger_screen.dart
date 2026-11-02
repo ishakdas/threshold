@@ -17,90 +17,467 @@ import 'arc_range_picker.dart';
 import 'threshold_widgets.dart';
 import '../../l10n/texts.dart';
 import '../../data/plus.dart';
+import '../plus/plus_card.dart';
 import '../plus/plus_sheet.dart';
 
-/// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
-/// Her değişiklik anında kaydedilir; yedek alarm da hemen yeniden kurulur.
-class TriggerScreen extends ConsumerStatefulWidget {
+/// Eşikler sekmesi: akşam ve sabah eşiklerinin özeti. Her eşik "Düzenle" ile,
+/// yenisi "+ … eşiği ekle" ile ayrı ekranda ([ThresholdEditorScreen]) kurulur.
+class TriggerScreen extends ConsumerWidget {
   const TriggerScreen({super.key});
 
   @override
-  ConsumerState<TriggerScreen> createState() => _TriggerScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final plus = ref.watch(plusProvider).active;
+    final all = ref.watch(thresholdsProvider);
+    final issues = ref.watch(setupIssuesProvider);
+    final issueCount = issues == null
+        ? 0
+        : {...?issues[DayMode.evening], ...?issues[DayMode.morning]}.length;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Atmosphere(
+        glowTop: -260,
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 130),
+            children: [
+              ScreenHeader(
+                title: l10n.settingsTitle,
+                trailing: _AppSettingsButton(
+                  onTap: () => context.push('/uygulama'),
+                ),
+              ),
+              const SizedBox(height: 14),
+              const PlusStrip(),
+              for (final mode in DayMode.values) ...[
+                _ModeSection(mode: mode, thresholds: all[mode]!, plus: plus),
+                const SizedBox(height: 22),
+              ],
+              SurfaceCard(
+                radius: 24,
+                padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+                onTap: () => showThresholdTemplates(context),
+                child: Row(
+                  children: [
+                    IconCircle(icon: EsikIcon.sparkle, size: 40, active: true),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n.thresholdTemplates, style: t.bodyLarge),
+                          const SizedBox(height: 2),
+                          Text(
+                            l10n.thresholdTemplatesShort,
+                            style: t.labelMedium?.copyWith(color: p.textMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    EsikIconView(
+                      EsikIcon.chevronRight,
+                      size: 16,
+                      color: p.text,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              PrimaryPillButton(
+                label: switch (issueCount) {
+                  0 => l10n.setupCheck,
+                  final n => l10n.setupFinishMissing(n),
+                },
+                warning: issueCount > 0,
+                trailingIcon: EsikIcon.arrowRight,
+                expand: true,
+                onPressed: () => context.push('/kurulum'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _TriggerScreenState extends ConsumerState<TriggerScreen> {
-  late DayMode _mode = ref.read(dayModeProvider);
+/// Başlıktaki belirgin "Uygulama ayarları" düğmesi.
+class _AppSettingsButton extends StatelessWidget {
+  const _AppSettingsButton({required this.onTap});
+  final VoidCallback onTap;
 
-  /// Seçili eşik (gün profili); mod değişince ilkine döner.
-  int _index = 0;
-
-  List<TriggerConfig> get _list => ref.read(thresholdsProvider)[_mode]!;
-  TriggerConfig get _config => _list[_index.clamp(0, _list.length - 1)];
-  void _update(TriggerConfig c) => ref
-      .read(thresholdsProvider.notifier)
-      .update(_mode, _index.clamp(0, _list.length - 1), c);
-
-  /// Seçili eşikte günü aç/kapat; başka eşikteyse buraya taşır.
-  void _toggleDay(int weekday) {
-    final list = _list;
-    final next = list.toggleDay(_index, weekday);
-    if (identical(next, list)) {
-      HapticFeedback.heavyImpact();
-      return;
-    }
-    HapticFeedback.selectionClick();
-    ref.read(thresholdsProvider.notifier).set(_mode, next);
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Semantics(
+      button: true,
+      label: l10n.appSettingsTitle,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(19),
+            color: p.primaryButton,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              EsikIconView(EsikIcon.gear, size: 18, color: p.onPrimaryButton),
+              const SizedBox(width: 6),
+              Text(
+                l10n.appSettingsShort,
+                style: t.labelLarge?.copyWith(color: p.onPrimaryButton),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
+}
 
-  /// Yeni eşik: seçilinin kopyası; hafta sonu ayrı değilse hafta sonuna,
-  /// değilse en kalabalık eşiğin son gününe kurulur. Günleri sonra seçilir.
-  void _addThreshold({required bool plus}) {
+/// Bir modun (akşam ya da sabah) eşikleri ve "+ … eşiği ekle".
+class _ModeSection extends StatelessWidget {
+  const _ModeSection({
+    required this.mode,
+    required this.thresholds,
+    required this.plus,
+  });
+
+  final DayMode mode;
+  final List<TriggerConfig> thresholds;
+  final bool plus;
+
+  String get _param => mode == DayMode.evening ? 'aksam' : 'sabah';
+
+  Future<void> _add(BuildContext context) async {
     if (!plus) {
       showPlusSheet(context);
       return;
     }
-    final list = _list;
+    final name = await askThresholdName(context, mode);
+    if (name == null || !context.mounted) return;
+    await context.push(
+      '/esik?mod=$_param&yeni=${Uri.encodeQueryComponent(name)}',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final evening = mode == DayMode.evening;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionTitle(
+          evening ? l10n.eveningThresholds : l10n.morningThresholds,
+          icon: evening ? EsikIcon.moon : EsikIcon.sun,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 2, 4, 10),
+          child: Text(
+            evening ? l10n.eveningThresholdsHint : l10n.morningThresholdsHint,
+            style: t.labelMedium?.copyWith(color: p.textMuted),
+          ),
+        ),
+        for (var i = 0; i < thresholds.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _ThresholdCard(
+              config: thresholds[i].effective(plus: plus || i > 0),
+              locked: !plus && i > 0,
+              onEdit: () {
+                if (!plus && i > 0) {
+                  showPlusSheet(context);
+                  return;
+                }
+                context.push('/esik?mod=$_param&i=$i');
+              },
+            ),
+          ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _add(context),
+            icon: EsikIconView(EsikIcon.plus, size: 18, color: p.accent),
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  evening ? l10n.addEveningThreshold : l10n.addMorningThreshold,
+                  style: t.labelLarge?.copyWith(color: p.accent),
+                ),
+                if (!plus) ...[
+                  const SizedBox(width: 8),
+                  PlusBadge(owned: plus, compact: true),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bir eşiğin özeti: adı, günleri, tetikleyicileri, saatleri ve "Düzenle".
+class _ThresholdCard extends StatelessWidget {
+  const _ThresholdCard({
+    required this.config,
+    required this.locked,
+    required this.onEdit,
+  });
+
+  final TriggerConfig config;
+  final bool locked;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final c = config;
+    Widget line(EsikIcon icon, String text) => Padding(
+      padding: const EdgeInsets.only(top: 5),
+      child: Row(
+        children: [
+          EsikIconView(icon, size: 14, color: p.textMuted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: t.labelMedium?.copyWith(color: p.textMuted),
+            ),
+          ),
+        ],
+      ),
+    );
+    return Opacity(
+      opacity: locked ? 0.55 : 1,
+      child: SurfaceCard(
+        radius: 24,
+        padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
+        onTap: onEdit,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c.label(l10n), style: t.titleMedium),
+                  if (c.name.isNotEmpty)
+                    line(EsikIcon.clock, c.daysLabel(l10n)),
+                  line(
+                    c.kinds.first.icon,
+                    c.kinds.map((k) => k.title(l10n)).join(', '),
+                  ),
+                  line(
+                    EsikIcon.clock,
+                    c.windowEnabled
+                        ? '${formatTime(c.windowStart)}–${formatTime(c.windowEnd)}'
+                        : l10n.anyTime,
+                  ),
+                  line(
+                    EsikIcon.bell,
+                    c.backupEnabled
+                        ? l10n.backupShort(formatTime(c.backupTime))
+                        : l10n.backupOffShort,
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: onEdit,
+              child: Text(locked ? l10n.plusName : l10n.edit),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Yeni eşiğin adı. İptal edilirse null.
+Future<String?> askThresholdName(BuildContext context, DayMode mode) {
+  final l10n = context.l10n;
+  final controller = TextEditingController();
+  final suggestions = mode == DayMode.evening
+      ? [l10n.daysWeekendNights, l10n.daysWeekdays, l10n.nameHoliday]
+      : [l10n.daysWeekend, l10n.daysWeekdays, l10n.nameHoliday];
+  return showDialog<String>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) {
+        void done() {
+          final name = controller.text.trim();
+          if (name.isNotEmpty) Navigator.pop(context, name);
+        }
+
+        return AlertDialog(
+          title: Text(
+            mode == DayMode.evening
+                ? l10n.addEveningThreshold
+                : l10n.addMorningThreshold,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.thresholdNameHint),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => done(),
+                decoration: InputDecoration(hintText: l10n.thresholdNameLabel),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final s in suggestions)
+                    ActionChip(
+                      label: Text(s),
+                      onPressed: () => setState(() => controller.text = s),
+                    ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: controller.text.trim().isEmpty ? null : done,
+              child: Text(l10n.thresholdCreate),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
+/// Bir eşiğin bütün ayarları: ad, tetikleyiciler, saat aralığı, günler,
+/// gecikme, yedek saat. Değişiklikler "Kaydet"e basınca uygulanır.
+/// [index] null ise [newName] adıyla yeni eşik oluşturulur.
+class ThresholdEditorScreen extends ConsumerStatefulWidget {
+  const ThresholdEditorScreen({
+    super.key,
+    required this.mode,
+    this.index,
+    this.newName,
+  });
+
+  final DayMode mode;
+  final int? index;
+  final String? newName;
+
+  @override
+  ConsumerState<ThresholdEditorScreen> createState() =>
+      _ThresholdEditorScreenState();
+}
+
+class _ThresholdEditorScreenState extends ConsumerState<ThresholdEditorScreen> {
+  DayMode get _mode => widget.mode;
+  late final List<TriggerConfig> _list = ref.read(thresholdsProvider)[_mode]!;
+  late final bool _isNew =
+      widget.index == null || widget.index! >= _list.length;
+  late final int _index = _isNew ? _list.length : widget.index!;
+  late TriggerConfig _draft = _initialDraft();
+  late final _name = TextEditingController(text: _draft.name);
+
+  /// Yeni eşik: ilk eşiğin ayarlarının kopyası. Hafta sonu başka bir
+  /// eşiğin tek günleri değilse oraya, değilse hiçbir eşiğin olmayan
+  /// günlere kurulur; günleri kullanıcı seçer.
+  TriggerConfig _initialDraft() {
+    if (!_isNew) return _list[_index];
     final weekend = _mode == DayMode.evening ? {5, 6} : {6, 7};
-    final owner = list.indexWhere((c) => c.days.containsAll(weekend));
-    final free = !list.any((c) => c.days.intersection(weekend).isNotEmpty);
-    final Set<int> days;
-    // Hafta sonu ya hiçbir eşikte değil ya da daha büyük bir eşiğin parçası.
-    if (free || (owner >= 0 && list[owner].days.length > weekend.length)) {
-      days = weekend;
-    } else {
-      final biggest = list.reduce(
-        (a, b) => a.days.length >= b.days.length ? a : b,
-      );
-      if (biggest.days.length < 2) {
+    final takeable = weekend.where(
+      (d) => _list.every((c) => !c.days.contains(d) || c.days.length > 1),
+    );
+    return _list.first.copyWith(
+      name: widget.newName ?? '',
+      days: takeable.isEmpty ? <int>{} : takeable.toSet(),
+    );
+  }
+
+  /// Başka eşiklere ait günler.
+  Set<int> get _others => {
+    for (var i = 0; i < _list.length; i++)
+      if (i != _index) ..._list[i].days,
+  };
+
+  void _update(TriggerConfig c) => setState(() => _draft = c);
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  void _toggleDay(int weekday) {
+    final days = {..._draft.days};
+    if (days.contains(weekday)) {
+      // Kendi son günü kapatılamaz (eşik hiç çalışmazdı).
+      if (days.length == 1) {
         HapticFeedback.heavyImpact();
         return;
       }
-      days = {(biggest.days.toList()..sort()).last};
+      days.remove(weekday);
+    } else {
+      // Başka eşiğin tek günü alınamaz.
+      final owner = _list.indexWhere((c) => c.days.contains(weekday));
+      if (owner >= 0 && owner != _index && _list[owner].days.length == 1) {
+        HapticFeedback.heavyImpact();
+        return;
+      }
+      days.add(weekday);
     }
-    final next = list.withThreshold(_config, days);
-    HapticFeedback.mediumImpact();
-    ref.read(thresholdsProvider.notifier).set(_mode, next);
-    setState(() => _index = next.length - 1);
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 110),
-          content: Text(context.l10n.thresholdAdded),
-        ),
-      );
+    HapticFeedback.selectionClick();
+    _update(_draft.copyWith(days: days));
   }
 
-  void _removeThreshold() {
+  void _save() {
+    if (_draft.days.isEmpty) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.thresholdNeedsDay)));
+      return;
+    }
+    final config = _draft.copyWith(name: _name.text.trim());
+    HapticFeedback.mediumImpact();
+    ref
+        .read(thresholdsProvider.notifier)
+        .set(_mode, _list.withEdited(_index, config));
+    context.pop();
+  }
+
+  void _delete() {
     HapticFeedback.mediumImpact();
     ref.read(thresholdsProvider.notifier).set(_mode, _list.without(_index));
-    setState(() => _index = 0);
+    context.pop();
   }
-
-  void _openSetup() => context.push(
-    '/kurulum?mod=${_mode == DayMode.evening ? 'aksam' : 'sabah'}',
-  );
 
   void _toggleKind(TriggerConfig c, TriggerKind kind, {required bool plus}) {
     if (!plus) {
@@ -129,7 +506,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
   int get _arcSpan => _mode == DayMode.evening ? 12 * 60 : 8 * 60;
 
   Future<void> _pickWindow({required bool start}) async {
-    final c = _config;
+    final c = _draft;
     final picked = await showTimePicker(
       context: context,
       initialTime: start ? c.windowStart : c.windowEnd,
@@ -148,20 +525,20 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
       start ? picked : c.windowStart,
       start ? c.windowEnd : picked,
     );
-    _update(c.copyWith(windowStart: s, windowEnd: e));
+    _update(_draft.copyWith(windowStart: s, windowEnd: e));
   }
 
   Future<void> _pickBackup() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _config.backupTime,
+      initialTime: _draft.backupTime,
       helpText: context.l10n.backupTimeHelp,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
         child: child!,
       ),
     );
-    if (picked != null) _update(_config.copyWith(backupTime: picked));
+    if (picked != null) _update(_draft.copyWith(backupTime: picked));
   }
 
   @override
@@ -171,293 +548,268 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final t = Theme.of(context).textTheme;
     final evening = _mode == DayMode.evening;
     final plus = ref.watch(plusProvider).active;
-    final list = ref.watch(thresholdsProvider)[_mode]!;
-    // Plus yoksa yalnızca ilk eşik geçerli.
-    if (!plus || _index >= list.length) _index = 0;
-    // Asıl seçim saklanır; Plus yoksa geçerli olan gösterilir.
-    final c = list[_index];
+    final c = _draft;
+    // Plus yoksa geçerli olan gösterilir (tek ücretsiz tetikleyici, her gün).
     final shown = c.effective(plus: plus);
-    final others = {
-      for (var i = 0; i < list.length; i++)
-        if (i != _index) ...list[i].days,
-    };
-    final issueCount = ref.watch(setupIssuesProvider)?[_mode]?.length ?? 0;
     // "Hiçbiri olmazsa {saat} hatırlat": saat altı çizili, ortasından böl.
     final backupParts = l10n.backupRow('\u0000').split('\u0000');
+
+    Widget section(String title, {Widget? trailing}) => Padding(
+      padding: const EdgeInsets.fromLTRB(2, 22, 2, 10),
+      child: Row(
+        children: [
+          Expanded(child: SectionTitle(title)),
+          ?trailing,
+        ],
+      ),
+    );
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Atmosphere(
         glowTop: -260,
         child: SafeArea(
-          bottom: false,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 130),
+          child: Column(
             children: [
-              ScreenHeader(
-                title: l10n.settingsTitle,
-                trailing: IconButton(
-                  tooltip: l10n.appSettingsTitle,
-                  onPressed: () => context.push('/uygulama'),
-                  icon: EsikIconView(EsikIcon.gear, size: 22, color: p.text),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ModeSegment(
-                value: _mode,
-                onChanged: (m) => setState(() {
-                  _mode = m;
-                  _index = 0;
-                }),
-              ),
-              const SizedBox(height: 12),
-              ThresholdTabs(
-                thresholds: list,
-                selected: _index,
-                plus: plus,
-                onSelect: (i) {
-                  if (!plus && i > 0) {
-                    showPlusSheet(context);
-                    return;
-                  }
-                  HapticFeedback.selectionClick();
-                  setState(() => _index = i);
-                },
-                onAdd: () => _addThreshold(plus: plus),
-                onTemplates: () => showThresholdTemplates(context),
-              ),
-              const SizedBox(height: 26),
-              ArcRangePicker(
-                key: ValueKey(_mode),
-                arcStart: _arcStart,
-                spanMinutes: _arcSpan,
-                start: c.windowStart,
-                end: c.windowEnd,
-                enabled: c.windowEnabled,
-                startIcon: evening ? EsikIcon.moon : EsikIcon.sun,
-                onChanged: (s, e) =>
-                    _update(c.copyWith(windowStart: s, windowEnd: e)),
-                child: Column(
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                   children: [
-                    if (c.windowEnabled)
-                      // Saatlere dokunarak da seçilebilir.
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _TimeButton(
-                              time: c.windowStart,
-                              label: l10n.pickStartTime,
-                              onTap: () => _pickWindow(start: true),
-                            ),
-                            Text(' – ', style: t.headlineMedium),
-                            _TimeButton(
-                              time: c.windowEnd,
-                              label: l10n.pickEndTime,
-                              onTap: () => _pickWindow(start: false),
-                            ),
-                          ],
+                    ScreenHeader(
+                      title: _isNew
+                          ? (evening
+                                ? l10n.addEveningThreshold
+                                : l10n.addMorningThreshold)
+                          : l10n.editThreshold,
+                      onBack: () => context.pop(),
+                      trailing: InfoChip(
+                        label: evening ? l10n.beforeBed : l10n.beforeLeaving,
+                        icon: evening ? EsikIcon.moon : EsikIcon.sun,
+                      ),
+                    ),
+                    section(l10n.thresholdNameLabel),
+                    TextField(
+                      controller: _name,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: t.titleMedium,
+                      cursorColor: p.accent,
+                      decoration: InputDecoration(
+                        hintText: c.daysLabel(l10n),
+                        filled: true,
+                        fillColor: p.chip.withValues(alpha: 0.35),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
                         ),
-                      )
-                    else
+                      ),
+                    ),
+                    section(
+                      l10n.whichDays,
+                      trailing: PlusBadge(owned: plus, compact: true),
+                    ),
+                    WeekdayPicker(
+                      days: shown.days,
+                      others: plus ? _others : const {},
+                      onToggle: (d) {
+                        if (!plus) {
+                          showPlusSheet(context);
+                          return;
+                        }
+                        _toggleDay(d);
+                      },
+                    ),
+                    if (plus && _others.isNotEmpty) ...[
+                      const SizedBox(height: 6),
                       Text(
-                        l10n.anyTime,
-                        textAlign: TextAlign.center,
-                        style: t.headlineMedium?.copyWith(fontSize: 34),
-                      ),
-                    const SizedBox(height: 8),
-                    Semantics(
-                      toggled: c.windowEnabled,
-                      button: true,
-                      label: l10n.onlyInWindow,
-                      excludeSemantics: true,
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          _update(c.copyWith(windowEnabled: !c.windowEnabled));
-                        },
-                        child: InfoChip(
-                          label: c.windowEnabled
-                              ? l10n.onlyInWindow
-                              : l10n.windowOff,
-                          icon: EsikIcon.clock,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: DotLabel(l10n.whatTriggers),
-              ),
-              const SizedBox(height: 10),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                // Verilmezse GridView güvenli alan boşluğunu kendisi ekler.
-                padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 1.95,
-                children: [
-                  for (final kind in TriggerKind.forMode(_mode))
-                    _TriggerTile(
-                      kind: kind,
-                      selected: shown.kinds.contains(kind),
-                      locked: !plus && kind.plusOnly,
-                      onTap: kind.supported
-                          ? () => _toggleKind(c, kind, plus: plus)
-                          : null,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Row(
-                  children: [
-                    // Birden fazla tetikleyici de Plus özelliği.
-                    PlusBadge(owned: plus, compact: true),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        !plus
-                            ? l10n.plusMultiHint
-                            : c.kinds.length > 1
-                            ? l10n.firstOneWins
-                            : l10n.pickSeveral,
+                        l10n.thresholdDaysHint,
                         style: t.labelSmall?.copyWith(
                           fontSize: 12,
                           color: p.textFaint,
                         ),
                       ),
+                    ],
+                    section(l10n.whatTriggers),
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      // Verilmezse GridView güvenli alan boşluğunu kendisi ekler.
+                      padding: EdgeInsets.zero,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 1.95,
+                      children: [
+                        for (final kind in TriggerKind.forMode(_mode))
+                          _TriggerTile(
+                            kind: kind,
+                            selected: shown.kinds.contains(kind),
+                            locked: !plus && kind.plusOnly,
+                            onTap: kind.supported
+                                ? () => _toggleKind(c, kind, plus: plus)
+                                : null,
+                          ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              _DelayCard(
-                delay: c.delay,
-                onChanged: (d) => _update(c.copyWith(delay: d)),
-              ),
-              const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Row(
-                  children: [
-                    Flexible(child: DotLabel(l10n.whichDays)),
-                    const SizedBox(width: 8),
-                    PlusBadge(owned: plus),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              WeekdayPicker(
-                days: shown.days,
-                others: plus ? others : const {},
-                onToggle: (d) {
-                  if (!plus) {
-                    showPlusSheet(context);
-                    return;
-                  }
-                  _toggleDay(d);
-                },
-              ),
-              if (plus && list.length > 1) ...[
-                const SizedBox(height: 6),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: Text(
-                    l10n.thresholdDaysHint,
-                    style: t.labelSmall?.copyWith(
-                      fontSize: 12,
-                      color: p.textFaint,
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-              SurfaceCard(
-                radius: 30,
-                padding: const EdgeInsets.fromLTRB(18, 10, 10, 10),
-                child: Row(
-                  children: [
-                    EsikIconView(EsikIcon.bell, size: 18, color: p.text),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        label: l10n.changeBackupTime,
-                        child: GestureDetector(
-                          onTap: _pickBackup,
-                          child: Text.rich(
-                            TextSpan(
-                              text: backupParts.first,
-                              children: [
-                                TextSpan(
-                                  text: l10n.at(c.backupTime),
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: p.textFaint,
-                                  ),
-                                ),
-                                TextSpan(text: backupParts.last),
-                              ],
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        // Birden fazla tetikleyici de Plus özelliği.
+                        PlusBadge(owned: plus, compact: true),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            !plus
+                                ? l10n.plusMultiHint
+                                : c.kinds.length > 1
+                                ? l10n.firstOneWins
+                                : l10n.pickSeveral,
+                            style: t.labelSmall?.copyWith(
+                              fontSize: 12,
+                              color: p.textFaint,
                             ),
-                            style: t.bodyMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    section(l10n.whichHours),
+                    ArcRangePicker(
+                      key: ValueKey(_mode),
+                      arcStart: _arcStart,
+                      spanMinutes: _arcSpan,
+                      start: c.windowStart,
+                      end: c.windowEnd,
+                      enabled: c.windowEnabled,
+                      startIcon: evening ? EsikIcon.moon : EsikIcon.sun,
+                      onChanged: (s, e) => _update(
+                        _draft.copyWith(windowStart: s, windowEnd: e),
+                      ),
+                      child: Column(
+                        children: [
+                          if (c.windowEnabled)
+                            // Saatlere dokunarak da seçilebilir.
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _TimeButton(
+                                    time: c.windowStart,
+                                    label: l10n.pickStartTime,
+                                    onTap: () => _pickWindow(start: true),
+                                  ),
+                                  Text(' – ', style: t.headlineMedium),
+                                  _TimeButton(
+                                    time: c.windowEnd,
+                                    label: l10n.pickEndTime,
+                                    onTap: () => _pickWindow(start: false),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Text(
+                              l10n.anyTime,
+                              textAlign: TextAlign.center,
+                              style: t.headlineMedium?.copyWith(fontSize: 34),
+                            ),
+                          const SizedBox(height: 8),
+                          Semantics(
+                            toggled: c.windowEnabled,
+                            button: true,
+                            label: l10n.onlyInWindow,
+                            excludeSemantics: true,
+                            child: GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                _update(
+                                  c.copyWith(windowEnabled: !c.windowEnabled),
+                                );
+                              },
+                              child: InfoChip(
+                                label: c.windowEnabled
+                                    ? l10n.onlyInWindow
+                                    : l10n.windowOff,
+                                icon: EsikIcon.clock,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    section(l10n.delayTitle),
+                    _DelayCard(
+                      delay: c.delay,
+                      onChanged: (d) => _update(c.copyWith(delay: d)),
+                    ),
+                    section(l10n.backupTitle),
+                    SurfaceCard(
+                      radius: 30,
+                      padding: const EdgeInsets.fromLTRB(18, 10, 10, 10),
+                      child: Row(
+                        children: [
+                          EsikIconView(EsikIcon.bell, size: 18, color: p.text),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Semantics(
+                              button: true,
+                              label: l10n.changeBackupTime,
+                              child: GestureDetector(
+                                onTap: _pickBackup,
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: backupParts.first,
+                                    children: [
+                                      TextSpan(
+                                        text: l10n.at(c.backupTime),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: p.textFaint,
+                                        ),
+                                      ),
+                                      TextSpan(text: backupParts.last),
+                                    ],
+                                  ),
+                                  style: t.bodyMedium,
+                                ),
+                              ),
+                            ),
+                          ),
+                          EsikSwitch(
+                            value: c.backupEnabled,
+                            semanticLabel: l10n.backupReminder,
+                            onChanged: (v) =>
+                                _update(c.copyWith(backupEnabled: v)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!_isNew) _StatusLine(mode: _mode),
+                    if (!_isNew && _list.length > 1)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: _delete,
+                          icon: EsikIconView(
+                            EsikIcon.trash,
+                            size: 16,
+                            color: p.textMuted,
+                          ),
+                          label: Text(
+                            l10n.thresholdRemove(_list[_index].label(l10n)),
+                            style: t.labelLarge?.copyWith(color: p.textMuted),
                           ),
                         ),
                       ),
-                    ),
-                    EsikSwitch(
-                      value: c.backupEnabled,
-                      semanticLabel: l10n.backupReminder,
-                      onChanged: (v) => _update(c.copyWith(backupEnabled: v)),
-                    ),
                   ],
                 ),
               ),
-              _StatusLine(mode: _mode),
-              if (plus && list.length > 1)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: _removeThreshold,
-                    icon: EsikIconView(
-                      EsikIcon.trash,
-                      size: 16,
-                      color: p.textMuted,
-                    ),
-                    label: Text(
-                      l10n.thresholdRemove(c.daysLabel(l10n)),
-                      style: t.labelLarge?.copyWith(color: p.textMuted),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-              PrimaryPillButton(
-                label: switch (issueCount) {
-                  0 => l10n.setupCheck,
-                  final n => l10n.setupFinishMissing(n),
-                },
-                warning: issueCount > 0,
-                trailingIcon: EsikIcon.arrowRight,
-                expand: true,
-                onPressed: _openSetup,
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: Text(
-                  l10n.autoSaved,
-                  style: t.labelSmall?.copyWith(
-                    fontSize: 12,
-                    color: p.textFaint,
-                  ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: PrimaryPillButton(
+                  label: _isNew ? l10n.thresholdCreate : l10n.saveLabel,
+                  expand: true,
+                  onPressed: _save,
                 ),
               ),
             ],
@@ -643,14 +995,6 @@ class _DelayCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              EsikIconView(EsikIcon.clock, size: 18, color: p.text),
-              const SizedBox(width: 10),
-              Expanded(child: Text(l10n.delayTitle, style: t.bodyMedium)),
-            ],
-          ),
-          const SizedBox(height: 12),
           ChoicePills<int>(
             values: const [..._presets, _custom],
             value: preset ? seconds : _custom,

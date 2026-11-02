@@ -74,6 +74,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           fromBackup: state.uri.queryParameters['kaynak'] == 'yedek',
         ),
       ),
+      GoRoute(
+        path: '/esik',
+        builder: (_, state) => ThresholdEditorScreen(
+          mode: _modeParam(state) ?? DayMode.evening,
+          index: int.tryParse(state.uri.queryParameters['i'] ?? ''),
+          newName: state.uri.queryParameters['yeni'],
+        ),
+      ),
       GoRoute(path: '/uygulama', builder: (_, _) => const AppSettingsScreen()),
       GoRoute(
         path: '/kurulum',

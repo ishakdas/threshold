@@ -224,6 +224,44 @@ class InfoChip extends StatelessWidget {
 }
 
 /// Amber noktalı küçük başlık ("• Bu akşamki eşiğin").
+/// Bir bölümün belirgin başlığı ("Ne olunca?", "Hangi günler?").
+class SectionTitle extends StatelessWidget {
+  const SectionTitle(this.text, {super.key, this.icon});
+
+  final String text;
+  final EsikIcon? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Row(
+      children: [
+        if (icon != null) ...[
+          EsikIconView(icon!, size: 20, color: p.accent),
+          const SizedBox(width: 8),
+        ] else ...[
+          Container(
+            width: 4,
+            height: 18,
+            decoration: BoxDecoration(
+              color: p.accent,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
+        Flexible(
+          child: Text(
+            text,
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w600, color: p.text),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class DotLabel extends StatelessWidget {
   const DotLabel(this.text, {super.key, this.center = false});
 

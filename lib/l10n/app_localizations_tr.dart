@@ -1614,12 +1614,105 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onbSetupKicker => 'Başlarken';
 
   @override
-  String get onbSetupTitle => 'Günün nasıl geçiyor?';
+  String get onbSetupTitle => 'Haftalık rutinin nasıl?';
 
   @override
   String get onbSetupBody =>
-      'Bir düzen seç; istediğin zaman Eşikler sekmesinden değiştirirsin.';
+      'Sana uyan şablonu seç; Eşik ona göre kurulu gelsin. İstediğin zaman Eşikler sekmesinden değiştirebilirsin.';
 
   @override
-  String get onbPacksTitle => 'Listene hazır maddeler ekle';
+  String get onbPacksTitle => 'Kontrol listeni hazırla';
+
+  @override
+  String get onbPacksBody =>
+      'Neleri kontrol etmek istersin? Seçtiğin paketlerdeki maddeler listene eklenir; sonra dilediğini silebilir ya da yenisini yazabilirsin.';
+
+  @override
+  String onbPackItems(int count) {
+    return '$count madde';
+  }
+
+  @override
+  String get onbReviewKicker => 'Hazır';
+
+  @override
+  String get onbReviewTitle => 'Eşik böyle çalışacak';
+
+  @override
+  String get onbReviewBody =>
+      'Her şeyi sonradan Eşikler ve Liste sekmelerinden değiştirebilirsin.';
+
+  @override
+  String onbReviewWhen(String days, String window, String trigger, int count) {
+    return '$days: $window arası $trigger → $count maddelik liste';
+  }
+
+  @override
+  String get onbReviewItems => 'Listende';
+
+  @override
+  String get onbReviewDefault => 'Paket seçmedin; örnek liste kullanılacak.';
+
+  @override
+  String get appSettingsShort => 'Ayarlar';
+
+  @override
+  String get eveningThresholds => 'Akşam eşikleri';
+
+  @override
+  String get morningThresholds => 'Sabah eşikleri';
+
+  @override
+  String get eveningThresholdsHint =>
+      'Yatmadan önceki kontrol. Günlere göre ayrı eşik ekleyebilirsin.';
+
+  @override
+  String get morningThresholdsHint =>
+      'Evden çıkmadan önceki kontrol. Günlere göre ayrı eşik ekleyebilirsin.';
+
+  @override
+  String get addEveningThreshold => 'Akşam eşiği ekle';
+
+  @override
+  String get addMorningThreshold => 'Sabah eşiği ekle';
+
+  @override
+  String get editThreshold => 'Eşiği düzenle';
+
+  @override
+  String get edit => 'Düzenle';
+
+  @override
+  String backupShort(String time) {
+    return 'Yedek $time';
+  }
+
+  @override
+  String get backupOffShort => 'Yedek saat kapalı';
+
+  @override
+  String get nameHoliday => 'Tatil';
+
+  @override
+  String get thresholdNameLabel => 'Eşiğin adı';
+
+  @override
+  String get thresholdNameHint =>
+      'Bu eşiği tanıyacağın bir ad ver. Sonra hangi günler ve nasıl çalışacağını seçeceksin.';
+
+  @override
+  String get thresholdCreate => 'Eşiği oluştur';
+
+  @override
+  String get thresholdNeedsDay => 'En az bir gün seç.';
+
+  @override
+  String get whichHours => 'Hangi saatlerde?';
+
+  @override
+  String get backupTitle => 'Hiçbiri olmazsa';
+
+  @override
+  String get thresholdTemplatesShort =>
+      'Hafta içi iş, erken kalkış gibi hazır düzenlerden birini kur.';
 }

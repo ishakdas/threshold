@@ -132,7 +132,10 @@ extension SilentAlertText on SilentAlert {
 }
 
 extension ThresholdDaysText on TriggerConfig {
-  /// Eşiğin adı, günlerinden: "Her gün", "Hafta içi", "Pzt, Çar"…
+  /// Eşiğin görünen adı: verilmişse kendi adı, yoksa günleri.
+  String label(AppLocalizations l) => name.isNotEmpty ? name : daysLabel(l);
+
+  /// Eşiğin günleri: "Her gün", "Hafta içi", "Pzt, Çar"…
   String daysLabel(AppLocalizations l) {
     final d = days;
     if (d.length == 7) return l.daysEveryDay;

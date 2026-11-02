@@ -2899,20 +2899,182 @@ abstract class AppLocalizations {
   /// No description provided for @onbSetupTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Günün nasıl geçiyor?'**
+  /// **'Haftalık rutinin nasıl?'**
   String get onbSetupTitle;
 
   /// No description provided for @onbSetupBody.
   ///
   /// In tr, this message translates to:
-  /// **'Bir düzen seç; istediğin zaman Eşikler sekmesinden değiştirirsin.'**
+  /// **'Sana uyan şablonu seç; Eşik ona göre kurulu gelsin. İstediğin zaman Eşikler sekmesinden değiştirebilirsin.'**
   String get onbSetupBody;
 
   /// No description provided for @onbPacksTitle.
   ///
   /// In tr, this message translates to:
-  /// **'Listene hazır maddeler ekle'**
+  /// **'Kontrol listeni hazırla'**
   String get onbPacksTitle;
+
+  /// No description provided for @onbPacksBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Neleri kontrol etmek istersin? Seçtiğin paketlerdeki maddeler listene eklenir; sonra dilediğini silebilir ya da yenisini yazabilirsin.'**
+  String get onbPacksBody;
+
+  /// No description provided for @onbPackItems.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} madde'**
+  String onbPackItems(int count);
+
+  /// No description provided for @onbReviewKicker.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazır'**
+  String get onbReviewKicker;
+
+  /// No description provided for @onbReviewTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşik böyle çalışacak'**
+  String get onbReviewTitle;
+
+  /// No description provided for @onbReviewBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Her şeyi sonradan Eşikler ve Liste sekmelerinden değiştirebilirsin.'**
+  String get onbReviewBody;
+
+  /// No description provided for @onbReviewWhen.
+  ///
+  /// In tr, this message translates to:
+  /// **'{days}: {window} arası {trigger} → {count} maddelik liste'**
+  String onbReviewWhen(String days, String window, String trigger, int count);
+
+  /// No description provided for @onbReviewItems.
+  ///
+  /// In tr, this message translates to:
+  /// **'Listende'**
+  String get onbReviewItems;
+
+  /// No description provided for @onbReviewDefault.
+  ///
+  /// In tr, this message translates to:
+  /// **'Paket seçmedin; örnek liste kullanılacak.'**
+  String get onbReviewDefault;
+
+  /// No description provided for @appSettingsShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ayarlar'**
+  String get appSettingsShort;
+
+  /// No description provided for @eveningThresholds.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam eşikleri'**
+  String get eveningThresholds;
+
+  /// No description provided for @morningThresholds.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabah eşikleri'**
+  String get morningThresholds;
+
+  /// No description provided for @eveningThresholdsHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yatmadan önceki kontrol. Günlere göre ayrı eşik ekleyebilirsin.'**
+  String get eveningThresholdsHint;
+
+  /// No description provided for @morningThresholdsHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evden çıkmadan önceki kontrol. Günlere göre ayrı eşik ekleyebilirsin.'**
+  String get morningThresholdsHint;
+
+  /// No description provided for @addEveningThreshold.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam eşiği ekle'**
+  String get addEveningThreshold;
+
+  /// No description provided for @addMorningThreshold.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabah eşiği ekle'**
+  String get addMorningThreshold;
+
+  /// No description provided for @editThreshold.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşiği düzenle'**
+  String get editThreshold;
+
+  /// No description provided for @edit.
+  ///
+  /// In tr, this message translates to:
+  /// **'Düzenle'**
+  String get edit;
+
+  /// No description provided for @backupShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedek {time}'**
+  String backupShort(String time);
+
+  /// No description provided for @backupOffShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yedek saat kapalı'**
+  String get backupOffShort;
+
+  /// No description provided for @nameHoliday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tatil'**
+  String get nameHoliday;
+
+  /// No description provided for @thresholdNameLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşiğin adı'**
+  String get thresholdNameLabel;
+
+  /// No description provided for @thresholdNameHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu eşiği tanıyacağın bir ad ver. Sonra hangi günler ve nasıl çalışacağını seçeceksin.'**
+  String get thresholdNameHint;
+
+  /// No description provided for @thresholdCreate.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşiği oluştur'**
+  String get thresholdCreate;
+
+  /// No description provided for @thresholdNeedsDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'En az bir gün seç.'**
+  String get thresholdNeedsDay;
+
+  /// No description provided for @whichHours.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi saatlerde?'**
+  String get whichHours;
+
+  /// No description provided for @backupTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hiçbiri olmazsa'**
+  String get backupTitle;
+
+  /// No description provided for @thresholdTemplatesShort.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hafta içi iş, erken kalkış gibi hazır düzenlerden birini kur.'**
+  String get thresholdTemplatesShort;
 }
 
 class _AppLocalizationsDelegate

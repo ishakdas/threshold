@@ -20,6 +20,7 @@ import 'widget_tip.dart';
 import '../../l10n/texts.dart';
 import '../../data/plus.dart';
 import '../plus/plus_sheet.dart';
+import '../plus/plus_card.dart';
 
 /// Tek ana ekran: üstte gün şeridi, ortada şu anki eşiğin büyük kartı,
 /// altta diğer eşiğin özeti.
@@ -56,6 +57,7 @@ class TodayScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 14),
+            const PlusStrip(),
             DayStrip(entries: _stripEntries(ref, l10n)),
             const SizedBox(height: 10),
             // Eksik bir izin ya da ayar varsa eşik haber veremeyebilir.

@@ -1648,12 +1648,112 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onbSetupKicker => 'Getting started';
 
   @override
-  String get onbSetupTitle => 'What are your days like?';
+  String get onbSetupTitle => 'What’s your weekly routine like?';
 
   @override
   String get onbSetupBody =>
-      'Pick a setup; you can change it any time in the Thresholds tab.';
+      'Pick the template that fits you and Eşik comes set up for it. You can change it any time in the Thresholds tab.';
 
   @override
-  String get onbPacksTitle => 'Add ready-made items';
+  String get onbPacksTitle => 'Fill in your checklist';
+
+  @override
+  String get onbPacksBody =>
+      'What do you want to check? Items from the packs you pick go into your list; you can delete or add more later.';
+
+  @override
+  String onbPackItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onbReviewKicker => 'Ready';
+
+  @override
+  String get onbReviewTitle => 'Here’s how Eşik will work';
+
+  @override
+  String get onbReviewBody =>
+      'You can change everything later in the Thresholds and List tabs.';
+
+  @override
+  String onbReviewWhen(String days, String window, String trigger, int count) {
+    return '$days: $window, $trigger → $count-item list';
+  }
+
+  @override
+  String get onbReviewItems => 'In your list';
+
+  @override
+  String get onbReviewDefault =>
+      'No pack chosen; the sample list will be used.';
+
+  @override
+  String get appSettingsShort => 'Settings';
+
+  @override
+  String get eveningThresholds => 'Evening thresholds';
+
+  @override
+  String get morningThresholds => 'Morning thresholds';
+
+  @override
+  String get eveningThresholdsHint =>
+      'Your check before bed. You can add separate thresholds for different days.';
+
+  @override
+  String get morningThresholdsHint =>
+      'Your check before leaving home. You can add separate thresholds for different days.';
+
+  @override
+  String get addEveningThreshold => 'Add evening threshold';
+
+  @override
+  String get addMorningThreshold => 'Add morning threshold';
+
+  @override
+  String get editThreshold => 'Edit threshold';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String backupShort(String time) {
+    return 'Backup $time';
+  }
+
+  @override
+  String get backupOffShort => 'No backup time';
+
+  @override
+  String get nameHoliday => 'Holiday';
+
+  @override
+  String get thresholdNameLabel => 'Threshold name';
+
+  @override
+  String get thresholdNameHint =>
+      'Give it a name you’ll recognize. Next you’ll pick its days and how it works.';
+
+  @override
+  String get thresholdCreate => 'Create threshold';
+
+  @override
+  String get thresholdNeedsDay => 'Pick at least one day.';
+
+  @override
+  String get whichHours => 'At what hours?';
+
+  @override
+  String get backupTitle => 'If nothing happens';
+
+  @override
+  String get thresholdTemplatesShort =>
+      'Set up a ready-made routine like a workweek or early mornings.';
 }

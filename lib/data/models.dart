@@ -292,6 +292,17 @@ extension ThresholdList on List<TriggerConfig> {
     template.copyWith(days: days),
   ];
 
+  /// [index]'teki eşiği [config] yapar; günleri diğer eşiklerden alınır,
+  /// günü kalmayan eşik çıkar. [index] listenin dışındaysa yeni eşik eklenir.
+  List<TriggerConfig> withEdited(int index, TriggerConfig config) => [
+    for (var i = 0; i < length; i++)
+      if (i == index)
+        config
+      else if (this[i].days.difference(config.days).isNotEmpty)
+        this[i].copyWith(days: this[i].days.difference(config.days)),
+    if (index >= length) config,
+  ];
+
   /// [index]'teki eşiği siler; günleri ilk kalan eşiğe geçer. Son eşik silinmez.
   List<TriggerConfig> without(int index) {
     if (length <= 1) return this;
@@ -314,6 +325,7 @@ class TriggerConfig {
     this.backupEnabled = true,
     required this.backupTime,
     this.delay = Duration.zero,
+    this.name = '',
   });
 
   /// [delay]'in üst sınırı; Android tarafı (EsikData.MAX_DELAY_SECONDS) aynı.
@@ -334,6 +346,9 @@ class TriggerConfig {
   /// Tetikleyiciden ne kadar sonra bildirilir; sıfır: hemen. O arada kontrol
   /// yapılırsa bildirim gelmez. Yedek saati etkilemez.
   final Duration delay;
+
+  /// Kullanıcının verdiği ad ("Hafta sonu"); boşsa günlerinden türetilir.
+  final String name;
 
   bool activeOn(DateTime day) => days.contains(day.weekday);
 
@@ -377,6 +392,7 @@ class TriggerConfig {
     bool? backupEnabled,
     TimeOfDay? backupTime,
     Duration? delay,
+    String? name,
   }) => TriggerConfig(
     kinds: kinds ?? this.kinds,
     days: days ?? this.days,
@@ -386,6 +402,7 @@ class TriggerConfig {
     backupEnabled: backupEnabled ?? this.backupEnabled,
     backupTime: backupTime ?? this.backupTime,
     delay: delay ?? this.delay,
+    name: name ?? this.name,
   );
 
   Map<String, Object?> toJson() => {
@@ -397,6 +414,7 @@ class TriggerConfig {
     'backupEnabled': backupEnabled,
     'backupTime': _timeToJson(backupTime),
     'delaySeconds': delay.inSeconds,
+    if (name.isNotEmpty) 'name': name,
   };
 
   /// [fallback], eksik ya da bozuk alanlar için kullanılır. Eski kayıtlardaki
@@ -435,6 +453,7 @@ class TriggerConfig {
           _ => fallback.delay.inSeconds,
         },
       ),
+      name: (json['name'] as String? ?? '').trim(),
     );
   }
 }

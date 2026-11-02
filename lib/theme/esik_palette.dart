@@ -19,6 +19,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
     required this.accentGradient,
     required this.warning,
     required this.warningGradient,
+    required this.success,
+    required this.successGradient,
     required this.primaryButton,
     required this.onPrimaryButton,
     required this.glassFill,
@@ -45,6 +47,10 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
   /// Dikkat isteyen durumlar (eksik kurulum): amberin kızıla kaçan komşusu.
   final Color warning;
   final List<Color> warningGradient;
+
+  /// Tamamlanan ve seçilen şeyler: amberle uyumlu, sıcak bir adaçayı yeşili.
+  final Color success;
+  final List<Color> successGradient;
   final Color primaryButton;
   final Color onPrimaryButton;
   final Color glassFill;
@@ -78,6 +84,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
     accentGradient: [Color(0xFFFFB86A), Color(0xFFEF8636)],
     warning: Color(0xFFFF7A62),
     warningGradient: [Color(0xFFFF9472), Color(0xFFE5483B)],
+    success: Color(0xFF8FD6A5),
+    successGradient: [Color(0xFFA8E0B5), Color(0xFF4FAE7E)],
     primaryButton: Color(0xFFFFFFFF),
     onPrimaryButton: Color(0xFF0B1029),
     glassFill: Color(0x801C2246),
@@ -112,6 +120,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
     accentGradient: [Color(0xFFFFB86A), Color(0xFFEF8636)],
     warning: Color(0xFFD9443A),
     warningGradient: [Color(0xFFFF9472), Color(0xFFE5483B)],
+    success: Color(0xFF3E9A6A),
+    successGradient: [Color(0xFF8FD3A3), Color(0xFF3E9A6A)],
     primaryButton: Color(0xFF2B1D12),
     onPrimaryButton: Color(0xFFFBF5EC),
     glassFill: Color(0x80FFFFFF),
@@ -147,6 +157,8 @@ class EsikPalette extends ThemeExtension<EsikPalette> {
       accentGradient: l(accentGradient, other.accentGradient),
       warning: c(warning, other.warning),
       warningGradient: l(warningGradient, other.warningGradient),
+      success: c(success, other.success),
+      successGradient: l(successGradient, other.successGradient),
       primaryButton: c(primaryButton, other.primaryButton),
       onPrimaryButton: c(onPrimaryButton, other.onPrimaryButton),
       glassFill: c(glassFill, other.glassFill),

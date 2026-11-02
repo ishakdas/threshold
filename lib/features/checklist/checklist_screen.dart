@@ -12,6 +12,7 @@ import '../../ui/esik_icons.dart';
 import '../../l10n/texts.dart';
 import 'item_sheet.dart';
 import 'templates_sheet.dart';
+import '../plus/plus_card.dart';
 
 class ChecklistScreen extends ConsumerStatefulWidget {
   const ChecklistScreen({super.key});
@@ -79,6 +80,7 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
             children: [
               ScreenHeader(title: l10n.checklistTitle),
               const SizedBox(height: 14),
+              const PlusStrip(),
               ModeSegment(
                 value: _mode,
                 counts: {for (final e in lists.entries) e.key: e.value.length},
@@ -317,37 +319,23 @@ class _ItemRow extends StatelessWidget {
             index: index,
             child: Semantics(
               label: l10n.dragToReorder,
+              // Yukarı-aşağı oklar: tutup sürükleyerek sıralanabildiği belli olsun.
               child: SizedBox(
                 width: 44,
                 height: 60,
-                child: Center(child: _Grip(color: p.textFaint)),
+                child: Center(
+                  child: EsikIconView(
+                    EsikIcon.upDown,
+                    size: 22,
+                    color: p.textMuted,
+                    strokeWidth: 1.8,
+                  ),
+                ),
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Grip extends StatelessWidget {
-  const _Grip({required this.color});
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget dot() => Container(
-      width: 3.4,
-      height: 3.4,
-      margin: const EdgeInsets.all(1.6),
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var r = 0; r < 3; r++)
-          Row(mainAxisSize: MainAxisSize.min, children: [dot(), dot()]),
-      ],
     );
   }
 }

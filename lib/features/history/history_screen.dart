@@ -15,6 +15,7 @@ import '../../ui/esik_logo.dart';
 import '../../l10n/texts.dart';
 import '../../data/plus.dart';
 import '../plus/plus_sheet.dart';
+import '../plus/plus_card.dart';
 
 /// Son 14 günün sade özeti: yay gösterge, hap ızgarası ve ortalama saat.
 class HistoryScreen extends ConsumerWidget {
@@ -78,7 +79,9 @@ class HistoryScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
+              const PlusStrip(),
+              const SizedBox(height: 4),
               _ScoreGauge(done: done, total: total),
               const SizedBox(height: 18),
               SurfaceCard(

@@ -41,8 +41,6 @@ class AppSettingsScreen extends StatelessWidget {
                     context.canPop() ? context.pop() : context.go('/ayarlar'),
               ),
               const SizedBox(height: 12),
-              const _PlusCard(),
-              const SizedBox(height: 10),
               const _ReminderCard(),
               const SizedBox(height: 10),
               // iOS'ta bildirim telefonun sessiz ayarını aşamaz.
@@ -59,65 +57,6 @@ class AppSettingsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Plus durumu: deneme günleri, ücretsiz sürüm ya da satın alındı.
-class _PlusCard extends ConsumerWidget {
-  const _PlusCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    final l10n = context.l10n;
-    final plus = ref.watch(plusProvider);
-    final testStart = plus.testStart;
-    final status = plus.owned
-        ? l10n.plusOwned
-        : testStart != null
-        // Yalnızca test APK'sı: başlangıç dakikasıyla, kalan süre dakikayla.
-        ? 'TEST · başlangıç ${testStart.day}.${testStart.month} '
-              '${formatTime(TimeOfDay.fromDateTime(testStart))} · '
-              '${plus.inTrial ? '${plus.testMinutesLeft} dk kaldı' : 'deneme bitti'}'
-        : plus.inTrial
-        ? l10n.plusTrialLeft(plus.trialDaysLeft)
-        : l10n.plusFree;
-    return SurfaceCard(
-      radius: 26,
-      highlighted: !plus.owned,
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      onTap: () => showPlusSheet(context),
-      child: Row(
-        children: [
-          IconCircle(
-            icon: EsikIcon.sparkle,
-            gradient: PlusBadge.gold,
-            iconColor: const Color(0xFF3A2306),
-            size: 36,
-            active: true,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.plusName, style: t.labelLarge),
-                Text(
-                  status,
-                  style: t.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w300,
-                    color: p.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (!plus.owned)
-            EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
-        ],
       ),
     );
   }

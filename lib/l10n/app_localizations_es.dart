@@ -1657,12 +1657,112 @@ class AppLocalizationsEs extends AppLocalizations {
   String get onbSetupKicker => 'Para empezar';
 
   @override
-  String get onbSetupTitle => '¿Cómo son tus días?';
+  String get onbSetupTitle => '¿Cómo es tu rutina semanal?';
 
   @override
   String get onbSetupBody =>
-      'Elige una configuración; puedes cambiarla cuando quieras en Umbrales.';
+      'Elige la plantilla que te encaje y Eşik vendrá configurado. Puedes cambiarla cuando quieras en Umbrales.';
 
   @override
-  String get onbPacksTitle => 'Añade elementos listos';
+  String get onbPacksTitle => 'Prepara tu lista';
+
+  @override
+  String get onbPacksBody =>
+      '¿Qué quieres comprobar? Los elementos de los paquetes que elijas van a tu lista; luego puedes borrar o añadir más.';
+
+  @override
+  String onbPackItems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos',
+      one: '1 elemento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onbReviewKicker => 'Listo';
+
+  @override
+  String get onbReviewTitle => 'Así funcionará Eşik';
+
+  @override
+  String get onbReviewBody =>
+      'Puedes cambiarlo todo luego en Umbrales y Lista.';
+
+  @override
+  String onbReviewWhen(String days, String window, String trigger, int count) {
+    return '$days: $window, $trigger → lista de $count';
+  }
+
+  @override
+  String get onbReviewItems => 'En tu lista';
+
+  @override
+  String get onbReviewDefault =>
+      'No elegiste paquetes; se usará la lista de ejemplo.';
+
+  @override
+  String get appSettingsShort => 'Ajustes';
+
+  @override
+  String get eveningThresholds => 'Umbrales de la noche';
+
+  @override
+  String get morningThresholds => 'Umbrales de la mañana';
+
+  @override
+  String get eveningThresholdsHint =>
+      'Tu control antes de dormir. Puedes añadir umbrales distintos según el día.';
+
+  @override
+  String get morningThresholdsHint =>
+      'Tu control antes de salir de casa. Puedes añadir umbrales distintos según el día.';
+
+  @override
+  String get addEveningThreshold => 'Añadir umbral de noche';
+
+  @override
+  String get addMorningThreshold => 'Añadir umbral de mañana';
+
+  @override
+  String get editThreshold => 'Editar umbral';
+
+  @override
+  String get edit => 'Editar';
+
+  @override
+  String backupShort(String time) {
+    return 'Respaldo $time';
+  }
+
+  @override
+  String get backupOffShort => 'Sin hora de respaldo';
+
+  @override
+  String get nameHoliday => 'Vacaciones';
+
+  @override
+  String get thresholdNameLabel => 'Nombre del umbral';
+
+  @override
+  String get thresholdNameHint =>
+      'Ponle un nombre que reconozcas. Después elegirás sus días y cómo funciona.';
+
+  @override
+  String get thresholdCreate => 'Crear umbral';
+
+  @override
+  String get thresholdNeedsDay => 'Elige al menos un día.';
+
+  @override
+  String get whichHours => '¿A qué horas?';
+
+  @override
+  String get backupTitle => 'Si no ocurre nada';
+
+  @override
+  String get thresholdTemplatesShort =>
+      'Configura una rutina lista, como entre semana o madrugar.';
 }

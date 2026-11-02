@@ -200,6 +200,29 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
     });
   }
 
+  /// Girişte seçilen paketler: maddesi olan modda listenin yerine geçer
+  /// (örnek liste kalkar); paket maddesi olmayan mod olduğu gibi kalır.
+  void replaceFromPacks(Map<DayMode, List<CheckItem>> items) {
+    final next = {...state};
+    for (final e in items.entries) {
+      if (e.value.isEmpty) continue;
+      final seen = <String>{};
+      next[e.key] = [
+        for (final i in e.value)
+          if (seen.add(i.title.toLowerCase()))
+            CheckItem(
+              id: _newId(),
+              title: i.title,
+              icon: i.icon,
+              days: i.days,
+              weather: i.weather,
+              photo: i.photo,
+            ),
+      ];
+    }
+    _save(next);
+  }
+
   /// Şablondan gelen maddeler; aynı adlı madde varsa eklenmez.
   void addAll(DayMode mode, List<CheckItem> items) {
     final existing = {for (final i in state[mode]!) i.title.toLowerCase()};
