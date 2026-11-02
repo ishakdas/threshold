@@ -270,49 +270,75 @@ const defaultTriggerConfigs = <DayMode, TriggerConfig>{
   ),
 };
 
-class TriggerConfigNotifier extends Notifier<Map<DayMode, TriggerConfig>> {
+/// Her modun eşikleri (bkz. [ThresholdList]). Diskte "triggers.v2"; eski
+/// tek eşikli "triggers.v1" kaydı ilk açılışta bundan okunur.
+class ThresholdsNotifier extends Notifier<Map<DayMode, List<TriggerConfig>>> {
   @override
-  Map<DayMode, TriggerConfig> build() {
-    final json = ref.watch(storeProvider).readJson(EsikStore.triggersKey);
-    if (json == null) {
-      // Android tarafı yedek saati diskten okur; varsayılanı da yaz.
-      _persist(defaultTriggerConfigs);
-      return defaultTriggerConfigs;
+  Map<DayMode, List<TriggerConfig>> build() {
+    final store = ref.watch(storeProvider);
+    final v2 = store.readJson(EsikStore.thresholdsKey);
+    final v1 = v2 == null ? store.readJson(EsikStore.triggersKey) : null;
+    if (v2 == null && v1 == null) {
+      // Android ve iOS tarafı ayarı diskten okur; varsayılanı da yaz.
+      final defaults = {
+        for (final e in defaultTriggerConfigs.entries) e.key: [e.value],
+      };
+      _persist(defaults);
+      return defaults;
     }
-    return {
-      for (final mode in DayMode.values)
-        mode: switch (json[mode.name]) {
-          final Map<String, Object?> m => TriggerConfig.fromJson(
-            m,
-            defaultTriggerConfigs[mode]!,
-          ),
-          _ => defaultTriggerConfigs[mode]!,
-        },
-    };
+    List<TriggerConfig> parse(DayMode mode) {
+      final fallback = defaultTriggerConfigs[mode]!;
+      final list = switch (v2?[mode.name] ?? v1?[mode.name]) {
+        final List<Object?> l => [
+          for (final m in l.whereType<Map<String, Object?>>())
+            TriggerConfig.fromJson(m, fallback),
+        ],
+        final Map<String, Object?> m => [TriggerConfig.fromJson(m, fallback)],
+        _ => <TriggerConfig>[],
+      };
+      return list.isEmpty ? [fallback] : list;
+    }
+
+    final loaded = {for (final mode in DayMode.values) mode: parse(mode)};
+    if (v2 == null) _persist(loaded);
+    return loaded;
   }
 
-  /// Son yazmanın bitişi. Android ayarı diskten okuduğu için alarmlar ancak
-  /// bu tamamlandıktan sonra yeniden kurulmalı.
+  /// Son yazmanın bitişi. Android ve iOS ayarı diskten okuduğu için alarmlar
+  /// ancak bu tamamlandıktan sonra yeniden kurulmalı.
   Future<void> saved = Future.value();
 
-  void update(DayMode mode, TriggerConfig config) {
-    final next = {...state, mode: config};
+  void set(DayMode mode, List<TriggerConfig> thresholds) {
+    final next = {...state, mode: thresholds};
     // Önce yazmayı başlat: state değişince dinleyiciler hemen çalışır ve
     // [saved]'i bu yazmanın kendisi olarak görmeliler.
     _persist(next);
     state = next;
   }
 
-  void _persist(Map<DayMode, TriggerConfig> configs) {
-    saved = ref.read(storeProvider).writeJson(EsikStore.triggersKey, {
-      for (final e in configs.entries) e.key.name: e.value.toJson(),
+  void update(DayMode mode, int index, TriggerConfig config) {
+    final list = [...state[mode]!];
+    list[index] = config;
+    set(mode, list);
+  }
+
+  /// İki modun bütün eşiklerini değiştirir (eşik şablonu).
+  void replaceAll(Map<DayMode, List<TriggerConfig>> next) {
+    _persist(next);
+    state = next;
+  }
+
+  void _persist(Map<DayMode, List<TriggerConfig>> all) {
+    saved = ref.read(storeProvider).writeJson(EsikStore.thresholdsKey, {
+      for (final e in all.entries)
+        e.key.name: [for (final c in e.value) c.toJson()],
     });
   }
 }
 
-final triggerConfigProvider =
-    NotifierProvider<TriggerConfigNotifier, Map<DayMode, TriggerConfig>>(
-      TriggerConfigNotifier.new,
+final thresholdsProvider =
+    NotifierProvider<ThresholdsNotifier, Map<DayMode, List<TriggerConfig>>>(
+      ThresholdsNotifier.new,
     );
 
 // ---------------------------------------------------------------------------
@@ -464,14 +490,14 @@ final historyProvider = Provider<List<DayLog>>((ref) {
   final today = ref.watch(todayProvider);
   final installed = ref.watch(installDayProvider);
   final log = ref.watch(checkLogProvider);
-  final configs = ref.watch(effectiveTriggerConfigProvider);
+  final thresholds = ref.watch(effectiveThresholdsProvider);
 
   (CheckOutcome, TimeOfDay?) outcome(DateTime day, DayMode mode) {
     if (day.isBefore(installed)) return (CheckOutcome.notTracked, null);
     final s = log[dayKey(day)]?[mode];
     if (s == null || !s.isComplete) {
       // Günler bugünkü ayardan okunur; geçmiş ayarlar saklanmıyor.
-      final off = !configs[mode]!.activeOn(day);
+      final off = thresholds[mode]!.on(day) == null;
       return (off ? CheckOutcome.off : CheckOutcome.missed, null);
     }
     return (

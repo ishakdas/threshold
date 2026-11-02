@@ -34,20 +34,20 @@ void main() {
     expect(find.text('Did I unplug the iron?'), findsOneWidget);
   });
 
-  testWidgets('Ayarlar’dan dil seçilince hemen değişir ve kalır', (
+  testWidgets('Uygulama ayarlarından dil seçilince hemen değişir ve kalır', (
     tester,
   ) async {
     await pumpApp(tester);
-    await tester.tap(find.bySemanticsLabel('Ayarlar'));
+    // Dil, Eşikler sekmesindeki dişliden açılan Uygulama ayarları'nda.
+    await tester.tap(find.bySemanticsLabel('Eşikler'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Uygulama ayarları'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
       find.text('Español'),
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    // Alttaki cam sekme çubuğunun üstüne çıkar.
-    await tester.drag(find.byType(Scrollable).first, const Offset(0, -300));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Español'));
     await tester.pumpAndSettle();
     // Kart başlığı da İspanyolca oldu (sayfanın üstü kaydırılmış durumda).

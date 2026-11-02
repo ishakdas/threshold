@@ -131,6 +131,23 @@ extension SilentAlertText on SilentAlert {
   };
 }
 
+extension ThresholdDaysText on TriggerConfig {
+  /// Eşiğin adı, günlerinden: "Her gün", "Hafta içi", "Pzt, Çar"…
+  String daysLabel(AppLocalizations l) {
+    final d = days;
+    if (d.length == 7) return l.daysEveryDay;
+    if (d.length == 5 && d.containsAll({1, 2, 3, 4, 5})) return l.daysWeekdays;
+    if (d.length == 2 && d.containsAll({6, 7})) return l.daysWeekend;
+    if (d.length == 2 && d.containsAll({5, 6})) return l.daysWeekendNights;
+    // Pazartesi'den başlayan bir haftanın günleri (2026-11-02 bir Pazartesi).
+    final names = [
+      for (final w in d.toList()..sort())
+        DateFormat.E(l.localeName).format(DateTime(2026, 11, 1 + w)),
+    ];
+    return names.join(', ');
+  }
+}
+
 extension WeatherNeedText on WeatherNeed {
   String label(AppLocalizations l) => switch (this) {
     WeatherNeed.always => l.weatherAlways,

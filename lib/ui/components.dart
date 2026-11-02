@@ -669,9 +669,17 @@ class PlusBadge extends StatelessWidget {
 /// Haftanın günleri (1 = Pazartesi … 7 = Pazar): eşiğin ya da maddenin
 /// hangi günler çalışacağı.
 class WeekdayPicker extends StatelessWidget {
-  const WeekdayPicker({super.key, required this.days, required this.onToggle});
+  const WeekdayPicker({
+    super.key,
+    required this.days,
+    required this.onToggle,
+    this.others = const {},
+  });
   final Set<int> days;
   final ValueChanged<int> onToggle;
+
+  /// Başka bir eşiğe ait günler: soluk ve noktalı gösterilir.
+  final Set<int> others;
 
   @override
   Widget build(BuildContext context) {
@@ -697,9 +705,15 @@ class WeekdayPicker extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: days.contains(d)
                       ? p.primaryButton
+                      : others.contains(d)
+                      ? Colors.transparent
                       : p.chip.withValues(alpha: 0.4),
                   border: Border.all(
-                    color: days.contains(d) ? p.primaryButton : p.chipBorder,
+                    color: days.contains(d)
+                        ? p.primaryButton
+                        : others.contains(d)
+                        ? p.accent.withValues(alpha: 0.5)
+                        : p.chipBorder,
                   ),
                 ),
                 alignment: Alignment.center,

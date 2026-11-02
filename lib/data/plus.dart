@@ -107,15 +107,35 @@ final plusProvider = Provider<PlusState>((ref) {
   );
 });
 
-/// Plus yoksa geçerli olan eşik ayarları (bkz. [TriggerConfig.effective]).
-/// Bugün, geçmiş ve kurulum bunu kullanır; Ayarlar asıl seçimi gösterir.
-final effectiveTriggerConfigProvider = Provider<Map<DayMode, TriggerConfig>>((
-  ref,
-) {
-  final plus = ref.watch(plusProvider).active;
+/// Plus yoksa geçerli olan eşikler: yalnızca ilki, her gün (bkz.
+/// [ThresholdList.effective]). Bugün, geçmiş ve kurulum bunu kullanır;
+/// Eşikler ekranı asıl seçimi gösterir.
+final effectiveThresholdsProvider = Provider<Map<DayMode, List<TriggerConfig>>>(
+  (ref) {
+    final plus = ref.watch(plusProvider).active;
+    return {
+      for (final e in ref.watch(thresholdsProvider).entries)
+        e.key: e.value.effective(plus: plus),
+    };
+  },
+);
+
+/// Bugünün eşiği; bugün izinliyse ilk eşik (ekranlar ayarı yine gösterir,
+/// izinli olduğunu [todayThresholdProvider] söyler).
+final shownThresholdProvider = Provider<Map<DayMode, TriggerConfig>>((ref) {
+  final today = ref.watch(todayThresholdProvider);
+  final all = ref.watch(effectiveThresholdsProvider);
   return {
-    for (final e in ref.watch(triggerConfigProvider).entries)
-      e.key: e.value.effective(plus: plus),
+    for (final mode in DayMode.values) mode: today[mode] ?? all[mode]!.first,
+  };
+});
+
+/// Bugünün (eşik günü) geçerli eşiği; o gün izinliyse null.
+final todayThresholdProvider = Provider<Map<DayMode, TriggerConfig?>>((ref) {
+  final today = ref.watch(todayProvider);
+  return {
+    for (final e in ref.watch(effectiveThresholdsProvider).entries)
+      e.key: e.value.on(today),
   };
 });
 

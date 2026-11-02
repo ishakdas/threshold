@@ -43,9 +43,9 @@ List<SetupIssue> setupIssues(SetupHealth h, List<TriggerKind> kinds) => [
 final setupIssuesProvider = Provider<Map<DayMode, List<SetupIssue>>?>((ref) {
   final health = ref.watch(setupHealthProvider).value;
   if (health == null) return null;
-  final configs = ref.watch(effectiveTriggerConfigProvider);
+  final thresholds = ref.watch(effectiveThresholdsProvider);
   return {
     for (final mode in DayMode.values)
-      mode: setupIssues(health, configs[mode]!.kinds),
+      mode: setupIssues(health, thresholds[mode]!.allKinds),
   };
 });

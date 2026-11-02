@@ -35,7 +35,7 @@ class HistoryScreen extends ConsumerWidget {
     final anyOff = outcomes.contains(CheckOutcome.off);
     final from = logs.first.date, to = logs.last.date;
     final eveningTimes = [for (final l in logs) ?l.eveningAt];
-    final evening = ref.watch(effectiveTriggerConfigProvider)[DayMode.evening]!;
+    final evening = ref.watch(shownThresholdProvider)[DayMode.evening]!;
 
     if (!ref.watch(plusProvider).active) {
       return Scaffold(

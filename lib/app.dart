@@ -64,7 +64,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
   }
 
   Future<void> _reschedule() async {
-    await ref.read(triggerConfigProvider.notifier).saved;
+    await ref.read(thresholdsProvider.notifier).saved;
     await ref.read(reminderProvider.notifier).saved;
     await _bridge.reschedule();
     if (mounted) ref.invalidate(thresholdStatusProvider);
@@ -101,7 +101,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
   Widget build(BuildContext context) {
     // Eşik ayarı değişince, ayar diske yazıldıktan sonra Android'deki yedek
     // alarmları ve tetikleyici işlerini yeniden kur.
-    ref.listen(triggerConfigProvider, (_, _) => _reschedule());
+    ref.listen(thresholdsProvider, (_, _) => _reschedule());
     // Plus açılınca ya da kapanınca Android tetikleyicileri buna göre kurulur.
     ref.listen(plusProvider.select((p) => p.active), (_, _) => _reschedule());
     ref.listen(reminderProvider, (_, _) => _reschedule());

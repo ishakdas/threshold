@@ -1050,7 +1050,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tabHistory => 'Historial';
 
   @override
-  String get tabSettings => 'Ajustes';
+  String get tabSettings => 'Umbrales';
 
   @override
   String get checkNow => 'Comprobar';
@@ -1576,4 +1576,92 @@ class AppLocalizationsEs extends AppLocalizations {
   String remindHint(int minutes, int count) {
     return 'Si no compruebas, te avisa cada $minutes minutos, $count veces en total.';
   }
+
+  @override
+  String get appSettingsTitle => 'Ajustes de la app';
+
+  @override
+  String get thresholdAdd => 'Añadir umbral';
+
+  @override
+  String get thresholdAdded =>
+      'Umbral añadido. Elige sus días y ajustes abajo.';
+
+  @override
+  String get thresholdDaysHint =>
+      'Al tocar un día de otro umbral, pasa a este.';
+
+  @override
+  String thresholdRemove(String name) {
+    return 'Eliminar el umbral “$name”';
+  }
+
+  @override
+  String get thresholdTabsHint =>
+      'Distintos activadores, horas y hora de respaldo según el día.';
+
+  @override
+  String get daysEveryDay => 'Cada día';
+
+  @override
+  String get daysWeekdays => 'Entre semana';
+
+  @override
+  String get daysWeekend => 'Fin de semana';
+
+  @override
+  String get daysWeekendNights => 'Viernes–sábado';
+
+  @override
+  String get thresholdTemplates => 'Configuraciones listas';
+
+  @override
+  String get thresholdTemplatesHint =>
+      'Configura los umbrales de noche y mañana, en lugar de los actuales. Tu lista no cambia.';
+
+  @override
+  String thresholdTemplateApplied(String name) {
+    return '“$name” configurado';
+  }
+
+  @override
+  String get ttEverydayTitle => 'Igual cada día';
+
+  @override
+  String get ttEverydaySubtitle =>
+      'Noche al cargar, mañana al apagar la alarma.';
+
+  @override
+  String get ttWorkweekTitle => 'Entre semana y fin de semana';
+
+  @override
+  String get ttWorkweekSubtitle =>
+      'Temprano con la alarma entre semana; más tarde el fin de semana, al desenchufar.';
+
+  @override
+  String get ttEarlyTitle => 'Madrugadores';
+
+  @override
+  String get ttEarlySubtitle =>
+      'Mañanas desde las 04:00 con la alarma, noches para acostarse pronto.';
+
+  @override
+  String get ttHomeTitle => 'Teletrabajo';
+
+  @override
+  String get ttHomeSubtitle =>
+      'Prioriza la noche; por la mañana solo al apagar la alarma, sin hora de respaldo.';
+
+  @override
+  String get onbSetupKicker => 'Para empezar';
+
+  @override
+  String get onbSetupTitle => '¿Cómo son tus días?';
+
+  @override
+  String get onbSetupBody =>
+      'Elige una configuración; puedes cambiarla cuando quieras en Umbrales.';
+
+  @override
+  String get onbPacksTitle => 'Añade elementos listos';
 }

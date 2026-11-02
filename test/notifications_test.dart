@@ -120,14 +120,12 @@ void main() {
     await pumpApp(tester);
     final c = ProviderScope.containerOf(tester.element(find.text('Eşik')));
     calls.clear();
-    c
-        .read(triggerConfigProvider.notifier)
-        .update(
-          DayMode.morning,
-          c
-              .read(triggerConfigProvider)[DayMode.morning]!
-              .toggle(TriggerKind.leftHomeWifi),
-        );
+    c.read(thresholdsProvider.notifier).set(DayMode.morning, [
+      c
+          .read(thresholdsProvider)[DayMode.morning]!
+          .first
+          .toggle(TriggerKind.leftHomeWifi),
+    ]);
     await tester.pumpAndSettle();
     expect(calls.map((c) => c.method), contains('reschedule'));
   });
@@ -157,11 +155,11 @@ void main() {
       );
       addTearDown(c.dispose);
       c.read(checklistProvider);
-      c.read(triggerConfigProvider);
+      c.read(thresholdsProvider);
       await Future<void>.delayed(Duration.zero);
       expect(prefs.getString(EsikStore.checklistKey), contains('Ütünün'));
       expect(
-        prefs.getString(EsikStore.triggersKey),
+        prefs.getString(EsikStore.thresholdsKey),
         contains('"backupTime":"22:30"'),
       );
     });
@@ -271,14 +269,12 @@ void main() {
       await pumpApp(tester);
       final element = tester.element(find.text('Eşik'));
       final c = ProviderScope.containerOf(element);
-      c
-          .read(triggerConfigProvider.notifier)
-          .update(
-            DayMode.morning,
-            c
-                .read(triggerConfigProvider)[DayMode.morning]!
-                .copyWith(kinds: [TriggerKind.nfcTag]),
-          );
+      c.read(thresholdsProvider.notifier).set(DayMode.morning, [
+        c
+            .read(thresholdsProvider)[DayMode.morning]!
+            .first
+            .copyWith(kinds: [TriggerKind.nfcTag]),
+      ]);
       GoRouter.of(element).push('/kurulum?mod=sabah');
       await tester.pumpAndSettle();
       for (final label in ['İzin ver', 'İzin ver']) {

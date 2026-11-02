@@ -1046,7 +1046,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabHistory => 'History';
 
   @override
-  String get tabSettings => 'Settings';
+  String get tabSettings => 'Thresholds';
 
   @override
   String get checkNow => 'Check';
@@ -1567,4 +1567,92 @@ class AppLocalizationsEn extends AppLocalizations {
   String remindHint(int minutes, int count) {
     return 'If you don’t check, it reminds you every $minutes minutes, $count times in total.';
   }
+
+  @override
+  String get appSettingsTitle => 'App settings';
+
+  @override
+  String get thresholdAdd => 'Add threshold';
+
+  @override
+  String get thresholdAdded =>
+      'New threshold added. Pick its days and settings below.';
+
+  @override
+  String get thresholdDaysHint =>
+      'Tapping a day from another threshold moves it here.';
+
+  @override
+  String thresholdRemove(String name) {
+    return 'Delete “$name” threshold';
+  }
+
+  @override
+  String get thresholdTabsHint =>
+      'Different triggers, hours and backup time by day.';
+
+  @override
+  String get daysEveryDay => 'Every day';
+
+  @override
+  String get daysWeekdays => 'Weekdays';
+
+  @override
+  String get daysWeekend => 'Weekend';
+
+  @override
+  String get daysWeekendNights => 'Fri–Sat nights';
+
+  @override
+  String get thresholdTemplates => 'Ready-made setups';
+
+  @override
+  String get thresholdTemplatesHint =>
+      'Sets up both evening and morning thresholds, replacing the current ones. Your checklist stays.';
+
+  @override
+  String thresholdTemplateApplied(String name) {
+    return '“$name” set up';
+  }
+
+  @override
+  String get ttEverydayTitle => 'Same every day';
+
+  @override
+  String get ttEverydaySubtitle =>
+      'Evening when you plug in, morning when the alarm stops.';
+
+  @override
+  String get ttWorkweekTitle => 'Workweek and weekend';
+
+  @override
+  String get ttWorkweekSubtitle =>
+      'Early with the alarm on weekdays; later at weekends, when you unplug.';
+
+  @override
+  String get ttEarlyTitle => 'Early risers';
+
+  @override
+  String get ttEarlySubtitle =>
+      'Mornings from 04:00 with the alarm, evenings for an early night.';
+
+  @override
+  String get ttHomeTitle => 'Working from home';
+
+  @override
+  String get ttHomeSubtitle =>
+      'The evening check comes first; mornings only when the alarm stops, no backup time.';
+
+  @override
+  String get onbSetupKicker => 'Getting started';
+
+  @override
+  String get onbSetupTitle => 'What are your days like?';
+
+  @override
+  String get onbSetupBody =>
+      'Pick a setup; you can change it any time in the Thresholds tab.';
+
+  @override
+  String get onbPacksTitle => 'Add ready-made items';
 }

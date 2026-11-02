@@ -678,7 +678,7 @@
   "tabToday": "Bugün",
   "tabList": "Liste",
   "tabHistory": "Geçmiş",
-  "tabSettings": "Ayarlar",
+  "tabSettings": "Eşikler",
   "checkNow": "Kontrol et",
   "evening": "Akşam",
   "morning": "Sabah",
@@ -949,5 +949,44 @@
         "type": "int"
       }
     }
-  }
+  },
+  "appSettingsTitle": "Uygulama ayarları",
+  "thresholdAdd": "Eşik ekle",
+  "thresholdAdded": "Yeni eşik eklendi. Günlerini ve ayarlarını aşağıdan seç.",
+  "thresholdDaysHint": "Başka eşikteki bir güne dokunursan o gün bu eşiğe geçer.",
+  "thresholdRemove": "“{name}” eşiğini sil",
+  "@thresholdRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "thresholdTabsHint": "Günlere göre farklı tetikleyici, saat ve yedek saat.",
+  "daysEveryDay": "Her gün",
+  "daysWeekdays": "Hafta içi",
+  "daysWeekend": "Hafta sonu",
+  "daysWeekendNights": "Cuma–Cumartesi",
+  "thresholdTemplates": "Hazır düzenler",
+  "thresholdTemplatesHint": "Akşam ve sabah eşiklerini birlikte kurar; mevcut eşik ayarlarının yerine geçer. Kontrol listen değişmez.",
+  "thresholdTemplateApplied": "“{name}” düzeni kuruldu",
+  "@thresholdTemplateApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ttEverydayTitle": "Her gün aynı",
+  "ttEverydaySubtitle": "Akşam şarja takınca, sabah alarmı durdurunca.",
+  "ttWorkweekTitle": "Hafta içi iş, hafta sonu rahat",
+  "ttWorkweekSubtitle": "Hafta içi alarmla erken; hafta sonu geç saatte, şarjdan çıkarınca.",
+  "ttEarlyTitle": "Erken kalkanlar",
+  "ttEarlySubtitle": "Sabah 04:00’ten itibaren alarmla, akşam erken yatışa göre.",
+  "ttHomeTitle": "Evden çalışanlar",
+  "ttHomeSubtitle": "Akşam kontrolü öne çıkar; sabah yalnızca alarm durunca, yedek saat yok.",
+  "onbSetupKicker": "Başlarken",
+  "onbSetupTitle": "Günün nasıl geçiyor?",
+  "onbSetupBody": "Bir düzen seç; istediğin zaman Eşikler sekmesinden değiştirirsin.",
+  "onbPacksTitle": "Listene hazır maddeler ekle"
 }

@@ -396,7 +396,7 @@ class _SetupGuideScreenState extends ConsumerState<SetupGuideScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
-    final kinds = ref.watch(effectiveTriggerConfigProvider)[mode]!.kinds;
+    final kinds = ref.watch(effectiveThresholdsProvider)[mode]!.allKinds;
     final steps = setupStepsFor(l10n, kinds);
     final health = ref.watch(setupHealthProvider).value;
     if (health != null && !_positioned) {

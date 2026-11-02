@@ -87,7 +87,7 @@ void main() {
     // Yeni kurulum: henüz geçmiş yok.
     expect(find.bySemanticsLabel('Henüz kayıt yok'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel('Ayarlar'));
+    await tester.tap(find.bySemanticsLabel('Eşikler'));
     await tester.pumpAndSettle();
     expect(find.text('Eşiklerim'), findsOneWidget);
     expect(find.text('22:00'), findsOneWidget);
@@ -103,7 +103,7 @@ void main() {
     tester,
   ) async {
     await pumpApp(tester);
-    await tester.tap(find.bySemanticsLabel('Ayarlar'));
+    await tester.tap(find.bySemanticsLabel('Eşikler'));
     await tester.pumpAndSettle();
 
     final picker = find.byType(ArcRangePicker);
@@ -125,7 +125,7 @@ void main() {
     expect(tester.state<ScrollableState>(list).position.pixels, before);
     final c = ProviderScope.containerOf(tester.element(picker));
     expect(
-      c.read(triggerConfigProvider)[DayMode.evening]!.windowEnd,
+      c.read(thresholdsProvider)[DayMode.evening]!.first.windowEnd,
       isNot(const TimeOfDay(hour: 2, minute: 0)),
     );
   });

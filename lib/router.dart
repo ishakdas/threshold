@@ -7,6 +7,7 @@ import 'features/check/quick_check_screen.dart';
 import 'features/checklist/checklist_screen.dart';
 import 'features/history/history_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/settings/app_settings_screen.dart';
 import 'features/setup/setup_guide_screen.dart';
 import 'features/shell/app_shell.dart';
 import 'features/today/today_screen.dart';
@@ -73,6 +74,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           fromBackup: state.uri.queryParameters['kaynak'] == 'yedek',
         ),
       ),
+      GoRoute(path: '/uygulama', builder: (_, _) => const AppSettingsScreen()),
       GoRoute(
         path: '/kurulum',
         builder: (_, state) => SetupGuideScreen(mode: _modeParam(state)),

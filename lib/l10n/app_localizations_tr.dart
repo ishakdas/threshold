@@ -1030,7 +1030,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get tabHistory => 'Geçmiş';
 
   @override
-  String get tabSettings => 'Ayarlar';
+  String get tabSettings => 'Eşikler';
 
   @override
   String get checkNow => 'Kontrol et';
@@ -1533,4 +1533,92 @@ class AppLocalizationsTr extends AppLocalizations {
   String remindHint(int minutes, int count) {
     return 'Kontrolü yapmazsan bildirim $minutes dakikada bir, toplam $count kez gelir.';
   }
+
+  @override
+  String get appSettingsTitle => 'Uygulama ayarları';
+
+  @override
+  String get thresholdAdd => 'Eşik ekle';
+
+  @override
+  String get thresholdAdded =>
+      'Yeni eşik eklendi. Günlerini ve ayarlarını aşağıdan seç.';
+
+  @override
+  String get thresholdDaysHint =>
+      'Başka eşikteki bir güne dokunursan o gün bu eşiğe geçer.';
+
+  @override
+  String thresholdRemove(String name) {
+    return '“$name” eşiğini sil';
+  }
+
+  @override
+  String get thresholdTabsHint =>
+      'Günlere göre farklı tetikleyici, saat ve yedek saat.';
+
+  @override
+  String get daysEveryDay => 'Her gün';
+
+  @override
+  String get daysWeekdays => 'Hafta içi';
+
+  @override
+  String get daysWeekend => 'Hafta sonu';
+
+  @override
+  String get daysWeekendNights => 'Cuma–Cumartesi';
+
+  @override
+  String get thresholdTemplates => 'Hazır düzenler';
+
+  @override
+  String get thresholdTemplatesHint =>
+      'Akşam ve sabah eşiklerini birlikte kurar; mevcut eşik ayarlarının yerine geçer. Kontrol listen değişmez.';
+
+  @override
+  String thresholdTemplateApplied(String name) {
+    return '“$name” düzeni kuruldu';
+  }
+
+  @override
+  String get ttEverydayTitle => 'Her gün aynı';
+
+  @override
+  String get ttEverydaySubtitle =>
+      'Akşam şarja takınca, sabah alarmı durdurunca.';
+
+  @override
+  String get ttWorkweekTitle => 'Hafta içi iş, hafta sonu rahat';
+
+  @override
+  String get ttWorkweekSubtitle =>
+      'Hafta içi alarmla erken; hafta sonu geç saatte, şarjdan çıkarınca.';
+
+  @override
+  String get ttEarlyTitle => 'Erken kalkanlar';
+
+  @override
+  String get ttEarlySubtitle =>
+      'Sabah 04:00’ten itibaren alarmla, akşam erken yatışa göre.';
+
+  @override
+  String get ttHomeTitle => 'Evden çalışanlar';
+
+  @override
+  String get ttHomeSubtitle =>
+      'Akşam kontrolü öne çıkar; sabah yalnızca alarm durunca, yedek saat yok.';
+
+  @override
+  String get onbSetupKicker => 'Başlarken';
+
+  @override
+  String get onbSetupTitle => 'Günün nasıl geçiyor?';
+
+  @override
+  String get onbSetupBody =>
+      'Bir düzen seç; istediğin zaman Eşikler sekmesinden değiştirirsin.';
+
+  @override
+  String get onbPacksTitle => 'Listene hazır maddeler ekle';
 }

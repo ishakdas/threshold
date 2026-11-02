@@ -242,7 +242,68 @@ enum SilentAlert {
 /// Haftanın bütün günleri (DateTime.monday = 1 … DateTime.sunday = 7).
 const allWeekdays = {1, 2, 3, 4, 5, 6, 7};
 
-/// Bir modun eşik ayarı: hangi davranışlar, hangi günler ve saatlerde, yedek saat.
+/// Bir modun eşikleri. Her eşik kendi günlerinde geçerlidir (ör. hafta içi,
+/// hafta sonu); günler çakışmaz, hiçbir eşiğe ait olmayan gün izinlidir.
+/// Kontrol listesi modun ortak listesidir; günlere göre farkı maddenin
+/// günleri sağlar. Android ve iOS tarafı (EsikData.kt, EsikCore.swift) aynı
+/// kuralla o günün eşiğini seçer.
+extension ThresholdList on List<TriggerConfig> {
+  /// [day] (eşik günü) için geçerli eşik; o gün izinliyse null.
+  TriggerConfig? on(DateTime day) => where((c) => c.activeOn(day)).firstOrNull;
+
+  /// Eşiklerin herhangi birinde seçili tetikleyiciler, [TriggerKind] sırasıyla.
+  List<TriggerKind> get allKinds => [
+    for (final k in TriggerKind.values)
+      if (any((c) => c.kinds.contains(k))) k,
+  ];
+
+  /// Plus yoksa yalnızca ilk eşik, her gün (bkz. [TriggerConfig.effective]).
+  List<TriggerConfig> effective({required bool plus}) =>
+      plus ? this : [first.effective(plus: false)];
+
+  /// [index]'teki eşikte [weekday] gününü açar ya da kapatır. Gün başka bir
+  /// eşikteyse buraya taşınır. Bir eşiğin son günü alınamaz; değişmezse
+  /// aynı liste döner.
+  List<TriggerConfig> toggleDay(int index, int weekday) {
+    final owner = indexWhere((c) => c.days.contains(weekday));
+    if (owner == index) {
+      final next = this[index].toggleDay(weekday);
+      if (identical(next, this[index])) return this;
+      return [...take(index), next, ...skip(index + 1)];
+    }
+    if (owner >= 0 && this[owner].days.length == 1) return this;
+    return [
+      for (var i = 0; i < length; i++)
+        if (i == index)
+          this[i].copyWith(days: {...this[i].days, weekday})
+        else if (i == owner)
+          this[i].copyWith(days: {...this[i].days}..remove(weekday))
+        else
+          this[i],
+    ];
+  }
+
+  /// [template]'in ayarlarıyla [days] günleri için yeni eşik ekler; o günler
+  /// diğer eşiklerden alınır, günü kalmayan eşik çıkar.
+  List<TriggerConfig> withThreshold(TriggerConfig template, Set<int> days) => [
+    for (final c in this)
+      if (c.days.difference(days).isNotEmpty)
+        c.copyWith(days: c.days.difference(days)),
+    template.copyWith(days: days),
+  ];
+
+  /// [index]'teki eşiği siler; günleri ilk kalan eşiğe geçer. Son eşik silinmez.
+  List<TriggerConfig> without(int index) {
+    if (length <= 1) return this;
+    final rest = [...take(index), ...skip(index + 1)];
+    return [
+      rest.first.copyWith(days: {...rest.first.days, ...this[index].days}),
+      ...rest.skip(1),
+    ];
+  }
+}
+
+/// Bir eşiğin ayarı: hangi davranışlar, hangi günler ve saatlerde, yedek saat.
 class TriggerConfig {
   const TriggerConfig({
     required this.kinds,

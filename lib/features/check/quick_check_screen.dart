@@ -96,7 +96,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
     final items = ref.watch(todayItemsProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
-    final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
+    final config = ref.watch(shownThresholdProvider)[mode]!;
     final evening = mode == DayMode.evening;
 
     return Scaffold(

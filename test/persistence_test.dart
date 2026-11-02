@@ -99,20 +99,17 @@ void main() {
 
   test('eşik ayarları yeniden açılışta korunur', () async {
     final a = open();
-    a
-        .read(triggerConfigProvider.notifier)
-        .update(
-          DayMode.morning,
-          defaultTriggerConfigs[DayMode.morning]!.copyWith(
-            kinds: [TriggerKind.alarmStopped, TriggerKind.nfcTag],
-            days: {1, 2, 3, 4, 5},
-            windowStart: const TimeOfDay(hour: 6, minute: 30),
-            backupEnabled: false,
-          ),
-        );
+    a.read(thresholdsProvider.notifier).set(DayMode.morning, [
+      defaultTriggerConfigs[DayMode.morning]!.copyWith(
+        kinds: [TriggerKind.alarmStopped, TriggerKind.nfcTag],
+        days: {1, 2, 3, 4, 5},
+        windowStart: const TimeOfDay(hour: 6, minute: 30),
+        backupEnabled: false,
+      ),
+    ]);
     await flush();
 
-    final c = open().read(triggerConfigProvider)[DayMode.morning]!;
+    final c = open().read(thresholdsProvider)[DayMode.morning]!.first;
     expect(c.kinds, [TriggerKind.alarmStopped, TriggerKind.nfcTag]);
     expect(c.days, {1, 2, 3, 4, 5});
     expect(c.windowStart, const TimeOfDay(hour: 6, minute: 30));
@@ -133,7 +130,7 @@ void main() {
       titles(c.read(checklistProvider)),
       titles(defaultChecklistFor(trL10n)),
     );
-    final evening = c.read(triggerConfigProvider)[DayMode.evening]!;
+    final evening = c.read(thresholdsProvider)[DayMode.evening]!.first;
     // nfcTag bir sabah tetikleyicisi; akşama yazılmışsa varsayılan kullanılır.
     expect(evening.kinds, [TriggerKind.charging]);
     expect(evening.days, allWeekdays);

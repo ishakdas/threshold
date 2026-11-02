@@ -239,14 +239,12 @@ void main() {
       });
       prefs = await SharedPreferences.getInstance();
       final c = container();
-      c
-          .read(triggerConfigProvider.notifier)
-          .update(
-            DayMode.evening,
-            c
-                .read(triggerConfigProvider)[DayMode.evening]!
-                .copyWith(days: {1, 2, 3, 4, 5}),
-          );
+      c.read(thresholdsProvider.notifier).set(DayMode.evening, [
+        c
+            .read(thresholdsProvider)[DayMode.evening]!
+            .first
+            .copyWith(days: {1, 2, 3, 4, 5}),
+      ]);
       final logs = c.read(historyProvider);
       final sunday = logs.firstWhere((l) => l.date == DateTime(2026, 10, 18));
       final monday = logs.firstWhere((l) => l.date == DateTime(2026, 10, 19));

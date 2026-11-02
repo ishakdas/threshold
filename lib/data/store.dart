@@ -12,6 +12,7 @@ class EsikStore {
 
   static const checklistKey = 'checklist.v1';
   static const triggersKey = 'triggers.v1';
+  static const thresholdsKey = 'triggers.v2';
   static const logKey = 'log.v1';
   static const installedOnKey = 'installed_on';
   static const silentAlertKey = 'silent_alert';

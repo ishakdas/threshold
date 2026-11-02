@@ -90,9 +90,14 @@ void main() {
       (tester) async {
         FakePlusBilling.buyCount = 0;
         await pumpApp(tester, now: morningNow, prefs: expired);
-        await tester.tap(find.bySemanticsLabel('Ayarlar'));
+        // Plus durumu Uygulama ayarları'nda.
+        await tester.tap(find.bySemanticsLabel('Eşikler'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Uygulama ayarları'));
         await tester.pumpAndSettle();
         expect(find.text('Ücretsiz sürüm'), findsOneWidget);
+        GoRouter.of(tester.element(find.text('Ücretsiz sürüm'))).pop();
+        await tester.pumpAndSettle();
 
         await tester.tap(find.textContaining('Wi‑Fi’ından çıkınca'));
         await tester.pumpAndSettle();
@@ -108,7 +113,7 @@ void main() {
 
     testWidgets('sessiz mod da Plus’a özel', (tester) async {
       await pumpApp(tester, prefs: expired);
-      await tester.tap(find.bySemanticsLabel('Ayarlar'));
+      await tester.tap(find.bySemanticsLabel('Eşikler'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sessize alınca'));
       await tester.pumpAndSettle();
@@ -116,7 +121,7 @@ void main() {
       final c = ProviderScope.containerOf(
         tester.element(find.text('Eşiklerim')),
       );
-      expect(c.read(triggerConfigProvider)[DayMode.evening]!.kinds, [
+      expect(c.read(thresholdsProvider)[DayMode.evening]!.first.kinds, [
         TriggerKind.charging,
       ]);
     });

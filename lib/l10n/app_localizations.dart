@@ -1879,7 +1879,7 @@ abstract class AppLocalizations {
   /// No description provided for @tabSettings.
   ///
   /// In tr, this message translates to:
-  /// **'Ayarlar'**
+  /// **'Eşikler'**
   String get tabSettings;
 
   /// No description provided for @checkNow.
@@ -2763,6 +2763,156 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Kontrolü yapmazsan bildirim {minutes} dakikada bir, toplam {count} kez gelir.'**
   String remindHint(int minutes, int count);
+
+  /// No description provided for @appSettingsTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Uygulama ayarları'**
+  String get appSettingsTitle;
+
+  /// No description provided for @thresholdAdd.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşik ekle'**
+  String get thresholdAdd;
+
+  /// No description provided for @thresholdAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yeni eşik eklendi. Günlerini ve ayarlarını aşağıdan seç.'**
+  String get thresholdAdded;
+
+  /// No description provided for @thresholdDaysHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başka eşikteki bir güne dokunursan o gün bu eşiğe geçer.'**
+  String get thresholdDaysHint;
+
+  /// No description provided for @thresholdRemove.
+  ///
+  /// In tr, this message translates to:
+  /// **'“{name}” eşiğini sil'**
+  String thresholdRemove(String name);
+
+  /// No description provided for @thresholdTabsHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlere göre farklı tetikleyici, saat ve yedek saat.'**
+  String get thresholdTabsHint;
+
+  /// No description provided for @daysEveryDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Her gün'**
+  String get daysEveryDay;
+
+  /// No description provided for @daysWeekdays.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hafta içi'**
+  String get daysWeekdays;
+
+  /// No description provided for @daysWeekend.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hafta sonu'**
+  String get daysWeekend;
+
+  /// No description provided for @daysWeekendNights.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cuma–Cumartesi'**
+  String get daysWeekendNights;
+
+  /// No description provided for @thresholdTemplates.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazır düzenler'**
+  String get thresholdTemplates;
+
+  /// No description provided for @thresholdTemplatesHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam ve sabah eşiklerini birlikte kurar; mevcut eşik ayarlarının yerine geçer. Kontrol listen değişmez.'**
+  String get thresholdTemplatesHint;
+
+  /// No description provided for @thresholdTemplateApplied.
+  ///
+  /// In tr, this message translates to:
+  /// **'“{name}” düzeni kuruldu'**
+  String thresholdTemplateApplied(String name);
+
+  /// No description provided for @ttEverydayTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Her gün aynı'**
+  String get ttEverydayTitle;
+
+  /// No description provided for @ttEverydaySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam şarja takınca, sabah alarmı durdurunca.'**
+  String get ttEverydaySubtitle;
+
+  /// No description provided for @ttWorkweekTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hafta içi iş, hafta sonu rahat'**
+  String get ttWorkweekTitle;
+
+  /// No description provided for @ttWorkweekSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hafta içi alarmla erken; hafta sonu geç saatte, şarjdan çıkarınca.'**
+  String get ttWorkweekSubtitle;
+
+  /// No description provided for @ttEarlyTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Erken kalkanlar'**
+  String get ttEarlyTitle;
+
+  /// No description provided for @ttEarlySubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabah 04:00’ten itibaren alarmla, akşam erken yatışa göre.'**
+  String get ttEarlySubtitle;
+
+  /// No description provided for @ttHomeTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evden çalışanlar'**
+  String get ttHomeTitle;
+
+  /// No description provided for @ttHomeSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam kontrolü öne çıkar; sabah yalnızca alarm durunca, yedek saat yok.'**
+  String get ttHomeSubtitle;
+
+  /// No description provided for @onbSetupKicker.
+  ///
+  /// In tr, this message translates to:
+  /// **'Başlarken'**
+  String get onbSetupKicker;
+
+  /// No description provided for @onbSetupTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günün nasıl geçiyor?'**
+  String get onbSetupTitle;
+
+  /// No description provided for @onbSetupBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir düzen seç; istediğin zaman Eşikler sekmesinden değiştirirsin.'**
+  String get onbSetupBody;
+
+  /// No description provided for @onbPacksTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Listene hazır maddeler ekle'**
+  String get onbPacksTitle;
 }
 
 class _AppLocalizationsDelegate

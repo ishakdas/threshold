@@ -14,13 +14,10 @@ import '../../ui/esik_icons.dart';
 import '../../platform/native_bridge.dart';
 import '../setup/setup_health.dart';
 import 'arc_range_picker.dart';
+import 'threshold_widgets.dart';
 import '../../l10n/texts.dart';
 import '../../data/plus.dart';
 import '../plus/plus_sheet.dart';
-import '../../data/reminders.dart';
-import '../../data/weather.dart';
-import '../weather/city_sheet.dart';
-import '../today/widget_tip.dart';
 
 /// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
 /// Her değişiklik anında kaydedilir; yedek alarm da hemen yeniden kurulur.
@@ -34,9 +31,70 @@ class TriggerScreen extends ConsumerStatefulWidget {
 class _TriggerScreenState extends ConsumerState<TriggerScreen> {
   late DayMode _mode = ref.read(dayModeProvider);
 
-  TriggerConfig get _config => ref.read(triggerConfigProvider)[_mode]!;
-  void _update(TriggerConfig c) =>
-      ref.read(triggerConfigProvider.notifier).update(_mode, c);
+  /// Seçili eşik (gün profili); mod değişince ilkine döner.
+  int _index = 0;
+
+  List<TriggerConfig> get _list => ref.read(thresholdsProvider)[_mode]!;
+  TriggerConfig get _config => _list[_index.clamp(0, _list.length - 1)];
+  void _update(TriggerConfig c) => ref
+      .read(thresholdsProvider.notifier)
+      .update(_mode, _index.clamp(0, _list.length - 1), c);
+
+  /// Seçili eşikte günü aç/kapat; başka eşikteyse buraya taşır.
+  void _toggleDay(int weekday) {
+    final list = _list;
+    final next = list.toggleDay(_index, weekday);
+    if (identical(next, list)) {
+      HapticFeedback.heavyImpact();
+      return;
+    }
+    HapticFeedback.selectionClick();
+    ref.read(thresholdsProvider.notifier).set(_mode, next);
+  }
+
+  /// Yeni eşik: seçilinin kopyası; hafta sonu ayrı değilse hafta sonuna,
+  /// değilse en kalabalık eşiğin son gününe kurulur. Günleri sonra seçilir.
+  void _addThreshold({required bool plus}) {
+    if (!plus) {
+      showPlusSheet(context);
+      return;
+    }
+    final list = _list;
+    final weekend = _mode == DayMode.evening ? {5, 6} : {6, 7};
+    final owner = list.indexWhere((c) => c.days.containsAll(weekend));
+    final Set<int> days;
+    if (owner >= 0 && list[owner].days.length > weekend.length) {
+      days = weekend;
+    } else {
+      final biggest = list.reduce(
+        (a, b) => a.days.length >= b.days.length ? a : b,
+      );
+      if (biggest.days.length < 2) {
+        HapticFeedback.heavyImpact();
+        return;
+      }
+      days = {(biggest.days.toList()..sort()).last};
+    }
+    final next = list.withThreshold(_config, days);
+    HapticFeedback.mediumImpact();
+    ref.read(thresholdsProvider.notifier).set(_mode, next);
+    setState(() => _index = next.length - 1);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 110),
+          content: Text(context.l10n.thresholdAdded),
+        ),
+      );
+  }
+
+  void _removeThreshold() {
+    HapticFeedback.mediumImpact();
+    ref.read(thresholdsProvider.notifier).set(_mode, _list.without(_index));
+    setState(() => _index = 0);
+  }
 
   void _openSetup() => context.push(
     '/kurulum?mod=${_mode == DayMode.evening ? 'aksam' : 'sabah'}',
@@ -111,9 +169,16 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
     final t = Theme.of(context).textTheme;
     final evening = _mode == DayMode.evening;
     final plus = ref.watch(plusProvider).active;
+    final list = ref.watch(thresholdsProvider)[_mode]!;
+    // Plus yoksa yalnızca ilk eşik geçerli.
+    if (!plus || _index >= list.length) _index = 0;
     // Asıl seçim saklanır; Plus yoksa geçerli olan gösterilir.
-    final c = ref.watch(triggerConfigProvider)[_mode]!;
+    final c = list[_index];
     final shown = c.effective(plus: plus);
+    final others = {
+      for (var i = 0; i < list.length; i++)
+        if (i != _index) ...list[i].days,
+    };
     final issueCount = ref.watch(setupIssuesProvider)?[_mode]?.length ?? 0;
     // "Hiçbiri olmazsa {saat} hatırlat": saat altı çizili, ortasından böl.
     final backupParts = l10n.backupRow('\u0000').split('\u0000');
@@ -129,17 +194,35 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
             children: [
               ScreenHeader(
                 title: l10n.settingsTitle,
-                trailing: InfoChip(
-                  label: evening ? l10n.beforeBed : l10n.beforeLeaving,
-                  icon: evening ? EsikIcon.moon : EsikIcon.sun,
+                trailing: IconButton(
+                  tooltip: l10n.appSettingsTitle,
+                  onPressed: () => context.push('/uygulama'),
+                  icon: EsikIconView(EsikIcon.gear, size: 22, color: p.text),
                 ),
               ),
               const SizedBox(height: 12),
-              const _PlusCard(),
-              const SizedBox(height: 14),
               ModeSegment(
                 value: _mode,
-                onChanged: (m) => setState(() => _mode = m),
+                onChanged: (m) => setState(() {
+                  _mode = m;
+                  _index = 0;
+                }),
+              ),
+              const SizedBox(height: 12),
+              ThresholdTabs(
+                thresholds: list,
+                selected: _index,
+                plus: plus,
+                onSelect: (i) {
+                  if (!plus && i > 0) {
+                    showPlusSheet(context);
+                    return;
+                  }
+                  HapticFeedback.selectionClick();
+                  setState(() => _index = i);
+                },
+                onAdd: () => _addThreshold(plus: plus),
+                onTemplates: () => showThresholdTemplates(context),
               ),
               const SizedBox(height: 26),
               ArcRangePicker(
@@ -273,20 +356,28 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
               const SizedBox(height: 10),
               WeekdayPicker(
                 days: shown.days,
+                others: plus ? others : const {},
                 onToggle: (d) {
                   if (!plus) {
                     showPlusSheet(context);
                     return;
                   }
-                  final next = c.toggleDay(d);
-                  if (identical(next, c)) {
-                    HapticFeedback.heavyImpact();
-                  } else {
-                    HapticFeedback.selectionClick();
-                    _update(next);
-                  }
+                  _toggleDay(d);
                 },
               ),
+              if (plus && list.length > 1) ...[
+                const SizedBox(height: 6),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    l10n.thresholdDaysHint,
+                    style: t.labelSmall?.copyWith(
+                      fontSize: 12,
+                      color: p.textFaint,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               SurfaceCard(
                 radius: 30,
@@ -330,20 +421,22 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 ),
               ),
               _StatusLine(mode: _mode),
-              const SizedBox(height: 10),
-              // iOS'ta bildirim telefonun sessiz ayarını aşamaz.
-              if (!isIOS) ...[
-                const _SilentAlertCard(),
-                const SizedBox(height: 10),
-              ],
-              const _ReminderCard(),
-              const SizedBox(height: 10),
-              const _WeatherCard(),
-              const SizedBox(height: 10),
-              if (!isIOS) ...[const _WidgetCard(), const SizedBox(height: 10)],
-              const _LanguageCard(),
-              const SizedBox(height: 10),
-              const _ContactCard(),
+              if (plus && list.length > 1)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _removeThreshold,
+                    icon: EsikIconView(
+                      EsikIcon.trash,
+                      size: 16,
+                      color: p.textMuted,
+                    ),
+                    label: Text(
+                      l10n.thresholdRemove(c.daysLabel(l10n)),
+                      style: t.labelLarge?.copyWith(color: p.textMuted),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 16),
               PrimaryPillButton(
                 label: switch (issueCount) {
@@ -515,65 +608,6 @@ class _TriggerTile extends StatelessWidget {
   }
 }
 
-/// Plus durumu: deneme günleri, ücretsiz sürüm ya da satın alındı.
-class _PlusCard extends ConsumerWidget {
-  const _PlusCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    final l10n = context.l10n;
-    final plus = ref.watch(plusProvider);
-    final testStart = plus.testStart;
-    final status = plus.owned
-        ? l10n.plusOwned
-        : testStart != null
-        // Yalnızca test APK'sı: başlangıç dakikasıyla, kalan süre dakikayla.
-        ? 'TEST · başlangıç ${testStart.day}.${testStart.month} '
-              '${formatTime(TimeOfDay.fromDateTime(testStart))} · '
-              '${plus.inTrial ? '${plus.testMinutesLeft} dk kaldı' : 'deneme bitti'}'
-        : plus.inTrial
-        ? l10n.plusTrialLeft(plus.trialDaysLeft)
-        : l10n.plusFree;
-    return SurfaceCard(
-      radius: 26,
-      highlighted: !plus.owned,
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      onTap: () => showPlusSheet(context),
-      child: Row(
-        children: [
-          IconCircle(
-            icon: EsikIcon.sparkle,
-            gradient: PlusBadge.gold,
-            iconColor: const Color(0xFF3A2306),
-            size: 36,
-            active: true,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.plusName, style: t.labelLarge),
-                Text(
-                  status,
-                  style: t.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w300,
-                    color: p.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (!plus.owned)
-            EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
-        ],
-      ),
-    );
-  }
-}
-
 /// Tetikleyiciden ne kadar sonra bildirileceği: hazır seçenekler ya da
 /// dakika ve saniyeyle özel bir süre.
 class _DelayCard extends StatelessWidget {
@@ -719,306 +753,6 @@ class _DelaySheetState extends State<_DelaySheet> {
   }
 }
 
-/// Geliştiriciye e-posta: telefondaki e-posta uygulamasını açar.
-class _ContactCard extends ConsumerWidget {
-  const _ContactCard();
-
-  static const email = 'developerishak@gmail.com';
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    return SurfaceCard(
-      radius: 30,
-      padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
-      onTap: () async {
-        final opened = await ref
-            .read(nativeBridgeProvider)
-            .sendFeedback(email: email, subject: l10n.contactSubject);
-        if (opened || !context.mounted) return;
-        await Clipboard.setData(const ClipboardData(text: email));
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.contactNoApp(email))));
-      },
-      child: Row(
-        children: [
-          EsikIconView(EsikIcon.mail, size: 18, color: p.text),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.contactTitle, style: t.bodyMedium),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.contactSubtitle,
-                  style: t.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w300,
-                    color: p.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
-        ],
-      ),
-    );
-  }
-}
-
-/// Israrcı hatırlatma: kaç bildirim, kaç dakika arayla. İki mod için ortak.
-class _ReminderCard extends ConsumerWidget {
-  const _ReminderCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    final r = ref.watch(reminderProvider);
-    final notifier = ref.read(reminderProvider.notifier);
-    return SurfaceCard(
-      radius: 30,
-      padding: const EdgeInsets.fromLTRB(18, 14, 12, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              EsikIconView(EsikIcon.bellRing, size: 18, color: p.text),
-              const SizedBox(width: 10),
-              Expanded(child: Text(l10n.remindTitle, style: t.bodyMedium)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ChoicePills<int>(
-            values: const [1, 2, 3, 4, 5],
-            value: r.max,
-            label: (n) => n == 1 ? l10n.remindOnce : '$n',
-            onChanged: (n) =>
-                notifier.set(ReminderSettings(max: n, minutes: r.minutes)),
-          ),
-          if (r.max > 1) ...[
-            const SizedBox(height: 10),
-            ChoicePills<int>(
-              values: ReminderSettings.minuteChoices,
-              value: r.minutes,
-              label: (m) => l10n.remindEvery(m),
-              expand: false,
-              onChanged: (m) =>
-                  notifier.set(ReminderSettings(max: r.max, minutes: m)),
-            ),
-          ],
-          const SizedBox(height: 10),
-          Text(
-            r.max == 1 ? l10n.remindHintOff : l10n.remindHint(r.minutes, r.max),
-            style: t.labelMedium?.copyWith(
-              fontWeight: FontWeight.w300,
-              color: p.textMuted,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Hava durumuna göre çıkan maddeler için şehir.
-class _WeatherCard extends ConsumerWidget {
-  const _WeatherCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    final weather = ref.watch(weatherProvider);
-    final today = weather.on(ref.watch(todayProvider));
-    return SurfaceCard(
-      radius: 30,
-      padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
-      onTap: () => showCitySheet(context),
-      child: Row(
-        children: [
-          EsikIconView(EsikIcon.cloud, size: 18, color: p.text),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.weatherTitle, style: t.bodyMedium),
-                const SizedBox(height: 2),
-                Text(
-                  [
-                    weather.place?.name ?? l10n.weatherNoCity,
-                    if (today != null)
-                      l10n.weatherToday(
-                        today.rainChance,
-                        today.minTemp.round(),
-                        today.maxTemp.round(),
-                      ),
-                  ].join(' · '),
-                  style: t.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w300,
-                    color: p.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
-        ],
-      ),
-    );
-  }
-}
-
-/// Android: ana ekrana Eşik widget'ını ekler.
-class _WidgetCard extends ConsumerWidget {
-  const _WidgetCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    return SurfaceCard(
-      radius: 30,
-      padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
-      onTap: () => addEsikWidget(context, ref),
-      child: Row(
-        children: [
-          EsikIconView(EsikIcon.widget, size: 18, color: p.text),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.widgetTitle, style: t.bodyMedium),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.widgetTipBody,
-                  style: t.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w300,
-                    color: p.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          EsikIconView(EsikIcon.plus, size: 18, color: p.accent),
-        ],
-      ),
-    );
-  }
-}
-
-/// Uygulamanın dili: telefonunki ya da seçilen.
-class _LanguageCard extends ConsumerWidget {
-  const _LanguageCard();
-
-  /// Diller her zaman kendi adlarıyla yazılır; yalnızca "Sistem" çevrilir.
-  static String _name(AppLocalizations l10n, AppLanguage language) =>
-      switch (language) {
-        AppLanguage.system => l10n.languageSystem,
-        AppLanguage.tr => 'Türkçe',
-        AppLanguage.en => 'English',
-        AppLanguage.es => 'Español',
-      };
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    final l10n = context.l10n;
-    return SurfaceCard(
-      radius: 30,
-      padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              EsikIconView(EsikIcon.globe, size: 18, color: p.text),
-              const SizedBox(width: 10),
-              Expanded(child: Text(l10n.language, style: t.bodyMedium)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ChoicePills<AppLanguage>(
-            values: AppLanguage.values,
-            value: ref.watch(languageProvider),
-            label: (lang) => _name(l10n, lang),
-            expand: false,
-            onChanged: ref.read(languageProvider.notifier).set,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Telefon sessizdeyken bildirim titresin ya da çalsın mı? İki mod için ortak.
-class _SilentAlertCard extends ConsumerWidget {
-  const _SilentAlertCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    final value = ref.watch(effectiveSilentAlertProvider);
-    final plus = ref.watch(plusProvider).active;
-    final muted =
-        value == SilentAlert.ring &&
-        ref.watch(setupHealthProvider).value?.alarmVolume == 0;
-    return SurfaceCard(
-      radius: 30,
-      padding: const EdgeInsets.fromLTRB(18, 14, 12, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              EsikIconView(EsikIcon.vibrate, size: 18, color: p.text),
-              const SizedBox(width: 10),
-              Expanded(child: Text(l10n.whenSilent, style: t.bodyMedium)),
-              PlusBadge(owned: plus),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ChoicePills<SilentAlert>(
-            values: SilentAlert.values,
-            value: value,
-            label: (a) => a.label(l10n),
-            icon: (a) => a.icon,
-            onChanged: (v) => !plus && v != SilentAlert.quiet
-                ? showPlusSheet(context)
-                : ref.read(silentAlertProvider.notifier).set(v),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            switch (value) {
-              SilentAlert.quiet => l10n.silentQuietHint,
-              SilentAlert.vibrate => l10n.silentVibrateHint,
-              SilentAlert.ring when muted => l10n.silentMutedHint,
-              SilentAlert.ring => l10n.silentRingHint,
-            },
-            style: t.labelMedium?.copyWith(
-              fontWeight: muted ? FontWeight.w400 : FontWeight.w300,
-              color: muted ? p.accent : p.textMuted,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// "Sıradaki yedek: bugün 14:05", son yedeğin ve son tetikleyicinin sonucu.
 /// Bildirimin gerçekten kurulduğunu ve son seferde ne olduğunu gösterir.
 class _StatusLine extends ConsumerWidget {
@@ -1080,7 +814,7 @@ class _StatusLine extends ConsumerWidget {
     final l10n = context.l10n;
     final p = context.palette;
     final status = ref.watch(thresholdStatusProvider).value?[mode];
-    final kinds = ref.watch(effectiveTriggerConfigProvider)[mode]!.kinds;
+    final kinds = ref.watch(effectiveThresholdsProvider)[mode]!.allKinds;
     // Android kanalı yoksa (testler) satır gösterilmez.
     if (status == null) return const SizedBox.shrink();
     final now = ref.watch(clockProvider)();

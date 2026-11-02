@@ -122,13 +122,13 @@ class _ThresholdCard extends ConsumerWidget {
     final l10n = context.l10n;
     final p = context.palette;
     final t = Theme.of(context).textTheme;
-    final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
+    final config = ref.watch(shownThresholdProvider)[mode]!;
     final items = ref.watch(todayItemsProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final evening = mode == DayMode.evening;
     final done = session.checked.length.clamp(0, items.length);
     final remaining = items.length - done;
-    final offToday = !config.activeOn(ref.watch(todayProvider));
+    final offToday = ref.watch(todayThresholdProvider)[mode] == null;
 
     final String buttonLabel;
     if (session.isComplete) {
@@ -244,7 +244,7 @@ class _SummaryCard extends ConsumerWidget {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final evening = mode == DayMode.evening;
-    final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
+    final config = ref.watch(shownThresholdProvider)[mode]!;
     final items = ref.watch(todayItemsProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final history = ref.watch(historyProvider);
