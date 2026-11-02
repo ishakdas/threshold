@@ -7,6 +7,15 @@ enum EsikIcon {
   iron(
     'M3 17h15a2 2 0 0 0 2-2v-5H9.5A6.5 6.5 0 0 0 3 16.5V17zM9 10V8a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2M7 20h2M12 20h2',
   ),
+  umbrella('M3 12a9 9 0 0 1 18 0zM12 12v6.5a2 2 0 0 1-4 0M12 3v0'),
+  coat('M8 4l4 3 4-3 4 3-2 4.5h-2V20H8v-8.5H6L4 7zM12 7v13'),
+  drop('M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z'),
+  paw(
+    'M8.5 7.5a1.5 1.5 0 1 0 0 .01M15.5 7.5a1.5 1.5 0 1 0 0 .01M5.5 11.5a1.5 1.5 0 1 0 0 .01M18.5 11.5a1.5 1.5 0 1 0 0 .01M12 12.5c-3 0-5 3-4.5 5s3 1.5 4.5 1.5 4 .5 4.5-1.5-1.5-5-4.5-5z',
+  ),
+  camera('M4 8h3l1.5-2h7L17 8h3v11H4zM12 11a3 3 0 1 0 0 6 3 3 0 1 0 0-6z'),
+  cloud('M7 18a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 .5 9z'),
+  widget('M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'),
   checklist(
     'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5L7.5 11M3.5 18l1.5 1.5L7.5 17',
   ),
@@ -145,4 +154,8 @@ const checkItemIcons = <EsikIcon>[
   EsikIcon.pill,
   EsikIcon.notes,
   EsikIcon.checklist,
+  EsikIcon.umbrella,
+  EsikIcon.coat,
+  EsikIcon.drop,
+  EsikIcon.paw,
 ];

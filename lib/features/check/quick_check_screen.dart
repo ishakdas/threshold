@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
+import '../../data/photos.dart';
 import '../../data/weather.dart';
 import '../../data/models.dart';
 import '../../theme/esik_palette.dart';
@@ -43,9 +44,22 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
     super.dispose();
   }
 
-  void _toggle(CheckItem item, bool wasChecked) {
+  Future<void> _toggle(CheckItem item, bool wasChecked) async {
     final progress = ref.read(todayProgressProvider.notifier);
-    progress.toggle(_mode, item.id);
+    String? photo;
+    if (item.photo && !wasChecked) {
+      // "Kilitledim mi?" güvencesi: fotoğraf çekilmeden işaretlenmez.
+      final dir = await ref.read(photosDirProvider.future);
+      if (dir == null || !mounted) return;
+      photo = await takeCheckPhoto(
+        dir,
+        ref.read(todayProvider),
+        _mode,
+        item.id,
+      );
+      if (photo == null || !mounted) return;
+    }
+    progress.toggle(_mode, item.id, photo: photo);
     if (!wasChecked) {
       // Dolum bitince ikinci, daha belirgin titreşim.
       Future.delayed(

@@ -1287,4 +1287,250 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get shortcutOffline =>
       'Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat.';
+
+  @override
+  String get iconUmbrella => 'Şemsiye';
+
+  @override
+  String get iconCoat => 'Mont';
+
+  @override
+  String get iconDrop => 'Su';
+
+  @override
+  String get iconPaw => 'Evcil hayvan';
+
+  @override
+  String get checklistEditHint =>
+      'Günlerini, havasını ya da fotoğrafla kontrolü ayarlamak için maddeye dokun.';
+
+  @override
+  String get itemEditTitle => 'Maddeyi düzenle';
+
+  @override
+  String get itemDays => 'Hangi günler?';
+
+  @override
+  String get itemWeather => 'Hangi havada?';
+
+  @override
+  String get weatherAlways => 'Her zaman';
+
+  @override
+  String get weatherRain => 'Yağmurda';
+
+  @override
+  String get weatherCold => 'Soğukta';
+
+  @override
+  String get weatherHot => 'Sıcakta';
+
+  @override
+  String get weatherHintRain => 'Yağış olasılığı %50 ve üstüyse listede çıkar.';
+
+  @override
+  String get weatherHintCold =>
+      'En düşük sıcaklık 5°C ve altındaysa listede çıkar.';
+
+  @override
+  String get weatherHintHot =>
+      'En yüksek sıcaklık 28°C ve üstündeyse listede çıkar.';
+
+  @override
+  String get weatherHintEvening => 'Akşam listesinde yarının havasına bakılır.';
+
+  @override
+  String get weatherHintNoPlace =>
+      'Şehir seçilmedi; seçene kadar madde her gün çıkar.';
+
+  @override
+  String get itemPhoto => 'Fotoğrafla kontrol';
+
+  @override
+  String get itemPhotoHint =>
+      'İşaretlerken fotoğraf çekersin. Sonra “Kilitledim mi?” diye düşündüğünde Bugün ekranında görürsün. Fotoğraf yalnızca telefonunda kalır.';
+
+  @override
+  String get saveLabel => 'Kaydet';
+
+  @override
+  String get itemEveryDay => 'Her gün';
+
+  @override
+  String get weatherTitle => 'Hava durumu';
+
+  @override
+  String get weatherNoCity => 'Şehir seçilmedi';
+
+  @override
+  String get weatherCityHint =>
+      'Şemsiye, mont gibi maddeler havaya göre çıksın diye. Konum izni istenmez.';
+
+  @override
+  String get weatherSearch => 'Şehir ara';
+
+  @override
+  String get weatherRemove => 'Şehri kaldır';
+
+  @override
+  String get weatherNoResult => 'Sonuç yok. Arama için internet gerekir.';
+
+  @override
+  String get weatherPrivacy =>
+      'Tahmin, yalnızca seçtiğin şehrin koordinatlarıyla Open-Meteo’dan alınır; başka bilgi gönderilmez.';
+
+  @override
+  String weatherToday(int rain, int min, int max) {
+    return 'Yağış %$rain · $min–$max°C';
+  }
+
+  @override
+  String get templatesButton => 'Şablondan ekle';
+
+  @override
+  String get templatesTitle => 'Hazır şablonlar';
+
+  @override
+  String get templatesHint =>
+      'Bir şablon seç; maddeler akşam ya da sabah listene eklenir. Sonra istediğini silebilirsin.';
+
+  @override
+  String templatesAdded(int count) {
+    return '$count madde eklendi';
+  }
+
+  @override
+  String get templatesNothingNew => 'Bu maddeler zaten listende';
+
+  @override
+  String get tplHome => 'Ev güvenliği';
+
+  @override
+  String get tplLeaving => 'Evden çıkarken';
+
+  @override
+  String get tplWeather => 'Havaya göre';
+
+  @override
+  String get tplHealth => 'İlaçlar';
+
+  @override
+  String get tplPet => 'Evcil hayvan';
+
+  @override
+  String get tplSport => 'Spor';
+
+  @override
+  String get tplStove => 'Ocağı kapattım mı?';
+
+  @override
+  String get tplIron => 'Ütünün fişini çektim mi?';
+
+  @override
+  String get tplDoor => 'Kapıyı kilitledim mi?';
+
+  @override
+  String get tplWindows => 'Pencereleri kapattım mı?';
+
+  @override
+  String get tplLights => 'Işıkları söndürdüm mü?';
+
+  @override
+  String get tplKeys => 'Anahtarlarım yanımda mı?';
+
+  @override
+  String get tplWallet => 'Cüzdanım yanımda mı?';
+
+  @override
+  String get tplCharger => 'Şarj aleti çantamda mı?';
+
+  @override
+  String get tplBadge => 'İş kartım yanımda mı?';
+
+  @override
+  String get tplUmbrella => 'Şemsiyemi aldım mı?';
+
+  @override
+  String get tplCoat => 'Montumu aldım mı?';
+
+  @override
+  String get tplWater => 'Suyumu aldım mı?';
+
+  @override
+  String get tplPillMorning => 'Sabah ilacımı aldım mı?';
+
+  @override
+  String get tplPillEvening => 'Akşam ilacımı aldım mı?';
+
+  @override
+  String get tplPetFood => 'Mamasını ve suyunu koydum mu?';
+
+  @override
+  String get tplPetInside => 'Evcil hayvanım içeride mi?';
+
+  @override
+  String get tplGymBag => 'Spor çantamı aldım mı?';
+
+  @override
+  String get proofTitle => 'Kilitledim mi?';
+
+  @override
+  String get proofSubtitle => 'Bugün fotoğrafla işaretlediklerin';
+
+  @override
+  String proofAt(String time) {
+    return '$time işaretledin';
+  }
+
+  @override
+  String get proofNotYet => 'Henüz işaretlenmedi';
+
+  @override
+  String get widgetTipTitle => 'Eşik’i ana ekrana ekle';
+
+  @override
+  String get widgetTipBody =>
+      'Widget bugünkü kontrollerini ve saatini, uygulamayı açmadan gösterir.';
+
+  @override
+  String get widgetTipAction => 'Widget ekle';
+
+  @override
+  String get widgetTipManual =>
+      'Ana ekranda boş bir yere basılı tut → Widget’lar → Eşik.';
+
+  @override
+  String get widgetTitle => 'Ana ekran widget’ı';
+
+  @override
+  String get widgetNotDone => 'Yapılmadı';
+
+  @override
+  String widgetDoneAt(String time) {
+    return '$time ✓';
+  }
+
+  @override
+  String get remindTitle => 'Tekrar hatırlat';
+
+  @override
+  String remindMax(int count) {
+    return 'En fazla $count bildirim';
+  }
+
+  @override
+  String get remindOnce => 'Bir kez';
+
+  @override
+  String remindEvery(int minutes) {
+    return '$minutes dk arayla';
+  }
+
+  @override
+  String get remindHintOff => 'Bildirim bir kez gelir.';
+
+  @override
+  String remindHint(int minutes, int count) {
+    return 'Kontrolü yapmazsan bildirim $minutes dakikada bir, toplam $count kez gelir.';
+  }
 }

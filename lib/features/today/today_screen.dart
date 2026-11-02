@@ -15,6 +15,8 @@ import '../../ui/esik_icons.dart';
 import '../../ui/esik_logo.dart';
 import '../../ui/threshold_door.dart';
 import 'day_strip.dart';
+import 'proof_card.dart';
+import 'widget_tip.dart';
 import '../../l10n/texts.dart';
 import '../../data/plus.dart';
 import '../plus/plus_sheet.dart';
@@ -68,7 +70,15 @@ class TodayScreen extends ConsumerWidget {
             ],
             _ThresholdCard(mode: mode),
             const SizedBox(height: 10),
+            if (ProofCard.visible(ref)) ...[
+              const ProofCard(),
+              const SizedBox(height: 10),
+            ],
             _SummaryCard(mode: other),
+            if (!isIOS && !ref.watch(widgetTipSeenProvider)) ...[
+              const SizedBox(height: 10),
+              const WidgetTipCard(),
+            ],
           ],
         ),
       ),

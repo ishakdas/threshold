@@ -1323,4 +1323,257 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get shortcutOffline =>
       'Automatización → + → Wi‑Fi → “Cualquier red” → “Al salir” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Internet apagado”. Haz lo mismo con Modo avión → “Se activa”. El iPhone no avisa al desactivar los datos: desactívalos antes, o en los 25 segundos siguientes al Wi‑Fi.';
+
+  @override
+  String get iconUmbrella => 'Paraguas';
+
+  @override
+  String get iconCoat => 'Abrigo';
+
+  @override
+  String get iconDrop => 'Agua';
+
+  @override
+  String get iconPaw => 'Mascota';
+
+  @override
+  String get checklistEditHint =>
+      'Toca un elemento para elegir sus días, el tiempo o la comprobación con foto.';
+
+  @override
+  String get itemEditTitle => 'Editar elemento';
+
+  @override
+  String get itemDays => '¿Qué días?';
+
+  @override
+  String get itemWeather => '¿Con qué tiempo?';
+
+  @override
+  String get weatherAlways => 'Siempre';
+
+  @override
+  String get weatherRain => 'Lluvia';
+
+  @override
+  String get weatherCold => 'Frío';
+
+  @override
+  String get weatherHot => 'Calor';
+
+  @override
+  String get weatherHintRain =>
+      'Aparece si la probabilidad de lluvia es del 50 % o más.';
+
+  @override
+  String get weatherHintCold => 'Aparece si la mínima es de 5 °C o menos.';
+
+  @override
+  String get weatherHintHot => 'Aparece si la máxima es de 28 °C o más.';
+
+  @override
+  String get weatherHintEvening =>
+      'La lista de la noche mira el tiempo de mañana.';
+
+  @override
+  String get weatherHintNoPlace =>
+      'No has elegido ciudad; hasta entonces, el elemento aparece cada día.';
+
+  @override
+  String get itemPhoto => 'Comprobar con foto';
+
+  @override
+  String get itemPhotoHint =>
+      'Haces una foto al marcarlo. Luego, cuando dudes “¿Cerré con llave?”, la verás en la pantalla Hoy. La foto se queda en tu móvil.';
+
+  @override
+  String get saveLabel => 'Guardar';
+
+  @override
+  String get itemEveryDay => 'Cada día';
+
+  @override
+  String get weatherTitle => 'Tiempo';
+
+  @override
+  String get weatherNoCity => 'Sin ciudad';
+
+  @override
+  String get weatherCityHint =>
+      'Para que elementos como el paraguas o el abrigo sigan el tiempo. Sin permiso de ubicación.';
+
+  @override
+  String get weatherSearch => 'Buscar ciudad';
+
+  @override
+  String get weatherRemove => 'Quitar ciudad';
+
+  @override
+  String get weatherNoResult =>
+      'Sin resultados. La búsqueda necesita internet.';
+
+  @override
+  String get weatherPrivacy =>
+      'El pronóstico llega de Open-Meteo solo con las coordenadas de tu ciudad; no se envía nada más.';
+
+  @override
+  String weatherToday(int rain, int min, int max) {
+    return 'Lluvia $rain % · $min–$max °C';
+  }
+
+  @override
+  String get templatesButton => 'Añadir desde plantilla';
+
+  @override
+  String get templatesTitle => 'Plantillas';
+
+  @override
+  String get templatesHint =>
+      'Elige una plantilla; sus elementos se añaden a tu lista de la noche o la mañana. Luego puedes borrar los que quieras.';
+
+  @override
+  String templatesAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementos añadidos',
+      one: '1 elemento añadido',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get templatesNothingNew => 'Estos elementos ya están en tu lista';
+
+  @override
+  String get tplHome => 'Seguridad en casa';
+
+  @override
+  String get tplLeaving => 'Al salir de casa';
+
+  @override
+  String get tplWeather => 'Según el tiempo';
+
+  @override
+  String get tplHealth => 'Medicinas';
+
+  @override
+  String get tplPet => 'Mascotas';
+
+  @override
+  String get tplSport => 'Deporte';
+
+  @override
+  String get tplStove => '¿Apagué el fuego?';
+
+  @override
+  String get tplIron => '¿Desenchufé la plancha?';
+
+  @override
+  String get tplDoor => '¿Cerré la puerta con llave?';
+
+  @override
+  String get tplWindows => '¿Cerré las ventanas?';
+
+  @override
+  String get tplLights => '¿Apagué las luces?';
+
+  @override
+  String get tplKeys => '¿Llevo las llaves?';
+
+  @override
+  String get tplWallet => '¿Llevo la cartera?';
+
+  @override
+  String get tplCharger => '¿Llevo el cargador?';
+
+  @override
+  String get tplBadge => '¿Llevo la tarjeta del trabajo?';
+
+  @override
+  String get tplUmbrella => '¿Cogí el paraguas?';
+
+  @override
+  String get tplCoat => '¿Cogí el abrigo?';
+
+  @override
+  String get tplWater => '¿Cogí agua?';
+
+  @override
+  String get tplPillMorning => '¿Tomé la medicina de la mañana?';
+
+  @override
+  String get tplPillEvening => '¿Tomé la medicina de la noche?';
+
+  @override
+  String get tplPetFood => '¿Le dejé comida y agua?';
+
+  @override
+  String get tplPetInside => '¿Está mi mascota dentro?';
+
+  @override
+  String get tplGymBag => '¿Cogí la bolsa de deporte?';
+
+  @override
+  String get proofTitle => '¿Cerré con llave?';
+
+  @override
+  String get proofSubtitle => 'Lo que marcaste hoy con foto';
+
+  @override
+  String proofAt(String time) {
+    return 'Marcado a las $time';
+  }
+
+  @override
+  String get proofNotYet => 'Aún sin marcar';
+
+  @override
+  String get widgetTipTitle => 'Añade Eşik a tu pantalla de inicio';
+
+  @override
+  String get widgetTipBody =>
+      'El widget muestra los controles de hoy y su hora sin abrir la app.';
+
+  @override
+  String get widgetTipAction => 'Añadir widget';
+
+  @override
+  String get widgetTipManual =>
+      'Mantén pulsado un espacio vacío de la pantalla de inicio → Widgets → Eşik.';
+
+  @override
+  String get widgetTitle => 'Widget de inicio';
+
+  @override
+  String get widgetNotDone => 'Pendiente';
+
+  @override
+  String widgetDoneAt(String time) {
+    return '$time ✓';
+  }
+
+  @override
+  String get remindTitle => 'Volver a avisar';
+
+  @override
+  String remindMax(int count) {
+    return 'Como máximo $count avisos';
+  }
+
+  @override
+  String get remindOnce => 'Una vez';
+
+  @override
+  String remindEvery(int minutes) {
+    return 'Cada $minutes min';
+  }
+
+  @override
+  String get remindHintOff => 'Te avisa una vez.';
+
+  @override
+  String remindHint(int minutes, int count) {
+    return 'Si no compruebas, te avisa cada $minutes minutos, $count veces en total.';
+  }
 }

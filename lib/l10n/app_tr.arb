@@ -817,5 +817,137 @@
   "stepTestOffline": "Önce deneme bildirimi. Gerçeği, akşam aralığında Wi‑Fi’ı ve mobil veriyi kapattığında birkaç saniye içinde gelir.",
   "waitOffline": "Wi‑Fi’ın ve mobil verinin kapanması bekleniyor",
   "waitAlreadyOffline": "internet zaten kapalı; önce birini aç",
-  "shortcutOffline": "Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat."
+  "shortcutOffline": "Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat.",
+  "iconUmbrella": "Şemsiye",
+  "iconCoat": "Mont",
+  "iconDrop": "Su",
+  "iconPaw": "Evcil hayvan",
+  "checklistEditHint": "Günlerini, havasını ya da fotoğrafla kontrolü ayarlamak için maddeye dokun.",
+  "itemEditTitle": "Maddeyi düzenle",
+  "itemDays": "Hangi günler?",
+  "itemWeather": "Hangi havada?",
+  "weatherAlways": "Her zaman",
+  "weatherRain": "Yağmurda",
+  "weatherCold": "Soğukta",
+  "weatherHot": "Sıcakta",
+  "weatherHintRain": "Yağış olasılığı %50 ve üstüyse listede çıkar.",
+  "weatherHintCold": "En düşük sıcaklık 5°C ve altındaysa listede çıkar.",
+  "weatherHintHot": "En yüksek sıcaklık 28°C ve üstündeyse listede çıkar.",
+  "weatherHintEvening": "Akşam listesinde yarının havasına bakılır.",
+  "weatherHintNoPlace": "Şehir seçilmedi; seçene kadar madde her gün çıkar.",
+  "itemPhoto": "Fotoğrafla kontrol",
+  "itemPhotoHint": "İşaretlerken fotoğraf çekersin. Sonra “Kilitledim mi?” diye düşündüğünde Bugün ekranında görürsün. Fotoğraf yalnızca telefonunda kalır.",
+  "saveLabel": "Kaydet",
+  "itemEveryDay": "Her gün",
+  "weatherTitle": "Hava durumu",
+  "weatherNoCity": "Şehir seçilmedi",
+  "weatherCityHint": "Şemsiye, mont gibi maddeler havaya göre çıksın diye. Konum izni istenmez.",
+  "weatherSearch": "Şehir ara",
+  "weatherRemove": "Şehri kaldır",
+  "weatherNoResult": "Sonuç yok. Arama için internet gerekir.",
+  "weatherPrivacy": "Tahmin, yalnızca seçtiğin şehrin koordinatlarıyla Open-Meteo’dan alınır; başka bilgi gönderilmez.",
+  "weatherToday": "Yağış %{rain} · {min}–{max}°C",
+  "@weatherToday": {
+    "placeholders": {
+      "rain": {
+        "type": "int"
+      },
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "templatesButton": "Şablondan ekle",
+  "templatesTitle": "Hazır şablonlar",
+  "templatesHint": "Bir şablon seç; maddeler akşam ya da sabah listene eklenir. Sonra istediğini silebilirsin.",
+  "templatesAdded": "{count} madde eklendi",
+  "@templatesAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "templatesNothingNew": "Bu maddeler zaten listende",
+  "tplHome": "Ev güvenliği",
+  "tplLeaving": "Evden çıkarken",
+  "tplWeather": "Havaya göre",
+  "tplHealth": "İlaçlar",
+  "tplPet": "Evcil hayvan",
+  "tplSport": "Spor",
+  "tplStove": "Ocağı kapattım mı?",
+  "tplIron": "Ütünün fişini çektim mi?",
+  "tplDoor": "Kapıyı kilitledim mi?",
+  "tplWindows": "Pencereleri kapattım mı?",
+  "tplLights": "Işıkları söndürdüm mü?",
+  "tplKeys": "Anahtarlarım yanımda mı?",
+  "tplWallet": "Cüzdanım yanımda mı?",
+  "tplCharger": "Şarj aleti çantamda mı?",
+  "tplBadge": "İş kartım yanımda mı?",
+  "tplUmbrella": "Şemsiyemi aldım mı?",
+  "tplCoat": "Montumu aldım mı?",
+  "tplWater": "Suyumu aldım mı?",
+  "tplPillMorning": "Sabah ilacımı aldım mı?",
+  "tplPillEvening": "Akşam ilacımı aldım mı?",
+  "tplPetFood": "Mamasını ve suyunu koydum mu?",
+  "tplPetInside": "Evcil hayvanım içeride mi?",
+  "tplGymBag": "Spor çantamı aldım mı?",
+  "proofTitle": "Kilitledim mi?",
+  "proofSubtitle": "Bugün fotoğrafla işaretlediklerin",
+  "proofAt": "{time} işaretledin",
+  "@proofAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "proofNotYet": "Henüz işaretlenmedi",
+  "widgetTipTitle": "Eşik’i ana ekrana ekle",
+  "widgetTipBody": "Widget bugünkü kontrollerini ve saatini, uygulamayı açmadan gösterir.",
+  "widgetTipAction": "Widget ekle",
+  "widgetTipManual": "Ana ekranda boş bir yere basılı tut → Widget’lar → Eşik.",
+  "widgetTitle": "Ana ekran widget’ı",
+  "widgetNotDone": "Yapılmadı",
+  "widgetDoneAt": "{time} ✓",
+  "@widgetDoneAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "remindTitle": "Tekrar hatırlat",
+  "remindMax": "En fazla {count} bildirim",
+  "@remindMax": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "remindOnce": "Bir kez",
+  "remindEvery": "{minutes} dk arayla",
+  "@remindEvery": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "remindHintOff": "Bildirim bir kez gelir.",
+  "remindHint": "Kontrolü yapmazsan bildirim {minutes} dakikada bir, toplam {count} kez gelir.",
+  "@remindHint": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

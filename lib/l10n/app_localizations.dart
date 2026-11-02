@@ -2319,6 +2319,450 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat.'**
   String get shortcutOffline;
+
+  /// No description provided for @iconUmbrella.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şemsiye'**
+  String get iconUmbrella;
+
+  /// No description provided for @iconCoat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mont'**
+  String get iconCoat;
+
+  /// No description provided for @iconDrop.
+  ///
+  /// In tr, this message translates to:
+  /// **'Su'**
+  String get iconDrop;
+
+  /// No description provided for @iconPaw.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvan'**
+  String get iconPaw;
+
+  /// No description provided for @checklistEditHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Günlerini, havasını ya da fotoğrafla kontrolü ayarlamak için maddeye dokun.'**
+  String get checklistEditHint;
+
+  /// No description provided for @itemEditTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Maddeyi düzenle'**
+  String get itemEditTitle;
+
+  /// No description provided for @itemDays.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi günler?'**
+  String get itemDays;
+
+  /// No description provided for @itemWeather.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hangi havada?'**
+  String get itemWeather;
+
+  /// No description provided for @weatherAlways.
+  ///
+  /// In tr, this message translates to:
+  /// **'Her zaman'**
+  String get weatherAlways;
+
+  /// No description provided for @weatherRain.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yağmurda'**
+  String get weatherRain;
+
+  /// No description provided for @weatherCold.
+  ///
+  /// In tr, this message translates to:
+  /// **'Soğukta'**
+  String get weatherCold;
+
+  /// No description provided for @weatherHot.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sıcakta'**
+  String get weatherHot;
+
+  /// No description provided for @weatherHintRain.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yağış olasılığı %50 ve üstüyse listede çıkar.'**
+  String get weatherHintRain;
+
+  /// No description provided for @weatherHintCold.
+  ///
+  /// In tr, this message translates to:
+  /// **'En düşük sıcaklık 5°C ve altındaysa listede çıkar.'**
+  String get weatherHintCold;
+
+  /// No description provided for @weatherHintHot.
+  ///
+  /// In tr, this message translates to:
+  /// **'En yüksek sıcaklık 28°C ve üstündeyse listede çıkar.'**
+  String get weatherHintHot;
+
+  /// No description provided for @weatherHintEvening.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam listesinde yarının havasına bakılır.'**
+  String get weatherHintEvening;
+
+  /// No description provided for @weatherHintNoPlace.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şehir seçilmedi; seçene kadar madde her gün çıkar.'**
+  String get weatherHintNoPlace;
+
+  /// No description provided for @itemPhoto.
+  ///
+  /// In tr, this message translates to:
+  /// **'Fotoğrafla kontrol'**
+  String get itemPhoto;
+
+  /// No description provided for @itemPhotoHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'İşaretlerken fotoğraf çekersin. Sonra “Kilitledim mi?” diye düşündüğünde Bugün ekranında görürsün. Fotoğraf yalnızca telefonunda kalır.'**
+  String get itemPhotoHint;
+
+  /// No description provided for @saveLabel.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kaydet'**
+  String get saveLabel;
+
+  /// No description provided for @itemEveryDay.
+  ///
+  /// In tr, this message translates to:
+  /// **'Her gün'**
+  String get itemEveryDay;
+
+  /// No description provided for @weatherTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hava durumu'**
+  String get weatherTitle;
+
+  /// No description provided for @weatherNoCity.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şehir seçilmedi'**
+  String get weatherNoCity;
+
+  /// No description provided for @weatherCityHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şemsiye, mont gibi maddeler havaya göre çıksın diye. Konum izni istenmez.'**
+  String get weatherCityHint;
+
+  /// No description provided for @weatherSearch.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şehir ara'**
+  String get weatherSearch;
+
+  /// No description provided for @weatherRemove.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şehri kaldır'**
+  String get weatherRemove;
+
+  /// No description provided for @weatherNoResult.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sonuç yok. Arama için internet gerekir.'**
+  String get weatherNoResult;
+
+  /// No description provided for @weatherPrivacy.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tahmin, yalnızca seçtiğin şehrin koordinatlarıyla Open-Meteo’dan alınır; başka bilgi gönderilmez.'**
+  String get weatherPrivacy;
+
+  /// No description provided for @weatherToday.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yağış %{rain} · {min}–{max}°C'**
+  String weatherToday(int rain, int min, int max);
+
+  /// No description provided for @templatesButton.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şablondan ekle'**
+  String get templatesButton;
+
+  /// No description provided for @templatesTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hazır şablonlar'**
+  String get templatesTitle;
+
+  /// No description provided for @templatesHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir şablon seç; maddeler akşam ya da sabah listene eklenir. Sonra istediğini silebilirsin.'**
+  String get templatesHint;
+
+  /// No description provided for @templatesAdded.
+  ///
+  /// In tr, this message translates to:
+  /// **'{count} madde eklendi'**
+  String templatesAdded(int count);
+
+  /// No description provided for @templatesNothingNew.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bu maddeler zaten listende'**
+  String get templatesNothingNew;
+
+  /// No description provided for @tplHome.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ev güvenliği'**
+  String get tplHome;
+
+  /// No description provided for @tplLeaving.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evden çıkarken'**
+  String get tplLeaving;
+
+  /// No description provided for @tplWeather.
+  ///
+  /// In tr, this message translates to:
+  /// **'Havaya göre'**
+  String get tplWeather;
+
+  /// No description provided for @tplHealth.
+  ///
+  /// In tr, this message translates to:
+  /// **'İlaçlar'**
+  String get tplHealth;
+
+  /// No description provided for @tplPet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvan'**
+  String get tplPet;
+
+  /// No description provided for @tplSport.
+  ///
+  /// In tr, this message translates to:
+  /// **'Spor'**
+  String get tplSport;
+
+  /// No description provided for @tplStove.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ocağı kapattım mı?'**
+  String get tplStove;
+
+  /// No description provided for @tplIron.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ütünün fişini çektim mi?'**
+  String get tplIron;
+
+  /// No description provided for @tplDoor.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kapıyı kilitledim mi?'**
+  String get tplDoor;
+
+  /// No description provided for @tplWindows.
+  ///
+  /// In tr, this message translates to:
+  /// **'Pencereleri kapattım mı?'**
+  String get tplWindows;
+
+  /// No description provided for @tplLights.
+  ///
+  /// In tr, this message translates to:
+  /// **'Işıkları söndürdüm mü?'**
+  String get tplLights;
+
+  /// No description provided for @tplKeys.
+  ///
+  /// In tr, this message translates to:
+  /// **'Anahtarlarım yanımda mı?'**
+  String get tplKeys;
+
+  /// No description provided for @tplWallet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Cüzdanım yanımda mı?'**
+  String get tplWallet;
+
+  /// No description provided for @tplCharger.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şarj aleti çantamda mı?'**
+  String get tplCharger;
+
+  /// No description provided for @tplBadge.
+  ///
+  /// In tr, this message translates to:
+  /// **'İş kartım yanımda mı?'**
+  String get tplBadge;
+
+  /// No description provided for @tplUmbrella.
+  ///
+  /// In tr, this message translates to:
+  /// **'Şemsiyemi aldım mı?'**
+  String get tplUmbrella;
+
+  /// No description provided for @tplCoat.
+  ///
+  /// In tr, this message translates to:
+  /// **'Montumu aldım mı?'**
+  String get tplCoat;
+
+  /// No description provided for @tplWater.
+  ///
+  /// In tr, this message translates to:
+  /// **'Suyumu aldım mı?'**
+  String get tplWater;
+
+  /// No description provided for @tplPillMorning.
+  ///
+  /// In tr, this message translates to:
+  /// **'Sabah ilacımı aldım mı?'**
+  String get tplPillMorning;
+
+  /// No description provided for @tplPillEvening.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam ilacımı aldım mı?'**
+  String get tplPillEvening;
+
+  /// No description provided for @tplPetFood.
+  ///
+  /// In tr, this message translates to:
+  /// **'Mamasını ve suyunu koydum mu?'**
+  String get tplPetFood;
+
+  /// No description provided for @tplPetInside.
+  ///
+  /// In tr, this message translates to:
+  /// **'Evcil hayvanım içeride mi?'**
+  String get tplPetInside;
+
+  /// No description provided for @tplGymBag.
+  ///
+  /// In tr, this message translates to:
+  /// **'Spor çantamı aldım mı?'**
+  String get tplGymBag;
+
+  /// No description provided for @proofTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kilitledim mi?'**
+  String get proofTitle;
+
+  /// No description provided for @proofSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bugün fotoğrafla işaretlediklerin'**
+  String get proofSubtitle;
+
+  /// No description provided for @proofAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'{time} işaretledin'**
+  String proofAt(String time);
+
+  /// No description provided for @proofNotYet.
+  ///
+  /// In tr, this message translates to:
+  /// **'Henüz işaretlenmedi'**
+  String get proofNotYet;
+
+  /// No description provided for @widgetTipTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Eşik’i ana ekrana ekle'**
+  String get widgetTipTitle;
+
+  /// No description provided for @widgetTipBody.
+  ///
+  /// In tr, this message translates to:
+  /// **'Widget bugünkü kontrollerini ve saatini, uygulamayı açmadan gösterir.'**
+  String get widgetTipBody;
+
+  /// No description provided for @widgetTipAction.
+  ///
+  /// In tr, this message translates to:
+  /// **'Widget ekle'**
+  String get widgetTipAction;
+
+  /// No description provided for @widgetTipManual.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ana ekranda boş bir yere basılı tut → Widget’lar → Eşik.'**
+  String get widgetTipManual;
+
+  /// No description provided for @widgetTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Ana ekran widget’ı'**
+  String get widgetTitle;
+
+  /// No description provided for @widgetNotDone.
+  ///
+  /// In tr, this message translates to:
+  /// **'Yapılmadı'**
+  String get widgetNotDone;
+
+  /// No description provided for @widgetDoneAt.
+  ///
+  /// In tr, this message translates to:
+  /// **'{time} ✓'**
+  String widgetDoneAt(String time);
+
+  /// No description provided for @remindTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Tekrar hatırlat'**
+  String get remindTitle;
+
+  /// No description provided for @remindMax.
+  ///
+  /// In tr, this message translates to:
+  /// **'En fazla {count} bildirim'**
+  String remindMax(int count);
+
+  /// No description provided for @remindOnce.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bir kez'**
+  String get remindOnce;
+
+  /// No description provided for @remindEvery.
+  ///
+  /// In tr, this message translates to:
+  /// **'{minutes} dk arayla'**
+  String remindEvery(int minutes);
+
+  /// No description provided for @remindHintOff.
+  ///
+  /// In tr, this message translates to:
+  /// **'Bildirim bir kez gelir.'**
+  String get remindHintOff;
+
+  /// No description provided for @remindHint.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kontrolü yapmazsan bildirim {minutes} dakikada bir, toplam {count} kez gelir.'**
+  String remindHint(int minutes, int count);
 }
 
 class _AppLocalizationsDelegate

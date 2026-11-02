@@ -665,3 +665,57 @@ class PlusBadge extends StatelessWidget {
     );
   }
 }
+
+/// Haftanın günleri (1 = Pazartesi … 7 = Pazar): eşiğin ya da maddenin
+/// hangi günler çalışacağı.
+class WeekdayPicker extends StatelessWidget {
+  const WeekdayPicker({super.key, required this.days, required this.onToggle});
+  final Set<int> days;
+  final ValueChanged<int> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (var d = 1; d <= 7; d++)
+          Semantics(
+            button: true,
+            toggled: days.contains(d),
+            label: l10n.weekdayName(d),
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: () => onToggle(d),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: days.contains(d)
+                      ? p.primaryButton
+                      : p.chip.withValues(alpha: 0.4),
+                  border: Border.all(
+                    color: days.contains(d) ? p.primaryButton : p.chipBorder,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  l10n.weekdayLetterList[d - 1],
+                  style: t.labelLarge?.copyWith(
+                    color: days.contains(d) ? p.onPrimaryButton : p.textMuted,
+                    fontWeight: days.contains(d)
+                        ? FontWeight.w500
+                        : FontWeight.w400,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}

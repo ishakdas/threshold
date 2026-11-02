@@ -10,6 +10,8 @@ import '../../ui/atmosphere.dart';
 import '../../ui/components.dart';
 import '../../ui/esik_icons.dart';
 import '../../l10n/texts.dart';
+import 'item_sheet.dart';
+import 'templates_sheet.dart';
 
 class ChecklistScreen extends ConsumerStatefulWidget {
   const ChecklistScreen({super.key});
@@ -168,7 +170,10 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                           ],
                         ),
                       ),
-                      child: _ItemRow(item: item, index: i),
+                      child: GestureDetector(
+                        onTap: () => showItemSheet(context, _mode, item),
+                        child: _ItemRow(item: item, index: i),
+                      ),
                     ),
                   );
                 },
@@ -177,14 +182,27 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(6, 2, 6, 0),
                   child: Text(
-                    l10n.checklistHint,
+                    '${l10n.checklistHint} ${l10n.checklistEditHint}',
                     style: t.labelMedium?.copyWith(
                       fontWeight: FontWeight.w300,
                       color: p.textFaint,
                     ),
                   ),
                 ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => showTemplatesSheet(context),
+                  icon: EsikIconView(
+                    EsikIcon.sparkle,
+                    size: 18,
+                    color: p.accent,
+                  ),
+                  label: Text(l10n.templatesButton),
+                ),
+              ),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: DotLabel(l10n.newItem),
@@ -247,11 +265,52 @@ class _ItemRow extends StatelessWidget {
           IconCircle(icon: item.icon, size: 46),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              item.title,
-              style: Theme.of(context).textTheme.bodyLarge,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (item.days.length < 7 ||
+                    item.weather != WeatherNeed.always ||
+                    item.photo)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Row(
+                      children: [
+                        if (item.photo) ...[
+                          EsikIconView(
+                            EsikIcon.camera,
+                            size: 13,
+                            color: p.textMuted,
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        Flexible(
+                          child: Text(
+                            [
+                              if (item.days.length < 7)
+                                l10n.weekdayLetterList.indexed
+                                    .where((e) => item.days.contains(e.$1 + 1))
+                                    .map((e) => e.$2)
+                                    .join(' '),
+                              if (item.weather != WeatherNeed.always)
+                                item.weather.label(l10n),
+                            ].join(' · '),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(fontSize: 12, color: p.textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
           ),
           ReorderableDragStartListener(

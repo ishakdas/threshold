@@ -131,6 +131,22 @@ extension SilentAlertText on SilentAlert {
   };
 }
 
+extension WeatherNeedText on WeatherNeed {
+  String label(AppLocalizations l) => switch (this) {
+    WeatherNeed.always => l.weatherAlways,
+    WeatherNeed.rain => l.weatherRain,
+    WeatherNeed.cold => l.weatherCold,
+    WeatherNeed.hot => l.weatherHot,
+  };
+
+  String hint(AppLocalizations l) => switch (this) {
+    WeatherNeed.always => '',
+    WeatherNeed.rain => l.weatherHintRain,
+    WeatherNeed.cold => l.weatherHintCold,
+    WeatherNeed.hot => l.weatherHintHot,
+  };
+}
+
 extension EsikIconText on EsikIcon {
   /// Madde ikonunun kısa adı ("Ütü"); listede olmayan ikonlarda null.
   String? label(AppLocalizations l) => switch (this) {
@@ -145,6 +161,10 @@ extension EsikIconText on EsikIcon {
     EsikIcon.pill => l.iconPill,
     EsikIcon.notes => l.iconNotes,
     EsikIcon.checklist => l.iconChecklist,
+    EsikIcon.umbrella => l.iconUmbrella,
+    EsikIcon.coat => l.iconCoat,
+    EsikIcon.drop => l.iconDrop,
+    EsikIcon.paw => l.iconPaw,
     _ => null,
   };
 }

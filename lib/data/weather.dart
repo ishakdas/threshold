@@ -68,8 +68,7 @@ class WeatherState {
       place: WeatherPlace.fromJson(json['place']),
       days: {
         if (json['days'] case final Map m)
-          for (final e in m.entries)
-            '${e.key}': ?WeatherDay.fromJson(e.value),
+          for (final e in m.entries) '${e.key}': ?WeatherDay.fromJson(e.value),
       },
       fetchedAt: DateTime.tryParse(json['fetchedAt'] as String? ?? ''),
     );

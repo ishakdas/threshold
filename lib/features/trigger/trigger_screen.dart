@@ -17,6 +17,10 @@ import 'arc_range_picker.dart';
 import '../../l10n/texts.dart';
 import '../../data/plus.dart';
 import '../plus/plus_sheet.dart';
+import '../../data/reminders.dart';
+import '../../data/weather.dart';
+import '../weather/city_sheet.dart';
+import '../today/widget_tip.dart';
 
 /// Eşik ayarı: hangi davranış, hangi saatlerde, yedek saat.
 /// Her değişiklik anında kaydedilir; yedek alarm da hemen yeniden kurulur.
@@ -267,7 +271,7 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              _DayPicker(
+              WeekdayPicker(
                 days: shown.days,
                 onToggle: (d) {
                   if (!plus) {
@@ -332,6 +336,11 @@ class _TriggerScreenState extends ConsumerState<TriggerScreen> {
                 const _SilentAlertCard(),
                 const SizedBox(height: 10),
               ],
+              const _ReminderCard(),
+              const SizedBox(height: 10),
+              const _WeatherCard(),
+              const SizedBox(height: 10),
+              if (!isIOS) ...[const _WidgetCard(), const SizedBox(height: 10)],
               const _LanguageCard(),
               const SizedBox(height: 10),
               const _ContactCard(),
@@ -502,59 +511,6 @@ class _TriggerTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Haftanın günleri: eşiğin hangi günler çalışacağı. En az bir gün seçili kalır.
-class _DayPicker extends StatelessWidget {
-  const _DayPicker({required this.days, required this.onToggle});
-  final Set<int> days;
-  final ValueChanged<int> onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final p = context.palette;
-    final t = Theme.of(context).textTheme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        for (var d = 1; d <= 7; d++)
-          Semantics(
-            button: true,
-            toggled: days.contains(d),
-            label: l10n.weekdayName(d),
-            excludeSemantics: true,
-            child: GestureDetector(
-              onTap: () => onToggle(d),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: days.contains(d)
-                      ? p.primaryButton
-                      : p.chip.withValues(alpha: 0.4),
-                  border: Border.all(
-                    color: days.contains(d) ? p.primaryButton : p.chipBorder,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  l10n.weekdayLetterList[d - 1],
-                  style: t.labelLarge?.copyWith(
-                    color: days.contains(d) ? p.onPrimaryButton : p.textMuted,
-                    fontWeight: days.contains(d)
-                        ? FontWeight.w500
-                        : FontWeight.w400,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }
@@ -808,6 +764,153 @@ class _ContactCard extends ConsumerWidget {
             ),
           ),
           EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
+        ],
+      ),
+    );
+  }
+}
+
+/// Israrcı hatırlatma: kaç bildirim, kaç dakika arayla. İki mod için ortak.
+class _ReminderCard extends ConsumerWidget {
+  const _ReminderCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final r = ref.watch(reminderProvider);
+    final notifier = ref.read(reminderProvider.notifier);
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              EsikIconView(EsikIcon.bellRing, size: 18, color: p.text),
+              const SizedBox(width: 10),
+              Expanded(child: Text(l10n.remindTitle, style: t.bodyMedium)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ChoicePills<int>(
+            values: const [1, 2, 3, 4, 5],
+            value: r.max,
+            label: (n) => n == 1 ? l10n.remindOnce : '$n',
+            onChanged: (n) =>
+                notifier.set(ReminderSettings(max: n, minutes: r.minutes)),
+          ),
+          if (r.max > 1) ...[
+            const SizedBox(height: 10),
+            ChoicePills<int>(
+              values: ReminderSettings.minuteChoices,
+              value: r.minutes,
+              label: (m) => l10n.remindEvery(m),
+              expand: false,
+              onChanged: (m) =>
+                  notifier.set(ReminderSettings(max: r.max, minutes: m)),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Text(
+            r.max == 1 ? l10n.remindHintOff : l10n.remindHint(r.minutes, r.max),
+            style: t.labelMedium?.copyWith(
+              fontWeight: FontWeight.w300,
+              color: p.textMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hava durumuna göre çıkan maddeler için şehir.
+class _WeatherCard extends ConsumerWidget {
+  const _WeatherCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    final weather = ref.watch(weatherProvider);
+    final today = weather.on(ref.watch(todayProvider));
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+      onTap: () => showCitySheet(context),
+      child: Row(
+        children: [
+          EsikIconView(EsikIcon.cloud, size: 18, color: p.text),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.weatherTitle, style: t.bodyMedium),
+                const SizedBox(height: 2),
+                Text(
+                  [
+                    weather.place?.name ?? l10n.weatherNoCity,
+                    if (today != null)
+                      l10n.weatherToday(
+                        today.rainChance,
+                        today.minTemp.round(),
+                        today.maxTemp.round(),
+                      ),
+                  ].join(' · '),
+                  style: t.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: p.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          EsikIconView(EsikIcon.chevronRight, size: 16, color: p.text),
+        ],
+      ),
+    );
+  }
+}
+
+/// Android: ana ekrana Eşik widget'ını ekler.
+class _WidgetCard extends ConsumerWidget {
+  const _WidgetCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final p = context.palette;
+    final t = Theme.of(context).textTheme;
+    return SurfaceCard(
+      radius: 30,
+      padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+      onTap: () => addEsikWidget(context, ref),
+      child: Row(
+        children: [
+          EsikIconView(EsikIcon.widget, size: 18, color: p.text),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.widgetTitle, style: t.bodyMedium),
+                const SizedBox(height: 2),
+                Text(
+                  l10n.widgetTipBody,
+                  style: t.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w300,
+                    color: p.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          EsikIconView(EsikIcon.plus, size: 18, color: p.accent),
         ],
       ),
     );

@@ -6,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/day_mode.dart';
 import 'data/app_state.dart';
 import 'data/models.dart' show isIOS;
+import 'data/photos.dart';
 import 'data/plus.dart';
+import 'data/reminders.dart';
 import 'data/weather.dart';
 import 'l10n/app_localizations.dart';
 import 'platform/billing.dart';
@@ -48,6 +50,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
       unawaited(ref.read(plusBillingProvider.notifier).start());
       unawaited(_syncTrial());
       unawaited(ref.read(weatherProvider.notifier).refresh());
+      unawaited(_cleanPhotos());
       final route = await _bridge.takeLaunchRoute();
       if (route != null) _openRoute(route);
     });
@@ -62,8 +65,14 @@ class _EsikAppState extends ConsumerState<EsikApp> {
 
   Future<void> _reschedule() async {
     await ref.read(triggerConfigProvider.notifier).saved;
+    await ref.read(reminderProvider.notifier).saved;
     await _bridge.reschedule();
     if (mounted) ref.invalidate(thresholdStatusProvider);
+  }
+
+  Future<void> _cleanPhotos() async {
+    final dir = await ref.read(photosDirProvider.future);
+    if (dir != null) await cleanOldPhotos(dir, ref.read(todayProvider));
   }
 
   /// Android deneme başlangıcını diske yazdıysa yeniden oku.
@@ -95,6 +104,10 @@ class _EsikAppState extends ConsumerState<EsikApp> {
     ref.listen(triggerConfigProvider, (_, _) => _reschedule());
     // Plus açılınca ya da kapanınca Android tetikleyicileri buna göre kurulur.
     ref.listen(plusProvider.select((p) => p.active), (_, _) => _reschedule());
+    ref.listen(reminderProvider, (_, _) => _reschedule());
+    // Widget ve bildirimler maddeleri, günleri ve havayı diskten okur.
+    ref.listen(checkLogProvider, (_, _) => unawaited(_bridge.updateWidget()));
+    ref.listen(weatherProvider, (_, _) => unawaited(_bridge.updateWidget()));
     // iOS'ta yedek saat bildirimleri önceden kurulur; kontrol yapılınca,
     // liste ya da dil değişince yeniden kurulmalı.
     if (isIOS) {

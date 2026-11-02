@@ -64,6 +64,15 @@ class NativeBridge {
 
   Future<void> openNfcSettings() => _call<void>('openNfcSettings');
 
+  /// "Kilitledim mi?" fotoğraflarının klasörü (uygulamanın özel alanı).
+  Future<String?> photosDir() => _call<String>('photosDir');
+
+  /// Android: ana ekrana Eşik widget'ını ekleme penceresi. Açılabildiyse true.
+  Future<bool> pinWidget() async => await _call<bool>('pinWidget') ?? false;
+
+  /// Widget'ı diskteki son duruma göre yeniler.
+  Future<void> updateWidget() => _call<void>('updateWidget');
+
   /// iOS: Kestirmeler uygulaması (otomasyon kurmak için).
   Future<void> openShortcuts() => _call<void>('openShortcuts');
 
