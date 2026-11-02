@@ -1290,4 +1290,37 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get plusFeatureTriggersIOS =>
       'Descanso, desenchufar, Wi‑Fi y etiqueta NFC';
+
+  @override
+  String get triggerOfflineTitle => 'Al quitar internet';
+
+  @override
+  String get triggerOfflineSubtitle => 'Wi‑Fi y datos móviles';
+
+  @override
+  String get triggerOfflineWhen =>
+      'Cuando desactivas el Wi‑Fi y los datos móviles';
+
+  @override
+  String get hintOffline =>
+      'Llega cuando el Wi‑Fi y los datos móviles están desactivados; el modo avión también cuenta. Perder la señal no.';
+
+  @override
+  String get stepOfflineDetail =>
+      'En el intervalo de la noche, Eşik nota cuando desactivas el Wi‑Fi y los datos móviles (o activas el modo avión). Si apagas primero el Wi‑Fi, espera 30 segundos a los datos.';
+
+  @override
+  String get stepTestOffline =>
+      'Primero un aviso de prueba. El real llega segundos después de desactivar el Wi‑Fi y los datos en el intervalo de la noche.';
+
+  @override
+  String get waitOffline =>
+      'esperando a que se desactiven el Wi‑Fi y los datos';
+
+  @override
+  String get waitAlreadyOffline => 'ya sin conexión; activa uno primero';
+
+  @override
+  String get shortcutOffline =>
+      'Automatización → + → Wi‑Fi → “Cualquier red” → “Al salir” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Internet apagado”. Haz lo mismo con Modo avión → “Se activa”. El iPhone no avisa al desactivar los datos: desactívalos antes, o en los 25 segundos siguientes al Wi‑Fi.';
 }

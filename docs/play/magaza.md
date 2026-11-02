@@ -34,7 +34,7 @@ değil, doğru anda gelir.
 Eşik, yatmadan önce ve evden çıkmadan önce yapman gerekenleri tam doğru anda hatırlatan bir kontrol listesi uygulamasıdır. Listeyi sen yazarsın; Eşik onu saat kurmana gerek kalmadan, sen o andayken önüne getirir.
 
 NASIL ÇALIŞIR
-Akşam, telefonu şarja taktığında ya da sessize aldığında akşam listen gelir.
+Akşam, telefonu şarja taktığında, sessize aldığında ya da Wi‑Fi'ı ve mobil veriyi kapattığında akşam listen gelir.
 Sabah, alarmı kapattığında, telefonu şarjdan çıkardığında, evin Wi‑Fi'ından ayrıldığında ya da kapıdaki NFC etiketine dokunduğunda sabah listen gelir.
 Birden fazlasını seçebilirsin; hangisi önce olursa o gün o hatırlatır. Hiçbiri olmazsa seçtiğin yedek saatte hatırlatır.
 
@@ -64,7 +64,7 @@ Did I unplug the iron? Turn off the stove? Lock the door?
 Eşik is a checklist app that reminds you of what to do before bed and before you leave home, right at the moment. You write the list; Eşik puts it in front of you when you are there, with no alarms to set.
 
 HOW IT WORKS
-In the evening, your evening list appears when you plug in or silence your phone.
+In the evening, your evening list appears when you plug in or silence your phone, or turn off Wi‑Fi and mobile data.
 In the morning, your morning list appears when you stop your alarm, unplug your phone, leave your home Wi‑Fi or tap the NFC tag on your door.
 Pick several; whichever comes first reminds you that day. If none happens, it reminds you at a backup time you choose.
 
@@ -94,7 +94,7 @@ Everything is unlocked for the first 15 days. Then keep using the charging and a
 Eşik es una app de listas de revisión que te recuerda lo que tienes que hacer antes de dormir y antes de salir de casa, justo en el momento. Tú escribes la lista; Eşik te la muestra cuando estás ahí, sin programar alarmas.
 
 CÓMO FUNCIONA
-Por la noche, tu lista aparece al poner el móvil a cargar o al silenciarlo.
+Por la noche, tu lista aparece al poner el móvil a cargar, al silenciarlo o al desactivar el Wi‑Fi y los datos móviles.
 Por la mañana, tu lista aparece al apagar la alarma, desenchufar el móvil, salir del Wi‑Fi de casa o tocar la etiqueta NFC de la puerta.
 Elige varios; el primero que ocurra te avisa ese día. Si no ocurre ninguno, te avisa a una hora de respaldo que tú eliges.
 

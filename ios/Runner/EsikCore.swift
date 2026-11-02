@@ -1,4 +1,5 @@
 import Foundation
+import Network
 import UserNotifications
 
 // Android'deki EsikData, EsikNotifications ve BackupScheduler'ın iOS karşılığı.
@@ -14,7 +15,7 @@ enum EsikMode: String, CaseIterable {
 
   /// Tetikleyicinin hangi moda ait olduğu (Dart'taki TriggerKind.mode).
   static func of(kind: String) -> EsikMode {
-    ["charging", "silenced", "appClosed", "sleepMode", "airplaneMode"].contains(kind)
+    ["charging", "silenced", "offline", "appClosed", "sleepMode", "airplaneMode"].contains(kind)
       ? .evening : .morning
   }
 }
@@ -279,6 +280,34 @@ final class EsikCore {
     return outcome
   }
 
+  /// Wi‑Fi'dan ayrılınca ya da uçak modu açılınca: iPhone mobil verinin
+  /// kapandığını bildirmediği için [seconds] boyunca bağlantıya bakılır.
+  /// Bağlantı en az birkaç saniye kesik kalırsa "offline" tetiklenir; Wi‑Fi'dan
+  /// mobil veriye geçerken olan anlık kopukluk sayılmaz.
+  func fireWhenOffline(seconds: Double = 25) async {
+    native.set(Date().timeIntervalSince1970, forKey: "seen.offline")
+    // Seçili değilse ya da aralık dışındaysa beklemeye gerek yok.
+    let config = self.config(.evening)
+    guard config.kinds.contains("offline"), config.inWindow(Date()) else { return }
+    let watcher = PathWatcher()
+    defer { watcher.stop() }
+    let deadline = Date().addingTimeInterval(seconds)
+    var offlineSince: Date?
+    while Date() < deadline {
+      if watcher.offline == true {
+        let since = offlineSince ?? Date()
+        offlineSince = since
+        if Date().timeIntervalSince(since) >= 4 {
+          await fire(kind: "offline")
+          return
+        }
+      } else {
+        offlineSince = nil
+      }
+      try? await Task.sleep(nanoseconds: 500_000_000)
+    }
+  }
+
   /// Otomasyonu en az bir kez çalışmış tetikleyiciler (kurulum rehberi için).
   func shortcutsSeen() -> [String] {
     native.dictionaryRepresentation().keys
@@ -448,6 +477,32 @@ final class EsikCore {
     }
     return out
   }
+}
+
+/// Ağ bağlantısının son durumu: hiçbir yoldan (Wi‑Fi, hücresel) bağlantı yoksa çevrimdışı.
+final class PathWatcher {
+  private let monitor = NWPathMonitor()
+  private let lock = NSLock()
+  private var latest: Bool?
+
+  init() {
+    monitor.pathUpdateHandler = { [weak self] path in
+      guard let self else { return }
+      self.lock.lock()
+      self.latest = path.status != .satisfied
+      self.lock.unlock()
+    }
+    monitor.start(queue: DispatchQueue(label: "esik.path"))
+  }
+
+  /// Henüz ilk durum gelmediyse nil.
+  var offline: Bool? {
+    lock.lock()
+    defer { lock.unlock() }
+    return latest
+  }
+
+  func stop() { monitor.cancel() }
 }
 
 /// Bildirim metinleri (Android'deki res/values*/strings.xml ile aynı).

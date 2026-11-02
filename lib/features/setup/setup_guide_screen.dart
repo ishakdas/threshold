@@ -73,12 +73,16 @@ List<SetupStep> setupStepsFor(AppLocalizations l, List<TriggerKind> kinds) {
       action: l.stepUsageAction,
       icon: EsikIcon.app,
     ),
-    TriggerKind.silenced || TriggerKind.unsilenced => SetupStep(
+    TriggerKind.silenced ||
+    TriggerKind.unsilenced ||
+    TriggerKind.offline => SetupStep(
       kind: SetupStepKind.trigger,
       title: l.stepNoPermissionTitle,
-      detail: kind == TriggerKind.silenced
-          ? l.stepSilencedDetail
-          : l.stepUnsilencedDetail,
+      detail: switch (kind) {
+        TriggerKind.silenced => l.stepSilencedDetail,
+        TriggerKind.offline => l.stepOfflineDetail,
+        _ => l.stepUnsilencedDetail,
+      },
       action: l.gotIt,
       icon: kind.icon,
     ),
@@ -122,6 +126,7 @@ List<SetupStep> setupStepsFor(AppLocalizations l, List<TriggerKind> kinds) {
       TriggerKind.alarmStopped => l.shortcutAlarm,
       TriggerKind.leftHomeWifi => l.shortcutWifi,
       TriggerKind.nfcTag => l.shortcutNfc,
+      TriggerKind.offline => l.shortcutOffline,
       _ => l.shortcutSleep,
     },
     action: l.stepShortcutAction,
@@ -137,6 +142,7 @@ List<SetupStep> setupStepsFor(AppLocalizations l, List<TriggerKind> kinds) {
       TriggerKind.leftHomeWifi => l.stepTestWifi,
       TriggerKind.alarmStopped => l.stepTestAlarm,
       TriggerKind.silenced => l.stepTestSilenced,
+      TriggerKind.offline => l.stepTestOffline,
       TriggerKind.unsilenced => l.stepTestUnsilenced,
       TriggerKind.nfcTag => l.stepTestNfc,
       null => l.stepTestMany,

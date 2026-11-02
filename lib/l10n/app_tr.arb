@@ -808,5 +808,14 @@
   "shortcutSeen": "Otomasyon çalışıyor.",
   "issueShortcut": "Kestirmeler otomasyonu henüz çalışmadı",
   "hintShortcut": "Kestirmeler’deki otomasyon çalışınca gelir; nasıl kurulacağı kurulum rehberinde.",
-  "plusFeatureTriggersIOS": "Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi"
+  "plusFeatureTriggersIOS": "Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi",
+  "triggerOfflineTitle": "İnterneti kapatınca",
+  "triggerOfflineSubtitle": "Wi‑Fi ve mobil veri",
+  "triggerOfflineWhen": "Wi‑Fi’ı ve mobil veriyi kapattığında",
+  "hintOffline": "Wi‑Fi ve mobil veri ikisi de kapanınca gelir; uçak modu da sayılır. Çekim gitmesi saymaz.",
+  "stepOfflineDetail": "Akşam aralığında Wi‑Fi’ı ve mobil veriyi kapatınca (ya da uçak modunu açınca) Eşik bunu fark eder. Wi‑Fi’ı önce kapatırsan, mobil veriyi kapatman için 30 saniye bekler.",
+  "stepTestOffline": "Önce deneme bildirimi. Gerçeği, akşam aralığında Wi‑Fi’ı ve mobil veriyi kapattığında birkaç saniye içinde gelir.",
+  "waitOffline": "Wi‑Fi’ın ve mobil verinin kapanması bekleniyor",
+  "waitAlreadyOffline": "internet zaten kapalı; önce birini aç",
+  "shortcutOffline": "Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat."
 }

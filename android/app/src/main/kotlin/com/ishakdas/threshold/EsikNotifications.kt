@@ -45,6 +45,7 @@ object EsikNotifications {
     private val triggerPast = mapOf(
         "charging" to R.string.past_charging,
         "silenced" to R.string.past_silenced,
+        "offline" to R.string.past_offline,
         "unsilenced" to R.string.past_unsilenced,
         "appClosed" to R.string.past_appClosed,
         "sleepMode" to R.string.past_sleepMode,

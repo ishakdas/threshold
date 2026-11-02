@@ -15,6 +15,7 @@
 "icon_checklist" = "List";
 "past_charging" = "You plugged in";
 "past_silenced" = "You silenced your phone";
+"past_offline" = "You went offline";
 "past_unsilenced" = "You turned the sound back on";
 "past_appClosed" = "You closed Instagram";
 "past_sleepMode" = "Sleep mode is on";
@@ -46,3 +47,5 @@
 "Eşik: you left your home Wi‑Fi." = "Eşik: you left your home Wi‑Fi.";
 "Eşik: you tapped the NFC tag on your door." = "Eşik: you tapped the NFC tag on your door.";
 "Eşik: Sleep Focus started." = "Eşik: Sleep Focus started.";
+"Internet off" = "Internet off";
+"Eşik: Wi‑Fi and mobile data are off." = "Eşik: Wi‑Fi and mobile data are off.";

@@ -15,6 +15,7 @@
 "icon_checklist" = "Liste";
 "past_charging" = "Şarja taktın";
 "past_silenced" = "Telefonu sessize aldın";
+"past_offline" = "İnterneti kapattın";
 "past_unsilenced" = "Telefonu sessizden çıkardın";
 "past_appClosed" = "Instagram’ı kapattın";
 "past_sleepMode" = "Uyku modu açıldı";
@@ -46,3 +47,5 @@
 "Eşik: you left your home Wi‑Fi." = "Eşik: evin Wi‑Fi’ından çıktın.";
 "Eşik: you tapped the NFC tag on your door." = "Eşik: kapıdaki NFC etiketine dokundun.";
 "Eşik: Sleep Focus started." = "Eşik: Uyku odağı başladı.";
+"Internet off" = "İnternet kapandı";
+"Eşik: Wi‑Fi and mobile data are off." = "Eşik: Wi‑Fi ve mobil veri kapalı.";

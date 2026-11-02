@@ -59,6 +59,7 @@ extension TriggerKindText on TriggerKind {
   String title(AppLocalizations l) => switch (this) {
     TriggerKind.charging => l.triggerChargingTitle,
     TriggerKind.silenced => l.triggerSilencedTitle,
+    TriggerKind.offline => l.triggerOfflineTitle,
     TriggerKind.appClosed => l.triggerAppClosedTitle,
     TriggerKind.sleepMode => l.triggerSleepModeTitle,
     TriggerKind.airplaneMode => l.triggerAirplaneModeTitle,
@@ -72,6 +73,7 @@ extension TriggerKindText on TriggerKind {
   String subtitle(AppLocalizations l) => switch (this) {
     TriggerKind.charging => l.triggerChargingSubtitle,
     TriggerKind.silenced => l.triggerSilencedSubtitle,
+    TriggerKind.offline => l.triggerOfflineSubtitle,
     TriggerKind.appClosed => l.triggerAppClosedSubtitle,
     TriggerKind.sleepMode => l.triggerSleepModeSubtitle,
     TriggerKind.airplaneMode => l.triggerAirplaneModeSubtitle,
@@ -86,6 +88,7 @@ extension TriggerKindText on TriggerKind {
   String when(AppLocalizations l) => switch (this) {
     TriggerKind.charging => l.triggerChargingWhen,
     TriggerKind.silenced => l.triggerSilencedWhen,
+    TriggerKind.offline => l.triggerOfflineWhen,
     TriggerKind.appClosed => l.triggerAppClosedWhen,
     TriggerKind.sleepMode => l.triggerSleepModeWhen,
     TriggerKind.airplaneMode => l.triggerAirplaneModeWhen,

@@ -219,6 +219,12 @@ enum TriggerWait {
   /// Zil zaten açık; daha fazla açılamaz.
   notSilent,
 
+  /// Wi‑Fi'ın ve mobil verinin kapanmasını bekliyor.
+  offline,
+
+  /// İkisi de zaten kapalı; önce biri açılmalı.
+  alreadyOffline,
+
   /// İş kurulu değil; olmaması gerekir.
   none,
 }

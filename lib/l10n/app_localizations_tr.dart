@@ -1256,4 +1256,35 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get plusFeatureTriggersIOS =>
       'Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi';
+
+  @override
+  String get triggerOfflineTitle => 'İnterneti kapatınca';
+
+  @override
+  String get triggerOfflineSubtitle => 'Wi‑Fi ve mobil veri';
+
+  @override
+  String get triggerOfflineWhen => 'Wi‑Fi’ı ve mobil veriyi kapattığında';
+
+  @override
+  String get hintOffline =>
+      'Wi‑Fi ve mobil veri ikisi de kapanınca gelir; uçak modu da sayılır. Çekim gitmesi saymaz.';
+
+  @override
+  String get stepOfflineDetail =>
+      'Akşam aralığında Wi‑Fi’ı ve mobil veriyi kapatınca (ya da uçak modunu açınca) Eşik bunu fark eder. Wi‑Fi’ı önce kapatırsan, mobil veriyi kapatman için 30 saniye bekler.';
+
+  @override
+  String get stepTestOffline =>
+      'Önce deneme bildirimi. Gerçeği, akşam aralığında Wi‑Fi’ı ve mobil veriyi kapattığında birkaç saniye içinde gelir.';
+
+  @override
+  String get waitOffline => 'Wi‑Fi’ın ve mobil verinin kapanması bekleniyor';
+
+  @override
+  String get waitAlreadyOffline => 'internet zaten kapalı; önce birini aç';
+
+  @override
+  String get shortcutOffline =>
+      'Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat.';
 }

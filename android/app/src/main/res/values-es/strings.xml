@@ -18,6 +18,7 @@
     <string name="icon_checklist">Lista</string>
     <string name="past_charging">Has enchufado el teléfono</string>
     <string name="past_silenced">Has silenciado el teléfono</string>
+    <string name="past_offline">Has desconectado internet</string>
     <string name="past_unsilenced">Has vuelto a activar el sonido</string>
     <string name="past_appClosed">Has cerrado Instagram</string>
     <string name="past_sleepMode">El modo descanso está activado</string>

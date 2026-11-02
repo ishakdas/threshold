@@ -21,6 +21,18 @@ struct ChargingIntent: AppIntent {
 }
 
 @available(iOS 16.0, *)
+struct InternetOffIntent: AppIntent {
+  static var title: LocalizedStringResource = "Internet off"
+  static var description = IntentDescription("Eşik: Wi‑Fi and mobile data are off.")
+  static var openAppWhenRun = false
+
+  func perform() async throws -> some IntentResult {
+    await EsikCore.shared.fireWhenOffline()
+    return .result()
+  }
+}
+
+@available(iOS 16.0, *)
 struct UnpluggedIntent: AppIntent {
   static var title: LocalizedStringResource = "Unplugged"
   static var description = IntentDescription("Eşik: the phone was unplugged.")

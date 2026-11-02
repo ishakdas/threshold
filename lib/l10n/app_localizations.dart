@@ -2265,6 +2265,60 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Uyku, şarjdan çıkarma, Wi‑Fi ve NFC etiketi'**
   String get plusFeatureTriggersIOS;
+
+  /// No description provided for @triggerOfflineTitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'İnterneti kapatınca'**
+  String get triggerOfflineTitle;
+
+  /// No description provided for @triggerOfflineSubtitle.
+  ///
+  /// In tr, this message translates to:
+  /// **'Wi‑Fi ve mobil veri'**
+  String get triggerOfflineSubtitle;
+
+  /// No description provided for @triggerOfflineWhen.
+  ///
+  /// In tr, this message translates to:
+  /// **'Wi‑Fi’ı ve mobil veriyi kapattığında'**
+  String get triggerOfflineWhen;
+
+  /// No description provided for @hintOffline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Wi‑Fi ve mobil veri ikisi de kapanınca gelir; uçak modu da sayılır. Çekim gitmesi saymaz.'**
+  String get hintOffline;
+
+  /// No description provided for @stepOfflineDetail.
+  ///
+  /// In tr, this message translates to:
+  /// **'Akşam aralığında Wi‑Fi’ı ve mobil veriyi kapatınca (ya da uçak modunu açınca) Eşik bunu fark eder. Wi‑Fi’ı önce kapatırsan, mobil veriyi kapatman için 30 saniye bekler.'**
+  String get stepOfflineDetail;
+
+  /// No description provided for @stepTestOffline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Önce deneme bildirimi. Gerçeği, akşam aralığında Wi‑Fi’ı ve mobil veriyi kapattığında birkaç saniye içinde gelir.'**
+  String get stepTestOffline;
+
+  /// No description provided for @waitOffline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Wi‑Fi’ın ve mobil verinin kapanması bekleniyor'**
+  String get waitOffline;
+
+  /// No description provided for @waitAlreadyOffline.
+  ///
+  /// In tr, this message translates to:
+  /// **'internet zaten kapalı; önce birini aç'**
+  String get waitAlreadyOffline;
+
+  /// No description provided for @shortcutOffline.
+  ///
+  /// In tr, this message translates to:
+  /// **'Otomasyon → + → Wi‑Fi → “Herhangi Bir Ağ” → “Ayrıldığında” ve “Hemen Çalıştır” → Sonraki → “Eşik” ara → “İnternet kapandı”. Uçak modu için aynısını Uçak Modu → “Açıldığında” ile de kur. iPhone mobil verinin kapandığını bildirmez: önce mobil veriyi kapat ya da Wi‑Fi’dan sonraki 25 saniye içinde kapat.'**
+  String get shortcutOffline;
 }
 
 class _AppLocalizationsDelegate

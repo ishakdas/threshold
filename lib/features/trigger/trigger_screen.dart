@@ -947,6 +947,8 @@ class _StatusLine extends ConsumerWidget {
       TriggerWait.silence => l10n.waitSilence,
       TriggerWait.alreadySilent => l10n.waitAlreadySilent,
       TriggerWait.unsilence => l10n.waitUnsilence,
+      TriggerWait.offline => l10n.waitOffline,
+      TriggerWait.alreadyOffline => l10n.waitAlreadyOffline,
       TriggerWait.notSilent => l10n.waitNotSilent,
       TriggerWait.none => l10n.waitNone,
     };
@@ -963,6 +965,7 @@ class _StatusLine extends ConsumerWidget {
           TriggerKind.alarmStopped => l10n.hintAlarm,
           TriggerKind.leftHomeWifi => l10n.hintWifi,
           TriggerKind.silenced => l10n.hintSilenced,
+          TriggerKind.offline => l10n.hintOffline,
           TriggerKind.unsilenced => l10n.hintUnsilenced,
           TriggerKind.nfcTag => l10n.hintNfc,
           TriggerKind.unplugged => l10n.hintUnplugged,

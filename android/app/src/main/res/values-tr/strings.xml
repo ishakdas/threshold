@@ -18,6 +18,7 @@
     <string name="icon_checklist">Liste</string>
     <string name="past_charging">Şarja taktın</string>
     <string name="past_silenced">Telefonu sessize aldın</string>
+    <string name="past_offline">İnterneti kapattın</string>
     <string name="past_unsilenced">Telefonu sessizden çıkardın</string>
     <string name="past_appClosed">Instagram’ı kapattın</string>
     <string name="past_sleepMode">Uyku modu açıldı</string>

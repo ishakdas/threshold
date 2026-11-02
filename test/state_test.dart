@@ -86,6 +86,7 @@ void main() {
     expect(TriggerKind.forMode(DayMode.evening), [
       TriggerKind.charging,
       TriggerKind.silenced,
+      TriggerKind.offline,
     ]);
     expect(TriggerKind.forMode(DayMode.morning).take(2), [
       TriggerKind.alarmStopped,
@@ -127,6 +128,7 @@ void main() {
     test('yalnızca Kestirmeler otomasyonu olan tetikleyiciler sunulur', () {
       expect(TriggerKind.forMode(DayMode.evening), [
         TriggerKind.charging,
+        TriggerKind.offline,
         TriggerKind.sleepMode,
       ]);
       expect(TriggerKind.forMode(DayMode.morning), [
@@ -157,7 +159,7 @@ void main() {
   });
 
   test('her mod yalnızca kendi tetikleyicilerini sunar', () {
-    expect(TriggerKind.forMode(DayMode.evening), hasLength(2));
+    expect(TriggerKind.forMode(DayMode.evening), hasLength(3));
     expect(
       TriggerKind.forMode(DayMode.morning)
           .every((k) => k.mode == DayMode.morning),
@@ -177,6 +179,7 @@ void main() {
     expect(steps(TriggerKind.leftHomeWifi), contains('Mobil veri açık kalsın'));
     expect(steps(TriggerKind.nfcTag), contains('Etiketi hazırla'));
     expect(steps(TriggerKind.silenced), contains('Ek izin gerekmez'));
+    expect(steps(TriggerKind.offline), contains('Ek izin gerekmez'));
     expect(steps(TriggerKind.unsilenced), hasLength(4));
   });
 

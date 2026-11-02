@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Sessizdeyken de titreşmek için (Ayarlar → Telefon sessizdeyken). -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- İnterneti kapatınca: Wi‑Fi açık mı, mobil veri açık mı (normal izinler, sorulmaz). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Kapıdaki etikete Eşik'in bağlantısını yazmak için. NFC'siz telefonlara da kurulur. -->
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />

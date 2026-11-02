@@ -360,5 +360,14 @@
   "shortcutSeen": "The automation is working.",
   "issueShortcut": "The Shortcuts automation hasn’t run yet",
   "hintShortcut": "Arrives when your Shortcuts automation runs; the setup guide shows how.",
-  "plusFeatureTriggersIOS": "Sleep, unplugging, Wi‑Fi and the NFC tag"
+  "plusFeatureTriggersIOS": "Sleep, unplugging, Wi‑Fi and the NFC tag",
+  "triggerOfflineTitle": "When you go offline",
+  "triggerOfflineSubtitle": "Wi‑Fi and mobile data",
+  "triggerOfflineWhen": "When you turn off Wi‑Fi and mobile data",
+  "hintOffline": "Arrives when both Wi‑Fi and mobile data are off; airplane mode counts too. Losing signal doesn’t.",
+  "stepOfflineDetail": "In the evening window, Eşik notices when you turn off Wi‑Fi and mobile data (or turn on airplane mode). If Wi‑Fi goes off first, it waits 30 seconds for mobile data.",
+  "stepTestOffline": "First a test reminder. The real one arrives seconds after you turn off Wi‑Fi and mobile data in the evening window.",
+  "waitOffline": "waiting for Wi‑Fi and mobile data to go off",
+  "waitAlreadyOffline": "already offline; turn one back on first",
+  "shortcutOffline": "Automation → + → Wi‑Fi → “Any Network” → “Leaves” and “Run Immediately” → Next → search “Eşik” → “Internet off”. Add the same for Airplane Mode → “Is Turned On”. iPhone doesn’t report mobile data turning off: turn it off first, or within 25 seconds after Wi‑Fi."
 }

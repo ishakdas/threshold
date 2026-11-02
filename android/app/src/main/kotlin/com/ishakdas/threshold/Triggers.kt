@@ -14,6 +14,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.media.AudioManager
+import android.net.wifi.WifiManager
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.nfc.NdefMessage
@@ -25,6 +26,8 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -103,6 +106,10 @@ object Thresholds {
  *   şarjda koşulu), sonra kısa aralıklı alarmlarla fişin çekilmesine bakılır.
  *   Şarjdayken telefon derin uykuya (Doze) girmediği için bu alarmlar zamanında
  *   çalar; fiş çekilince en geç [UNPLUG_CHECK_MS] içinde fark edilir.
+ * - İnterneti kapatınca: Wi‑Fi, mobil veri ya da uçak modu ayarı değişince
+ *   JobScheduler uyandırır (TriggerContentUri); ikisi de kapalıysa bildirir.
+ *   Çekim gitmesi ayarı değiştirmediği için saymaz. Wi‑Fi kapanıp veri hâlâ
+ *   açıksa [OFFLINE_WAIT_MS] boyunca birkaç saniyede bir yeniden bakılır.
  * - Kapıdaki etiket: etiket uygulamayı doğrudan açar (MainActivity), iş yok.
  */
 object TriggerScheduler {
@@ -112,6 +119,12 @@ object TriggerScheduler {
     const val JOB_WIFI_LEFT = 44
     const val JOB_SILENCE = 45
     const val JOB_UNPLUG_ARM = 46
+    const val JOB_OFFLINE = 47
+    const val JOB_OFFLINE_RECHECK = 48
+
+    /** Wi‑Fi kapandıktan sonra mobil verinin de kapanması bu kadar beklenir. */
+    private const val OFFLINE_WAIT_MS = 30_000L
+    private const val OFFLINE_RECHECK_MS = 3_000L
 
     /** Şarjdaki telefonun fişinin çekilip çekilmediğine bu aralıkla bakılır. */
     private const val UNPLUG_CHECK_MS = 2 * 60_000L
@@ -177,6 +190,14 @@ object TriggerScheduler {
             scheduleSilence(c)
         } else {
             jobs(c).cancel(JOB_SILENCE)
+        }
+        if (evening.has("offline")) {
+            // İş zaten bekliyorsa son bilinen durum onun; yeniden kurarken ezme.
+            if (jobs(c).getPendingJob(JOB_OFFLINE) == null) rememberOffline(c, isOffline(c))
+            scheduleOffline(c)
+        } else {
+            jobs(c).cancel(JOB_OFFLINE)
+            jobs(c).cancel(JOB_OFFLINE_RECHECK)
         }
         if (!morning.has("alarmStopped")) jobs(c).cancel(JOB_ALARM)
         if (morning.has("unplugged")) {
@@ -297,6 +318,64 @@ object TriggerScheduler {
         jobs(c).schedule(b.setTriggerContentUpdateDelay(500).setTriggerContentMaxDelay(3_000).build())
     }
 
+    /** Wi‑Fi, mobil veri ya da uçak modu ayarı değişince çalışır. Tek seferlik. */
+    private fun scheduleOffline(c: Context) {
+        val names = mutableListOf(
+            Settings.Global.WIFI_ON,
+            Settings.Global.AIRPLANE_MODE_ON,
+            "mobile_data",
+        )
+        // Çift SIM'de mobil veri ayarı SIM'e özel anahtarda tutulur.
+        val sub = SubscriptionManager.getDefaultDataSubscriptionId()
+        if (sub != SubscriptionManager.INVALID_SUBSCRIPTION_ID) names += "mobile_data$sub"
+        val b = job(c, JOB_OFFLINE)
+        for (name in names) {
+            b.addTriggerContentUri(JobInfo.TriggerContentUri(Settings.Global.getUriFor(name), 0))
+        }
+        jobs(c).schedule(b.setTriggerContentUpdateDelay(500).setTriggerContentMaxDelay(3_000).build())
+    }
+
+    private fun scheduleOfflineRecheck(c: Context) {
+        jobs(c).schedule(job(c, JOB_OFFLINE_RECHECK).setMinimumLatency(OFFLINE_RECHECK_MS).build())
+    }
+
+    private fun wifiOn(c: Context): Boolean =
+        c.applicationContext.getSystemService(WifiManager::class.java)?.isWifiEnabled == true
+
+    /** Mobil veri kullanılabilir mi: SIM hazır ve veri açık. Uçak modunda değil. */
+    private fun mobileDataOn(c: Context): Boolean {
+        if (Settings.Global.getInt(c.contentResolver, Settings.Global.AIRPLANE_MODE_ON, 0) == 1) return false
+        val sub = SubscriptionManager.getDefaultDataSubscriptionId()
+        val base = c.getSystemService(TelephonyManager::class.java) ?: return false
+        val tm = if (sub != SubscriptionManager.INVALID_SUBSCRIPTION_ID) base.createForSubscriptionId(sub) else base
+        if (tm.simState != TelephonyManager.SIM_STATE_READY) return false
+        return try {
+            tm.isDataEnabled
+        } catch (e: SecurityException) {
+            Settings.Global.getInt(c.contentResolver, "mobile_data", 1) == 1
+        }
+    }
+
+    /** Wi‑Fi ve mobil veri ikisi de kapalı (uçak modu dahil). */
+    fun isOffline(c: Context): Boolean = !wifiOn(c) && !mobileDataOn(c)
+
+    private fun rememberOffline(c: Context, offline: Boolean) {
+        state(c).edit().putBoolean("offline", offline).apply()
+    }
+
+    /** Çevrimdışı olduysa (öncesinde değildi) bildir. Olduysa true. */
+    private fun checkOffline(c: Context, now: LocalDateTime): Boolean {
+        val offline = isOffline(c)
+        val before = state(c).getBoolean("offline", false)
+        rememberOffline(c, offline)
+        if (!offline || before) return offline
+        val config = EsikData.config(c, Mode.EVENING)
+        if (config.has("offline") && Window.of(config).contains(now.toLocalTime())) {
+            fire(c, Mode.EVENING, "offline")
+        }
+        return true
+    }
+
     const val LEVEL_SILENT = 0
     const val LEVEL_VIBRATE = 1
     const val LEVEL_SOUND = 2
@@ -361,6 +440,11 @@ object TriggerScheduler {
                     !pending(JOB_SILENCE) -> "none" to null
                     soundLevel(c) == LEVEL_SILENT -> "alreadySilent" to null
                     else -> "silence" to null
+                }
+                mode == Mode.EVENING && kind == "offline" -> when {
+                    !pending(JOB_OFFLINE) -> "none" to null
+                    isOffline(c) -> "alreadyOffline" to null
+                    else -> "offline" to null
                 }
                 mode == Mode.MORNING && kind == "unsilenced" -> when {
                     !pending(JOB_SILENCE) -> "none" to null
@@ -459,6 +543,25 @@ object TriggerScheduler {
                     }
                 }
                 later { scheduleSilence(c) }
+            }
+            JOB_OFFLINE -> {
+                val wifiWasOn = state(c).getBoolean("offline.wifi", true)
+                val wifi = wifiOn(c)
+                state(c).edit().putBoolean("offline.wifi", wifi).apply()
+                if (!checkOffline(c, now) && wifiWasOn && !wifi) {
+                    // Wi‑Fi şimdi kapandı, veri hâlâ açık: kapatılmasını bekle.
+                    state(c).edit()
+                        .putLong("offline.until", System.currentTimeMillis() + OFFLINE_WAIT_MS)
+                        .apply()
+                    scheduleOfflineRecheck(c)
+                }
+                later { if (EsikData.config(c, Mode.EVENING).has("offline")) scheduleOffline(c) }
+            }
+            JOB_OFFLINE_RECHECK -> {
+                val until = state(c).getLong("offline.until", 0L)
+                if (!checkOffline(c, now) && !wifiOn(c) && System.currentTimeMillis() < until) {
+                    later { scheduleOfflineRecheck(c) }
+                }
             }
             JOB_UNPLUG_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)

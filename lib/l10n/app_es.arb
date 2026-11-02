@@ -360,5 +360,14 @@
   "shortcutSeen": "La automatización funciona.",
   "issueShortcut": "La automatización de Atajos aún no se ha ejecutado",
   "hintShortcut": "Llega cuando se ejecuta tu automatización de Atajos; la guía te muestra cómo.",
-  "plusFeatureTriggersIOS": "Descanso, desenchufar, Wi‑Fi y etiqueta NFC"
+  "plusFeatureTriggersIOS": "Descanso, desenchufar, Wi‑Fi y etiqueta NFC",
+  "triggerOfflineTitle": "Al quitar internet",
+  "triggerOfflineSubtitle": "Wi‑Fi y datos móviles",
+  "triggerOfflineWhen": "Cuando desactivas el Wi‑Fi y los datos móviles",
+  "hintOffline": "Llega cuando el Wi‑Fi y los datos móviles están desactivados; el modo avión también cuenta. Perder la señal no.",
+  "stepOfflineDetail": "En el intervalo de la noche, Eşik nota cuando desactivas el Wi‑Fi y los datos móviles (o activas el modo avión). Si apagas primero el Wi‑Fi, espera 30 segundos a los datos.",
+  "stepTestOffline": "Primero un aviso de prueba. El real llega segundos después de desactivar el Wi‑Fi y los datos en el intervalo de la noche.",
+  "waitOffline": "esperando a que se desactiven el Wi‑Fi y los datos",
+  "waitAlreadyOffline": "ya sin conexión; activa uno primero",
+  "shortcutOffline": "Automatización → + → Wi‑Fi → “Cualquier red” → “Al salir” y “Ejecutar inmediatamente” → Siguiente → busca “Eşik” → “Internet apagado”. Haz lo mismo con Modo avión → “Se activa”. El iPhone no avisa al desactivar los datos: desactívalos antes, o en los 25 segundos siguientes al Wi‑Fi."
 }

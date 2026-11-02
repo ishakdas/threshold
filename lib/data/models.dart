@@ -58,6 +58,9 @@ TimeOfDay _timeFromJson(Object? v, TimeOfDay fallback) {
 enum TriggerKind {
   charging(DayMode.evening, EsikIcon.plug),
   silenced(DayMode.evening, EsikIcon.bellOff),
+
+  /// Wi‑Fi ve mobil veri ikisi de kapalı (uçak modu dahil).
+  offline(DayMode.evening, EsikIcon.wifiOff),
   appClosed(DayMode.evening, EsikIcon.app),
   sleepMode(DayMode.evening, EsikIcon.bed),
   airplaneMode(DayMode.evening, EsikIcon.airplane),
@@ -81,6 +84,7 @@ enum TriggerKind {
 
   bool get _supportedIOS => switch (this) {
     charging ||
+    offline ||
     sleepMode ||
     alarmStopped ||
     unplugged ||
@@ -92,6 +96,7 @@ enum TriggerKind {
   bool get _supportedAndroid => switch (this) {
     charging ||
     silenced ||
+    offline ||
     alarmStopped ||
     unsilenced ||
     leftHomeWifi ||

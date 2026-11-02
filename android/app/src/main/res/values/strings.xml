@@ -18,6 +18,7 @@
     <string name="icon_checklist">List</string>
     <string name="past_charging">You plugged in</string>
     <string name="past_silenced">You silenced your phone</string>
+    <string name="past_offline">You went offline</string>
     <string name="past_unsilenced">You turned the sound back on</string>
     <string name="past_appClosed">You closed Instagram</string>
     <string name="past_sleepMode">Sleep mode is on</string>

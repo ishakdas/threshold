@@ -1284,4 +1284,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get plusFeatureTriggersIOS =>
       'Sleep, unplugging, Wi‑Fi and the NFC tag';
+
+  @override
+  String get triggerOfflineTitle => 'When you go offline';
+
+  @override
+  String get triggerOfflineSubtitle => 'Wi‑Fi and mobile data';
+
+  @override
+  String get triggerOfflineWhen => 'When you turn off Wi‑Fi and mobile data';
+
+  @override
+  String get hintOffline =>
+      'Arrives when both Wi‑Fi and mobile data are off; airplane mode counts too. Losing signal doesn’t.';
+
+  @override
+  String get stepOfflineDetail =>
+      'In the evening window, Eşik notices when you turn off Wi‑Fi and mobile data (or turn on airplane mode). If Wi‑Fi goes off first, it waits 30 seconds for mobile data.';
+
+  @override
+  String get stepTestOffline =>
+      'First a test reminder. The real one arrives seconds after you turn off Wi‑Fi and mobile data in the evening window.';
+
+  @override
+  String get waitOffline => 'waiting for Wi‑Fi and mobile data to go off';
+
+  @override
+  String get waitAlreadyOffline => 'already offline; turn one back on first';
+
+  @override
+  String get shortcutOffline =>
+      'Automation → + → Wi‑Fi → “Any Network” → “Leaves” and “Run Immediately” → Next → search “Eşik” → “Internet off”. Add the same for Airplane Mode → “Is Turned On”. iPhone doesn’t report mobile data turning off: turn it off first, or within 25 seconds after Wi‑Fi.';
 }

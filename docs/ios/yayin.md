@@ -16,11 +16,17 @@ adımları gösterir ve otomasyon bir kez çalışınca adımı tamamlanmış sa
 | Tetikleyici | Kestirmeler otomasyonu | Eylem |
 |---|---|---|
 | Şarja takınca | Şarj Cihazı → Bağlandı | Şarja takıldı |
+| İnterneti kapatınca | Wi‑Fi → Herhangi Bir Ağ → Ayrıldığında; ayrıca Uçak Modu → Açıldığında | İnternet kapandı |
 | Uyku başlayınca | Uyku (ya da Odak → Uyku) → Başladığında | Uyku başladı |
 | Alarmı durdurunca | Alarm → Durduruldu (iOS 17+) | Alarm durdu |
 | Şarjdan çıkarınca | Şarj Cihazı → Bağlantısı Kesildi | Şarjdan çıkarıldı |
 | Evden çıkınca | Wi‑Fi → ev ağı → Ayrıldığında | Evden çıkıldı |
 | Kapıdaki etiket | NFC → etiketi tara | Kapı etiketi |
+
+"İnternet kapandı" eylemi 25 saniye boyunca bağlantıya bakar: iPhone mobil
+verinin kapandığını bildirmediği için önce mobil veri, sonra Wi‑Fi
+kapatılmalı (ya da Wi‑Fi'dan sonraki 25 saniye içinde veri). Wi‑Fi'dan
+çıkıp mobil veriye geçmek tetiklemez.
 
 iOS'ta olmayanlar: sessize alınca / sessizden çıkarınca (sessiz düğmesi için
 otomasyon yok) ve "sessizdeyken çal" (Apple'ın özel izni gerekir). Yedek saat
