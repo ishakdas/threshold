@@ -139,6 +139,36 @@ object TriggerScheduler {
 
     private fun jobs(c: Context) = c.getSystemService(JobScheduler::class.java)
 
+    /**
+     * [kind] seçili eşiğin bir sonraki aralığına kalan süre (ms). Eşikler
+     * günlere göre değişebildiği için gün gün bakılır. Bugünün aralığı şu an
+     * açıksa ve [skipToday] değilse 0; önümüzdeki hafta hiç yoksa null.
+     */
+    private fun nextOpen(c: Context, mode: Mode, kind: String, now: LocalDateTime, skipToday: Boolean): Long? {
+        val today = EsikData.thresholdDay(now)
+        for (offset in 0L..7L) {
+            if (offset == 0L && skipToday) continue
+            val day = today.plusDays(offset)
+            val cfg = EsikData.config(c, mode, day)
+            if (!cfg.activeOn(day) || !cfg.has(kind)) continue
+            // Eşik günü 04:00'te başlar; aralığın o günkü başı ve sonu.
+            val dayStart = day.atTime(4, 0)
+            val start = if (!cfg.windowEnabled) dayStart else {
+                val t = day.atTime(cfg.windowStart)
+                if (t < dayStart) t.plusDays(1) else t
+            }
+            val end = if (!cfg.windowEnabled || cfg.windowStart == cfg.windowEnd) {
+                start.plusDays(1)
+            } else {
+                val t = start.toLocalDate().atTime(cfg.windowEnd)
+                if (t <= start) t.plusDays(1) else t
+            }
+            if (!now.isBefore(start) && now.isBefore(end)) return 0
+            if (start.isAfter(now)) return Duration.between(now, start).toMillis()
+        }
+        return null
+    }
+
     private fun job(c: Context, id: Int) =
         JobInfo.Builder(id, ComponentName(c, TriggerJobService::class.java))
 
@@ -175,23 +205,18 @@ object TriggerScheduler {
         val now = LocalDateTime.now()
         rememberNextAlarm(c)
 
-        val evening = EsikData.config(c, Mode.EVENING)
-        if (evening.has("charging")) {
-            val skip = Thresholds.handledToday(c, Mode.EVENING)
-            scheduleCharging(c, Window.of(evening).delayUntilOpen(now, skip))
-        } else {
-            jobs(c).cancel(JOB_CHARGING)
-        }
+        val chargingAt = nextOpen(c, Mode.EVENING, "charging", now, Thresholds.handledToday(c, Mode.EVENING))
+        if (chargingAt != null) scheduleCharging(c, chargingAt) else jobs(c).cancel(JOB_CHARGING)
 
         val morning = EsikData.config(c, Mode.MORNING)
-        if (evening.has("silenced") || morning.has("unsilenced")) {
+        if (EsikData.anyHas(c, Mode.EVENING, "silenced") || EsikData.anyHas(c, Mode.MORNING, "unsilenced")) {
             // İş zaten bekliyorsa son bilinen durum onun; yeniden kurarken ezme.
             if (jobs(c).getPendingJob(JOB_SILENCE) == null) rememberLevel(c, soundLevel(c))
             scheduleSilence(c)
         } else {
             jobs(c).cancel(JOB_SILENCE)
         }
-        if (evening.has("offline")) {
+        if (EsikData.anyHas(c, Mode.EVENING, "offline")) {
             // İş zaten bekliyorsa son bilinen durum onun; yeniden kurarken ezme.
             if (jobs(c).getPendingJob(JOB_OFFLINE) == null) rememberOffline(c, isOffline(c))
             scheduleOffline(c)
@@ -199,24 +224,24 @@ object TriggerScheduler {
             jobs(c).cancel(JOB_OFFLINE)
             jobs(c).cancel(JOB_OFFLINE_RECHECK)
         }
-        if (!morning.has("alarmStopped")) jobs(c).cancel(JOB_ALARM)
-        if (morning.has("unplugged")) {
+        if (!EsikData.anyHas(c, Mode.MORNING, "alarmStopped")) jobs(c).cancel(JOB_ALARM)
+        if (EsikData.anyHas(c, Mode.MORNING, "unplugged")) {
             // Fiş takibi sürüyorsa bozma; yoksa şarjda olmayı bekle.
             if (unplugCheck(c, PendingIntent.FLAG_NO_CREATE) == null) {
-                val skip = Thresholds.handledToday(c, Mode.MORNING)
-                scheduleUnplugArm(c, Window.of(morning).delayUntilOpen(now, skip))
+                val at = nextOpen(c, Mode.MORNING, "unplugged", now, Thresholds.handledToday(c, Mode.MORNING))
+                if (at != null) scheduleUnplugArm(c, at) else jobs(c).cancel(JOB_UNPLUG_ARM)
             }
         } else {
             jobs(c).cancel(JOB_UNPLUG_ARM)
             cancelUnplugCheck(c)
         }
-        if (morning.has("leftHomeWifi")) {
+        if (EsikData.anyHas(c, Mode.MORNING, "leftHomeWifi")) {
             val window = Window.of(morning)
             val skip = Thresholds.handledToday(c, Mode.MORNING)
-            if (!skip && window.contains(now.toLocalTime()) && armedToday(c)) {
+            if (!skip && morning.has("leftHomeWifi") && window.contains(now.toLocalTime()) && armedToday(c)) {
                 scheduleWifiLeft(c)
             } else {
-                scheduleWifiArm(c, window.delayUntilOpen(now, skip))
+                nextOpen(c, Mode.MORNING, "leftHomeWifi", now, skip)?.let { scheduleWifiArm(c, it) }
             }
         } else {
             jobs(c).cancel(JOB_WIFI_ARM)
@@ -271,17 +296,18 @@ object TriggerScheduler {
     fun onUnplugCheck(c: Context) {
         val config = EsikData.config(c, Mode.MORNING)
         unplugCheck(c, PendingIntent.FLAG_NO_CREATE)?.cancel()
-        if (!config.has("unplugged")) return
+        if (!EsikData.anyHas(c, Mode.MORNING, "unplugged")) return
         val now = LocalDateTime.now()
         val window = Window.of(config)
-        val open = window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)
+        val open = config.has("unplugged") && window.contains(now.toLocalTime()) &&
+            !Thresholds.handledToday(c, Mode.MORNING)
         when {
             open && pluggedIn(c) -> scheduleUnplugCheck(c)
             open -> {
                 fire(c, Mode.MORNING, "unplugged")
-                scheduleUnplugArm(c, window.delayUntilOpen(now, true))
+                nextOpen(c, Mode.MORNING, "unplugged", now, true)?.let { scheduleUnplugArm(c, it) }
             }
-            else -> scheduleUnplugArm(c, window.delayUntilOpen(now, true))
+            else -> nextOpen(c, Mode.MORNING, "unplugged", now, true)?.let { scheduleUnplugArm(c, it) }
         }
     }
 
@@ -424,7 +450,7 @@ object TriggerScheduler {
      */
     fun waiting(c: Context, mode: Mode): List<Map<String, Any?>> {
         val pending = { id: Int -> jobs(c).getPendingJob(id) != null }
-        return EsikData.config(c, mode).kinds.mapNotNull { kind ->
+        return EsikData.allKinds(c, mode).mapNotNull { kind ->
             val w: Pair<String, Long?>? = when {
                 mode == Mode.EVENING && kind == "charging" ->
                     if (pending(JOB_CHARGING)) "charging" to from(c, JOB_CHARGING) else "none" to null
@@ -493,7 +519,7 @@ object TriggerScheduler {
     fun onNextAlarmChanged(c: Context) {
         val previous = state(c).getLong("alarm.next", 0L)
         rememberNextAlarm(c)
-        if (!EsikData.config(c, Mode.MORNING).has("alarmStopped")) return
+        if (!EsikData.anyHas(c, Mode.MORNING, "alarmStopped")) return
         val now = System.currentTimeMillis()
         val rang = previous > 0 && previous <= now + 60_000 && now - previous < 3 * 3_600_000L
         if (!rang) return
@@ -511,7 +537,7 @@ object TriggerScheduler {
                     fire(c, Mode.EVENING, "charging")
                 }
                 // Hâlâ şarjdayken hemen yeniden çalışmasın: bir sonraki aralığı bekle.
-                later { if (config.has("charging")) scheduleCharging(c, window.delayUntilOpen(now, true)) }
+                later { nextOpen(c, Mode.EVENING, "charging", now, true)?.let { scheduleCharging(c, it) } }
             }
             JOB_ALARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
@@ -555,7 +581,7 @@ object TriggerScheduler {
                         .apply()
                     scheduleOfflineRecheck(c)
                 }
-                later { if (EsikData.config(c, Mode.EVENING).has("offline")) scheduleOffline(c) }
+                later { if (EsikData.anyHas(c, Mode.EVENING, "offline")) scheduleOffline(c) }
             }
             JOB_OFFLINE_RECHECK -> {
                 val until = state(c).getLong("offline.until", 0L)
@@ -566,33 +592,37 @@ object TriggerScheduler {
             JOB_UNPLUG_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val window = Window.of(config)
-                if (!config.has("unplugged")) return
-                if (window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)) {
+                if (!EsikData.anyHas(c, Mode.MORNING, "unplugged")) return
+                if (config.has("unplugged") && window.contains(now.toLocalTime()) &&
+                    !Thresholds.handledToday(c, Mode.MORNING)
+                ) {
                     scheduleUnplugCheck(c)
                 } else {
-                    later { scheduleUnplugArm(c, window.delayUntilOpen(now, true)) }
+                    later { nextOpen(c, Mode.MORNING, "unplugged", now, true)?.let { scheduleUnplugArm(c, it) } }
                 }
             }
             JOB_WIFI_ARM -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val window = Window.of(config)
-                if (!config.has("leftHomeWifi")) return
-                if (window.contains(now.toLocalTime()) && !Thresholds.handledToday(c, Mode.MORNING)) {
+                if (!EsikData.anyHas(c, Mode.MORNING, "leftHomeWifi")) return
+                if (config.has("leftHomeWifi") && window.contains(now.toLocalTime()) &&
+                    !Thresholds.handledToday(c, Mode.MORNING)
+                ) {
                     setArmed(c, true)
                     later { scheduleWifiLeft(c) }
                 } else {
-                    later { scheduleWifiArm(c, window.delayUntilOpen(now, true)) }
+                    later { nextOpen(c, Mode.MORNING, "leftHomeWifi", now, true)?.let { scheduleWifiArm(c, it) } }
                 }
             }
             JOB_WIFI_LEFT -> {
                 val config = EsikData.config(c, Mode.MORNING)
                 val window = Window.of(config)
-                if (!config.has("leftHomeWifi")) return
-                if (window.contains(now.toLocalTime()) && armedToday(c)) {
+                if (!EsikData.anyHas(c, Mode.MORNING, "leftHomeWifi")) return
+                if (config.has("leftHomeWifi") && window.contains(now.toLocalTime()) && armedToday(c)) {
                     fire(c, Mode.MORNING, "leftHomeWifi")
                 }
                 setArmed(c, false)
-                later { scheduleWifiArm(c, window.delayUntilOpen(now, true)) }
+                later { nextOpen(c, Mode.MORNING, "leftHomeWifi", now, true)?.let { scheduleWifiArm(c, it) } }
             }
         }
     }

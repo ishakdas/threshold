@@ -90,18 +90,34 @@ object BackupScheduler {
         return if (today.isAfter(now)) today else today.plusDays(1)
     }
 
+    /**
+     * Sıradaki yedek saat. Eşikler günlere göre değişebildiği için gün gün
+     * bakılır; 04:00'ten önceki yedek saat ertesi takvim gününe düşer.
+     */
+    private fun nextBackup(c: Context, mode: Mode, now: LocalDateTime = LocalDateTime.now()): LocalDateTime? {
+        val today = EsikData.thresholdDay(now)
+        for (offset in 0L..7L) {
+            val day = today.plusDays(offset)
+            val cfg = EsikData.config(c, mode, day)
+            if (!cfg.activeOn(day) || !cfg.backupEnabled) continue
+            val t = day.atTime(cfg.backupTime)
+            val at = if (t < day.atTime(4, 0)) t.plusDays(1) else t
+            if (at.isAfter(now)) return at
+        }
+        return null
+    }
+
     fun schedule(c: Context) {
         val am = c.getSystemService(AlarmManager::class.java)
         for (mode in Mode.entries) {
             val pi = pending(c, mode)
             am.cancel(pi)
-            val config = EsikData.config(c, mode)
-            if (!config.backupEnabled) {
+            val next = nextBackup(c, mode)
+            if (next == null) {
                 state(c).edit().remove("next.${mode.key}").apply()
                 continue
             }
-            val at = nextOccurrence(config.backupTime)
-                .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val at = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             state(c).edit().putLong("next.${mode.key}", at).apply()
             // Kesin alarm izni (SCHEDULE_EXACT_ALARM) istemiyoruz: bir hatırlatma
             // için birkaç dakikalık gecikme kabul edilebilir. Bu alarm Doze'da da çalışır.

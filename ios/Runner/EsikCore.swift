@@ -180,9 +180,18 @@ final class EsikCore {
   /// [base] bildiriminin tekrarlarının kimlikleri.
   private func repeatIds(_ base: String) -> [String] { (2...5).map { "\(base).r\($0)" } }
 
-  private func rawConfig(_ mode: EsikMode) -> EsikConfig {
+  /// "triggers.v2" (eşik listesi) ya da eski tek eşikli "triggers.v1".
+  private func rawThresholds(_ mode: EsikMode) -> [EsikConfig] {
     let d = Self.fallbacks[mode]!
-    guard let o = json("triggers.v1")?[mode.rawValue] as? [String: Any] else { return d }
+    if let list = json("triggers.v2")?[mode.rawValue] as? [[String: Any]] {
+      let parsed = list.map { parse($0, d) }
+      if !parsed.isEmpty { return parsed }
+    }
+    guard let o = json("triggers.v1")?[mode.rawValue] as? [String: Any] else { return [d] }
+    return [parse(o, d)]
+  }
+
+  private func parse(_ o: [String: Any], _ d: EsikConfig) -> EsikConfig {
     // Eski kayıtlarda tek "kind" alanı vardı.
     let kinds =
       (o["kinds"] as? [String]) ?? (o["kind"] as? String).map { [$0] } ?? []
@@ -201,12 +210,20 @@ final class EsikCore {
 
   /// Geçerli ayar. Plus yoksa tek ve ücretsiz bir tetikleyici, her gün
   /// (Dart'taki TriggerConfig.effective).
-  func config(_ mode: EsikMode) -> EsikConfig {
-    var c = rawConfig(mode)
-    if plusActive() { return c }
+  func thresholds(_ mode: EsikMode) -> [EsikConfig] {
+    let raw = rawThresholds(mode)
+    if plusActive() { return raw }
+    var c = raw[0]
     c.kinds = [c.kinds.first(where: { Self.freeKinds.contains($0) }) ?? Self.fallbacks[mode]!.kinds[0]]
     c.days = Set(1...7)
-    return c
+    return [c]
+  }
+
+  /// [day] (eşik günü) için geçerli eşik (Dart'taki ThresholdList.on). O gün
+  /// hiçbir eşiğe ait değilse ilk eşik döner; activeOn(day) false olur.
+  func config(_ mode: EsikMode, day: Date = EsikCore.thresholdDay()) -> EsikConfig {
+    let list = thresholds(mode)
+    return list.first(where: { $0.activeOn(day) }) ?? list[0]
   }
 
   /// Eşik Plus açık mı: satın alındı ya da deneme sürüyor (Dart'taki PlusState.active).
@@ -480,13 +497,14 @@ final class EsikCore {
     let today = Self.thresholdDay(now)
     for mode in EsikMode.allCases {
       if isComplete(today, mode) { clear(mode) }
-      let config = self.config(mode)
       native.removeObject(forKey: "next.\(mode.rawValue)")
-      guard config.backupEnabled, granted else { continue }
+      guard granted else { continue }
       var next: Date?
       for offset in 0..<7 {
         let day = Calendar.current.date(byAdding: .day, value: offset, to: today)!
-        guard config.activeOn(day) else { continue }
+        // Eşikler günlere göre değişebilir: o günün eşiği.
+        let config = self.config(mode, day: day)
+        guard config.activeOn(day), config.backupEnabled else { continue }
         if offset == 0, isComplete(day, mode) || wasNotified(day, mode) { continue }
         // 04:00'ten önceki yedek saati ertesi takvim gününe düşer.
         let base =

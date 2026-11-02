@@ -51,6 +51,7 @@ object EsikData {
     private const val PREFIX = "flutter."
     private const val CHECKLIST = "checklist.v1"
     private const val TRIGGERS = "triggers.v1"
+    private const val THRESHOLDS = "triggers.v2"
     private const val LOG = "log.v1"
 
     private val ALL_DAYS = (1..7).toSet()
@@ -162,19 +163,45 @@ object EsikData {
     }
 
     /**
-     * Geçerli eşik ayarı. Plus yoksa tek ve ücretsiz bir tetikleyici, her gün
-     * (Dart'taki TriggerConfig.effective); kullanıcının asıl seçimi diskte kalır.
+     * Bir modun geçerli eşikleri (Dart'taki effectiveThresholdsProvider). Her eşik
+     * kendi günlerinde geçerli; Plus yoksa yalnızca ilki, tek ve ücretsiz bir
+     * tetikleyiciyle, her gün. Kullanıcının asıl seçimi diskte kalır.
      */
-    fun config(c: Context, mode: Mode): TriggerConfig {
-        val raw = rawConfig(c, mode)
+    fun thresholds(c: Context, mode: Mode): List<TriggerConfig> {
+        val raw = rawThresholds(c, mode)
         if (plusActive(c)) return raw
-        val kind = raw.kinds.firstOrNull { it in FREE_KINDS } ?: defaultConfigs.getValue(mode).kinds.first()
-        return raw.copy(kinds = listOf(kind), days = ALL_DAYS)
+        val first = raw.first()
+        val kind = first.kinds.firstOrNull { it in FREE_KINDS } ?: defaultConfigs.getValue(mode).kinds.first()
+        return listOf(first.copy(kinds = listOf(kind), days = ALL_DAYS))
     }
 
-    private fun rawConfig(c: Context, mode: Mode): TriggerConfig {
+    /**
+     * [day] (eşik günü) için geçerli eşik. O gün hiçbir eşiğe ait değilse ilk
+     * eşik döner; activeOn(day) false olduğu için izin günü sayılır.
+     */
+    fun config(c: Context, mode: Mode, day: LocalDate = thresholdDay()): TriggerConfig {
+        val list = thresholds(c, mode)
+        return list.firstOrNull { it.activeOn(day) } ?: list.first()
+    }
+
+    /** Herhangi bir eşikte [kind] seçili mi (işleri kurmak için). */
+    fun anyHas(c: Context, mode: Mode, kind: String): Boolean = thresholds(c, mode).any { it.has(kind) }
+
+    /** Eşiklerin herhangi birinde seçili tetikleyiciler, sırasıyla. */
+    fun allKinds(c: Context, mode: Mode): List<String> = thresholds(c, mode).flatMap { it.kinds }.distinct()
+
+    /** "triggers.v2" (eşik listesi) ya da eski tek eşikli "triggers.v1". */
+    private fun rawThresholds(c: Context, mode: Mode): List<TriggerConfig> {
         val d = defaultConfigs.getValue(mode)
-        val o = readJson(c, TRIGGERS)?.optJSONObject(mode.key) ?: return d
+        readJson(c, THRESHOLDS)?.optJSONArray(mode.key)?.let { a ->
+            val list = (0 until a.length()).mapNotNull { a.optJSONObject(it)?.let { o -> parse(o, d) } }
+            if (list.isNotEmpty()) return list
+        }
+        val o = readJson(c, TRIGGERS)?.optJSONObject(mode.key) ?: return listOf(d)
+        return listOf(parse(o, d))
+    }
+
+    private fun parse(o: JSONObject, d: TriggerConfig): TriggerConfig {
         // Eski kayıtlarda tek "kind" alanı vardı.
         val kinds = o.optJSONArray("kinds")?.let { a -> (0 until a.length()).map { a.optString(it) } }
             ?: o.optString("kind", "").takeIf { it.isNotEmpty() }?.let { listOf(it) }
