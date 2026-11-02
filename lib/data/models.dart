@@ -9,28 +9,131 @@ import '../ui/esik_icons.dart';
 /// otomasyonlarında çalışır (ios/Runner/EsikIntents.swift).
 bool get isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
+/// Maddenin hangi havada listede çıkacağı. Hava bilinmiyorsa her zaman çıkar.
+enum WeatherNeed {
+  always,
+
+  /// Yağış olasılığı yüksekse (ör. şemsiye).
+  rain,
+
+  /// Hava soğuksa (ör. mont, eldiven).
+  cold,
+
+  /// Hava sıcaksa (ör. su, güneş kremi).
+  hot,
+}
+
+/// Bir günün hava tahmini (Open-Meteo). Koşullar [WeatherNeed] için.
+class WeatherDay {
+  const WeatherDay({
+    required this.rainChance,
+    required this.minTemp,
+    required this.maxTemp,
+  });
+
+  /// Gün içindeki en yüksek yağış olasılığı (%).
+  final int rainChance;
+  final double minTemp;
+  final double maxTemp;
+
+  static const rainAt = 50;
+  static const coldAt = 5.0;
+  static const hotAt = 28.0;
+
+  bool matches(WeatherNeed need) => switch (need) {
+    WeatherNeed.always => true,
+    WeatherNeed.rain => rainChance >= rainAt,
+    WeatherNeed.cold => minTemp <= coldAt,
+    WeatherNeed.hot => maxTemp >= hotAt,
+  };
+
+  Map<String, Object?> toJson() => {
+    'rain': rainChance,
+    'min': minTemp,
+    'max': maxTemp,
+  };
+
+  static WeatherDay? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final rain = json['rain'], min = json['min'], max = json['max'];
+    if (rain is! num || min is! num || max is! num) return null;
+    return WeatherDay(
+      rainChance: rain.round(),
+      minTemp: min.toDouble(),
+      maxTemp: max.toDouble(),
+    );
+  }
+}
+
 /// Kontrol listesindeki tek bir madde ("Ütünün fişini çektim mi?").
 class CheckItem {
-  const CheckItem({required this.id, required this.title, required this.icon});
+  const CheckItem({
+    required this.id,
+    required this.title,
+    required this.icon,
+    this.days = allWeekdays,
+    this.weather = WeatherNeed.always,
+    this.photo = false,
+  });
 
   final String id;
   final String title;
   final EsikIcon icon;
 
-  CheckItem copyWith({String? title, EsikIcon? icon}) =>
-      CheckItem(id: id, title: title ?? this.title, icon: icon ?? this.icon);
+  /// Listede çıktığı günler (eşik günü); 1 = Pazartesi … 7 = Pazar.
+  final Set<int> days;
 
+  /// Yalnızca bu havada çıkar (ör. şemsiye yağmurda).
+  final WeatherNeed weather;
+
+  /// İşaretlerken fotoğraf çekilir ("Kilitledim mi?" güvencesi).
+  final bool photo;
+
+  /// [day] gününün listesinde var mı. [forecast] bilinmiyorsa hava koşulu
+  /// sayılmaz (madde gösterilir).
+  bool visibleOn(DateTime day, WeatherDay? forecast) =>
+      days.contains(day.weekday) &&
+      (forecast == null || forecast.matches(weather));
+
+  CheckItem copyWith({
+    String? title,
+    EsikIcon? icon,
+    Set<int>? days,
+    WeatherNeed? weather,
+    bool? photo,
+  }) => CheckItem(
+    id: id,
+    title: title ?? this.title,
+    icon: icon ?? this.icon,
+    days: days ?? this.days,
+    weather: weather ?? this.weather,
+    photo: photo ?? this.photo,
+  );
+
+  /// Android ve iOS tarafı (EsikData.kt, EsikCore.swift) aynı alanları okur.
   Map<String, Object?> toJson() => {
     'id': id,
     'title': title,
     'icon': icon.name,
+    if (days.length < 7) 'days': days.toList()..sort(),
+    if (weather != WeatherNeed.always) 'weather': weather.name,
+    if (photo) 'photo': true,
   };
 
-  factory CheckItem.fromJson(Map<String, Object?> json) => CheckItem(
-    id: json['id']! as String,
-    title: json['title']! as String,
-    icon: _byName(EsikIcon.values, json['icon'], EsikIcon.checklist),
-  );
+  factory CheckItem.fromJson(Map<String, Object?> json) {
+    final days = {
+      for (final d in json['days'] as List? ?? const [])
+        if (d is int && d >= 1 && d <= 7) d,
+    };
+    return CheckItem(
+      id: json['id']! as String,
+      title: json['title']! as String,
+      icon: _byName(EsikIcon.values, json['icon'], EsikIcon.checklist),
+      days: days.isEmpty ? allWeekdays : days,
+      weather: _byName(WeatherNeed.values, json['weather'], WeatherNeed.always),
+      photo: json['photo'] == true,
+    );
+  }
 }
 
 /// Kayıtlı bir enum adını çözer; bilinmeyen ya da eksik ad için [fallback].
@@ -277,9 +380,22 @@ class TriggerConfig {
 
 /// Bir eşik gününün bir modundaki kontrol: tiklenen maddeler ve bitiş anı.
 class CheckSession {
-  const CheckSession({this.checked = const {}, this.completedAt, this.source});
+  const CheckSession({
+    this.checked = const {},
+    this.completedAt,
+    this.source,
+    this.checkedAt = const {},
+    this.photos = const {},
+  });
 
   final Set<String> checked;
+
+  /// Her maddenin işaretlendiği an ("Kapı 08:12'de kilitlendi").
+  final Map<String, DateTime> checkedAt;
+
+  /// Fotoğrafla kontrol edilen maddelerin fotoğraf dosyası (uygulamanın
+  /// photos klasöründe, yalnızca ad).
+  final Map<String, String> photos;
   final DateTime? completedAt;
 
   /// Nereden tamamlandı: [sourceApp], [sourceNotification] ya da [sourceBackup].
@@ -298,12 +414,29 @@ class CheckSession {
     'checked': checked.toList(),
     if (completedAt != null) 'completedAt': completedAt!.toIso8601String(),
     'source': ?source,
+    if (checkedAt.isNotEmpty)
+      'checkedAt': {
+        for (final e in checkedAt.entries) e.key: e.value.toIso8601String(),
+      },
+    if (photos.isNotEmpty) 'photos': photos,
   };
 
   factory CheckSession.fromJson(Map<String, Object?> json) => CheckSession(
     checked: {...(json['checked'] as List? ?? const []).whereType<String>()},
     completedAt: DateTime.tryParse(json['completedAt'] as String? ?? ''),
     source: json['source'] as String?,
+    checkedAt: {
+      if (json['checkedAt'] case final Map m)
+        for (final e in m.entries)
+          if (e.key is String && DateTime.tryParse('${e.value}') != null)
+            e.key as String: DateTime.parse('${e.value}'),
+    },
+    photos: {
+      if (json['photos'] case final Map m)
+        for (final e in m.entries)
+          if (e.key is String && e.value is String)
+            e.key as String: e.value as String,
+    },
   );
 }
 

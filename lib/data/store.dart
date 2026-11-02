@@ -18,6 +18,8 @@ class EsikStore {
   static const languageKey = 'language';
   static const plusOwnedKey = 'plus_owned';
   static const trialStartKey = 'trial_start';
+  static const weatherKey = 'weather.v1';
+  static const remindersKey = 'reminders.v1';
 
   /// Bozuk ya da eksik belgede null döner; çağıran varsayılana düşer.
   Map<String, Object?>? readJson(String key) {

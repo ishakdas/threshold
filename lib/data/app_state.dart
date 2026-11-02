@@ -10,6 +10,7 @@ import '../core/day_mode.dart';
 import '../l10n/app_localizations.dart';
 import '../ui/esik_icons.dart';
 import 'models.dart';
+import 'weather.dart';
 import 'store.dart';
 import 'plus.dart';
 
@@ -191,6 +192,35 @@ class ChecklistNotifier extends Notifier<Map<DayMode, List<CheckItem>>> {
     });
   }
 
+  /// Maddenin ayarlarını (ad, ikon, günler, hava, fotoğraf) değiştirir.
+  void update(DayMode mode, CheckItem item) {
+    _save({
+      ...state,
+      mode: [for (final i in state[mode]!) i.id == item.id ? item : i],
+    });
+  }
+
+  /// Şablondan gelen maddeler; aynı adlı madde varsa eklenmez.
+  void addAll(DayMode mode, List<CheckItem> items) {
+    final existing = {for (final i in state[mode]!) i.title.toLowerCase()};
+    _save({
+      ...state,
+      mode: [
+        ...state[mode]!,
+        for (final i in items)
+          if (!existing.contains(i.title.toLowerCase()))
+            CheckItem(
+              id: _newId(),
+              title: i.title,
+              icon: i.icon,
+              days: i.days,
+              weather: i.weather,
+              photo: i.photo,
+            ),
+      ],
+    });
+  }
+
   void remove(DayMode mode, String id) {
     _save({
       ...state,
@@ -344,10 +374,25 @@ class CheckLogNotifier extends Notifier<CheckLog> {
     );
   }
 
-  void toggle(DateTime day, DayMode mode, String itemId) {
-    final checked = {...session(day, mode).checked};
-    if (!checked.remove(itemId)) checked.add(itemId);
-    _put(day, mode, CheckSession(checked: checked));
+  /// [photo]: fotoğrafla kontrol edilen maddenin dosya adı.
+  void toggle(DateTime day, DayMode mode, String itemId, {String? photo}) {
+    final s = session(day, mode);
+    final checked = {...s.checked};
+    final at = {...s.checkedAt};
+    final photos = {...s.photos};
+    if (checked.remove(itemId)) {
+      at.remove(itemId);
+      photos.remove(itemId);
+    } else {
+      checked.add(itemId);
+      at[itemId] = ref.read(clockProvider)();
+      if (photo != null) photos[itemId] = photo;
+    }
+    _put(
+      day,
+      mode,
+      CheckSession(checked: checked, checkedAt: at, photos: photos),
+    );
   }
 
   void complete(
@@ -356,11 +401,21 @@ class CheckLogNotifier extends Notifier<CheckLog> {
     Set<String> ids,
     DateTime at, {
     String source = CheckSession.sourceApp,
-  }) => _put(
-    day,
-    mode,
-    CheckSession(checked: ids, completedAt: at, source: source),
-  );
+  }) {
+    final s = session(day, mode);
+    _put(
+      day,
+      mode,
+      CheckSession(
+        checked: ids,
+        completedAt: at,
+        source: source,
+        // Tek tek işaretlenenlerin anı ve fotoğrafı kalır; diğerleri şimdi.
+        checkedAt: {for (final id in ids) id: s.checkedAt[id] ?? at},
+        photos: s.photos,
+      ),
+    );
+  }
 
   void reset(DateTime day, DayMode mode) =>
       _put(day, mode, const CheckSession());
@@ -386,12 +441,13 @@ class TodayProgressNotifier extends Notifier<Map<DayMode, CheckSession>> {
   CheckLogNotifier get _log => ref.read(checkLogProvider.notifier);
   DateTime get _today => ref.read(todayProvider);
 
-  void toggle(DayMode mode, String itemId) => _log.toggle(_today, mode, itemId);
+  void toggle(DayMode mode, String itemId, {String? photo}) =>
+      _log.toggle(_today, mode, itemId, photo: photo);
 
   /// [source]: kontrol yedek saatteki bildirimden açıldıysa
   /// [CheckSession.sourceBackup]; geçmişte "yedek bildirimle" görünür.
   void completeAll(DayMode mode, {String source = CheckSession.sourceApp}) {
-    final ids = ref.read(checklistProvider)[mode]!.map((i) => i.id).toSet();
+    final ids = ref.read(todayItemsProvider)[mode]!.map((i) => i.id).toSet();
     _log.complete(_today, mode, ids, ref.read(clockProvider)(), source: source);
   }
 

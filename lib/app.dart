@@ -7,6 +7,7 @@ import 'core/day_mode.dart';
 import 'data/app_state.dart';
 import 'data/models.dart' show isIOS;
 import 'data/plus.dart';
+import 'data/weather.dart';
 import 'l10n/app_localizations.dart';
 import 'platform/billing.dart';
 import 'platform/native_bridge.dart';
@@ -46,6 +47,7 @@ class _EsikAppState extends ConsumerState<EsikApp> {
       unawaited(_reschedule());
       unawaited(ref.read(plusBillingProvider.notifier).start());
       unawaited(_syncTrial());
+      unawaited(ref.read(weatherProvider.notifier).refresh());
       final route = await _bridge.takeLaunchRoute();
       if (route != null) _openRoute(route);
     });

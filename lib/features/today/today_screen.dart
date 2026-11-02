@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
+import '../../data/weather.dart';
 import '../../data/models.dart';
 import '../setup/setup_health.dart';
 import '../../theme/esik_palette.dart';
@@ -112,7 +113,7 @@ class _ThresholdCard extends ConsumerWidget {
     final p = context.palette;
     final t = Theme.of(context).textTheme;
     final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
-    final items = ref.watch(checklistProvider)[mode]!;
+    final items = ref.watch(todayItemsProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final evening = mode == DayMode.evening;
     final done = session.checked.length.clamp(0, items.length);
@@ -234,7 +235,7 @@ class _SummaryCard extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final evening = mode == DayMode.evening;
     final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
-    final items = ref.watch(checklistProvider)[mode]!;
+    final items = ref.watch(todayItemsProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final history = ref.watch(historyProvider);
     final last7 = history.sublist(history.length - 7);

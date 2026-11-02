@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/day_mode.dart';
 import '../../data/app_state.dart';
+import '../../data/weather.dart';
 import '../../data/models.dart';
 import '../../theme/esik_palette.dart';
 import '../../ui/animated_check.dart';
@@ -54,7 +55,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
     }
     // Bütün maddeler tek tek tiklendiyse kısa bir an bekleyip tamamla.
     _autoComplete?.cancel();
-    final items = ref.read(checklistProvider)[_mode]!;
+    final items = ref.read(todayItemsProvider)[_mode]!;
     final checked = ref.read(todayProgressProvider)[_mode]!.checked;
     if (items.every((i) => checked.contains(i.id))) {
       _autoComplete = Timer(const Duration(milliseconds: 650), _completeAll);
@@ -79,7 +80,7 @@ class _QuickCheckScreenState extends ConsumerState<QuickCheckScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final DayMode mode = widget.mode ?? ref.watch(dayModeProvider);
-    final items = ref.watch(checklistProvider)[mode]!;
+    final items = ref.watch(todayItemsProvider)[mode]!;
     final session = ref.watch(todayProgressProvider)[mode]!;
     final config = ref.watch(effectiveTriggerConfigProvider)[mode]!;
     final evening = mode == DayMode.evening;
