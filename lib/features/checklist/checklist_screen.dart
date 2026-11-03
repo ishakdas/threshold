@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,14 +23,66 @@ class ChecklistScreen extends ConsumerStatefulWidget {
   ConsumerState<ChecklistScreen> createState() => _ChecklistScreenState();
 }
 
-class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
+class _ChecklistScreenState extends ConsumerState<ChecklistScreen>
+    with SingleTickerProviderStateMixin {
   late DayMode _mode = ref.read(dayModeProvider);
   final _controller = TextEditingController();
   final _focus = FocusNode();
   EsikIcon _icon = EsikIcon.flame;
 
+  /// Silmenin sola kaydırarak yapıldığını gösteren ipucu: ilk madde kısa
+  /// bir an sola kayar, arkasındaki "Sil" görünür, geri döner. İlk
+  /// [_peekTimes] açılışta gösterilir; bir kez kaydırarak silinince bir daha
+  /// gösterilmez.
+  static const _peekKey = 'swipe_hint';
+  static const _peekTimes = 3;
+  AnimationController? _peekController;
+  Animation<double>? _peek;
+
+  @override
+  void initState() {
+    super.initState();
+    final store = ref.read(storeProvider);
+    final shown = int.tryParse(store.readString(_peekKey) ?? '') ?? 0;
+    if (shown >= _peekTimes) return;
+    unawaited(store.writeString(_peekKey, '${shown + 1}'));
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+    _peekController = controller;
+    // Bekle, sola kay, kısa dur, geri dön.
+    _peek = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(0), weight: 30),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 22,
+      ),
+      TweenSequenceItem(tween: ConstantTween(1), weight: 20),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 28,
+      ),
+    ]).animate(controller);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // Hareketleri azalt açıksa gösterme.
+      if (MediaQuery.of(context).disableAnimations) return;
+      controller.forward().whenComplete(() {
+        if (mounted) setState(() => _peek = null);
+      });
+    });
+  }
+
   @override
   void dispose() {
+    _peekController?.dispose();
     _controller.dispose();
     _focus.dispose();
     super.dispose();
@@ -43,6 +97,8 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
 
   void _delete(int index, CheckItem item) {
     HapticFeedback.mediumImpact();
+    // Kaydırarak silmeyi öğrendi; ipucu bir daha gösterilmez.
+    unawaited(ref.read(storeProvider).writeString(_peekKey, '$_peekTimes'));
     final notifier = ref.read(checklistProvider.notifier)
       ..remove(_mode, item.id);
     final mode = _mode;
@@ -143,38 +199,15 @@ class _ChecklistScreenState extends ConsumerState<ChecklistScreen> {
                       key: ValueKey('d-${item.id}'),
                       direction: DismissDirection.endToStart,
                       onDismissed: (_) => _delete(i, item),
-                      background: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 24),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE5484D),
-                          borderRadius: BorderRadius.circular(26),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            EsikIconView(
-                              EsikIcon.trash,
-                              size: 20,
-                              color: Colors.white,
-                              strokeWidth: 1.8,
-                            ),
-                            SizedBox(height: 3),
-                            Text(
-                              l10n.delete,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      background: const _DeleteBackground(),
                       child: GestureDetector(
                         onTap: () => showItemSheet(context, _mode, item),
-                        child: _ItemRow(item: item, index: i),
+                        child: i == 0 && _peek != null
+                            ? _SwipePeek(
+                                animation: _peek!,
+                                child: _ItemRow(item: item, index: i),
+                              )
+                            : _ItemRow(item: item, index: i),
                       ),
                     ),
                   );
@@ -495,6 +528,73 @@ class _IconPicker extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Kaydırınca maddenin arkasında görünen kırmızı "Sil" alanı.
+class _DeleteBackground extends StatelessWidget {
+  const _DeleteBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5484D),
+        borderRadius: BorderRadius.circular(26),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          const EsikIconView(
+            EsikIcon.trash,
+            size: 20,
+            color: Colors.white,
+            strokeWidth: 1.8,
+          ),
+          const SizedBox(height: 3),
+          Text(
+            context.l10n.delete,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// İpucu animasyonu: [child] sola kayar, arkasında "Sil" görünür.
+class _SwipePeek extends StatelessWidget {
+  const _SwipePeek({required this.animation, required this.child});
+
+  final Animation<double> animation;
+  final Widget child;
+
+  /// Kayma miktarı: "Sil" yazısı tam görünecek kadar.
+  static const _distance = 96.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      child: child,
+      builder: (context, child) => Stack(
+        children: [
+          if (animation.value > 0)
+            const Positioned.fill(child: _DeleteBackground()),
+          Transform.translate(
+            offset: Offset(-_distance * animation.value, 0),
+            child: child,
+          ),
+        ],
       ),
     );
   }
