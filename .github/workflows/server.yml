@@ -4,7 +4,7 @@ name: Sunucu
 # CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_KV_TRIAL_ID.
 on:
   push:
-    branches: [main, ozellikler]
+    branches: [main]
     paths:
       - "server/**"
       - ".github/workflows/server.yml"

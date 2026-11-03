@@ -216,9 +216,9 @@ void main() {
     // Sabah: seçilebilecek tetikleyicilerin çoğu orada.
     testWidgets('$lang: tetikleyiciler', (t) async {
       await _boot(t, morning, lang);
-      _router(t).go('/ayarlar');
+      _router(t).push('/esik?mod=sabah&i=0');
       await _settle(t);
-      await t.drag(find.byType(ListView).first, const Offset(0, -330));
+      await t.drag(find.byType(ListView).last, const Offset(0, -262));
       await _shot(t, app, '$lang/4-tetikleyiciler');
     });
 
@@ -356,12 +356,12 @@ class _PrivacyPanel extends StatelessWidget {
       (
         EsikIcon.lock,
         'Verilerin yalnızca telefonunda',
-        'Hesap yok, sunucu yok, reklam yok. Listelerin ve geçmişin sende kalır.',
+        'Hesap yok, reklam yok. Listelerin, geçmişin ve fotoğrafların sende kalır.',
       ),
       (
         EsikIcon.location,
-        'Konum, rehber, fotoğraf yok',
-        'Eşik bunlara erişmez, izin bile istemez.',
+        'Konum, rehber, mikrofon yok',
+        'Eşik bunlara erişmez, izin bile istemez. Hava için şehrini sen seçersin.',
       ),
       (
         EsikIcon.battery,
@@ -378,12 +378,12 @@ class _PrivacyPanel extends StatelessWidget {
       (
         EsikIcon.lock,
         'Your data stays on your phone',
-        'No account, no servers, no ads. Your lists and history stay with you.',
+        'No account, no ads. Your lists, history and photos stay with you.',
       ),
       (
         EsikIcon.location,
-        'No location, contacts or photos',
-        'Eşik never accesses them and never asks for them.',
+        'No location, contacts or microphone',
+        'Eşik never accesses them or asks for them. You pick your city for the weather.',
       ),
       (
         EsikIcon.battery,
@@ -400,12 +400,12 @@ class _PrivacyPanel extends StatelessWidget {
       (
         EsikIcon.lock,
         'Tus datos, solo en tu móvil',
-        'Sin cuenta, sin servidores, sin anuncios. Tus listas e historial son tuyos.',
+        'Sin cuenta, sin anuncios. Tus listas, historial y fotos son tuyos.',
       ),
       (
         EsikIcon.location,
-        'Sin ubicación, contactos ni fotos',
-        'Eşik no accede a ellos y ni siquiera los pide.',
+        'Sin ubicación, contactos ni micrófono',
+        'Eşik no accede a ellos ni los pide. Tú eliges tu ciudad para el tiempo.',
       ),
       (
         EsikIcon.battery,
@@ -421,9 +421,9 @@ class _PrivacyPanel extends StatelessWidget {
   };
 
   static const _note = {
-    'tr': 'İnternet yalnızca Google Play satın alması için kullanılır.',
-    'en': 'The internet is used only for Google Play purchases.',
-    'es': 'Internet solo se usa para las compras de Google Play.',
+    'tr': 'İnternet yalnızca satın alma, deneme kaydı ve hava tahmini için.',
+    'en': 'The internet is only for purchases, the trial record and the forecast.',
+    'es': 'Internet solo para compras, el registro de prueba y el pronóstico.',
   };
 
   @override

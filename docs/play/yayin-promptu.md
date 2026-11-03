@@ -1,22 +1,51 @@
-Eşik adlı Android uygulamamı Google Play'de dahili teste hazırlamanı istiyorum.
-Play Console'u Chrome üzerinden benim hesabımla kullanacaksın.
+Eşik adlı Android uygulamamın **1.1 sürümünü** Google Play'de yayına hazırlamanı
+istiyorum. Play Console'u Chrome üzerinden benim hesabımla kullanacaksın.
+
+## Durum (yaptıklarını önce Console'da doğrula)
+
+Daha önce yapılanlar; Console'da gerçekten böyle olduğunu kontrol et, farklıysa
+bana söyle:
+
+- Uygulama oluşturuldu: **Eşik: Doğru Anda Hatırlatıcı**, paket
+  `com.ishakdas.threshold`, varsayılan dil Türkçe.
+- Dahili test kanalında 1.0 sürümü (sürüm kodu 37 civarı) var.
+- Uygulama içi ürün `esik_plus` (tek seferlik, Türkiye 19,99 TL) oluşturuldu.
+- Lisans testi listesi ayarlı.
+- Türkçe, İngilizce ve İspanyolca mağaza girişleri ile formlar 1.0'a göre
+  dolduruldu.
+
+1.1'de değişenler ve Console'a yansıması gerekenler:
+
+- Yeni özellikler: günlere göre farklı eşikler, hazır düzenler, hazır madde
+  paketleri, maddeye özel gün ve hava durumu, "Kilitledim mi?" fotoğrafı, ana
+  ekran widget'ı, tekrar hatırlatma, "İnterneti kapatınca" tetikleyicisi.
+- **Veri güvenliği değişti.** Uygulama artık iki şeyi telefondan dışarı
+  gönderiyor; 1.0'daki "veri toplamıyoruz" beyanı artık yanlış:
+  - Deneme süresinin baştan başlamaması için cihaz kimliğinin SHA-256 özeti
+    Eşik'in sunucusuna (Cloudflare) gidiyor.
+  - Kullanıcı şehir seçerse, şehrin koordinatları hava tahmini için
+    Open-Meteo'ya gidiyor.
+- Mağaza metinleri ve 7 ekran görüntüsü yenilendi.
 
 ## Kaynaklar
 
-Proje bilgisayarımda: `threshold` deposu (GitHub Desktop ile klonlu, `esik-plus` dalı).
-Önce bu dalın güncel olduğundan emin ol, sonra şu dosyaları baştan sona oku:
+Proje bilgisayarımda: `threshold` deposu (GitHub Desktop ile klonlu). Önce
+**`main` dalına geç ve güncelle** (Fetch/Pull), sonra şu dosyaları baştan sona
+oku:
 
-- `docs/play/magaza.md`: uygulama adı, kısa ve tam açıklama, kategori, etiketler, sürüm notu
-- `docs/play/console-formlari.md`: uygulama içi ürün, gizlilik politikası adresi,
-  reklamlar, uygulama erişimi, içerik derecelendirmesi, hedef kitle, veri
-  güvenliği, hassas izinler (pil optimizasyonu gerekçesi)
-- `docs/play/gorseller/`: `ikon-512.png` (simge) ve her dil için
-  `tr/`, `en/`, `es/` klasörlerinde `1.png`…`7.png` (telefon ekran görüntüleri,
-  bu sırayla) ve `one-cikan-1024x500.png` (öne çıkan grafik)
+- `docs/play/magaza.md`: üç dilde ad, kısa ve tam açıklama, kategori,
+  etiketler, **"Sürüm 1.1" sürüm notu**.
+- `docs/play/console-formlari.md`: uygulama içi ürün, gizlilik politikası
+  adresi, reklamlar, oturum açma bilgileri, içerik derecelendirmesi, hedef
+  kitle, **veri güvenliği (yeni hâli)**, hassas izinler.
+- `docs/gizlilik.md`: gizlilik politikasının güncel metni.
+- `docs/play/gorseller/`: `ikon-512.png` (simge) ve her dil için `tr/`, `en/`,
+  `es/` klasörlerinde `1.png`…`7.png` (telefon ekran görüntüleri, bu sırayla)
+  ile `one-cikan-1024x500.png` (öne çıkan grafik).
 
-Bu dosyalardaki cevaplar kesindir; formlarda onlara uy, kendi tahminini
-yazma. Bir soru dosyalarda yoksa ya da ekrandaki seçenekler dosyadakiyle
-uyuşmuyorsa dur ve bana sor.
+Bu dosyalardaki cevaplar kesindir; formlarda onlara uy, kendi tahminini yazma.
+Bir soru dosyalarda yoksa ya da ekrandaki seçenekler dosyadakiyle uyuşmuyorsa
+dur ve bana sor.
 
 ## Kurallar
 
@@ -25,68 +54,80 @@ uyuşmuyorsa dur ve bana sor.
 - **Ödeme profili, banka, vergi ve kimlik bilgilerine dokunma.** Bu ekranlar
   gelirse dur, bana söyle; ben dolduracağım.
 - Sözleşme ya da şart kabul eden kutuları işaretlemeden önce bana sor.
-- **Üretime (Production), kapalı ya da açık teste sürüm gönderme.** Yalnızca
-  **Dahili test** kanalını kullan. İncelemeye gönderme ve yayınlama
-  düğmelerine benden açık onay almadan basma.
-- Her büyük adımdan sonra (uygulama oluşturma, mağaza girişi, her form, sürüm,
-  ürün) ne yaptığını kısaca özetle.
+- **Üretime (Production) ya da kapalı/açık teste benden açık onay almadan
+  sürüm gönderme.** İncelemeye gönder ve yayınla düğmelerine onaysız basma.
+  Dahili teste gönderebilirsin.
+- `esik_plus` ürününün kimliğini ve fiyatını değiştirme.
+- Her büyük adımdan sonra (sürüm, mağaza girişi, her form) ne yaptığını kısaca
+  özetle.
 
 ## Yapılacaklar (sırayla)
 
-1. **Uygulamayı oluştur** (yoksa):
-   - Ad: `Eşik: Doğru Anda Hatırlatıcı`
-   - Varsayılan dil: Türkçe (tr-TR)
-   - Tür: Uygulama
-   - Ücret: Ücretsiz
+1. **Gizlilik politikası sayfasını kontrol et.**
+   https://ishakdas.github.io/esik-gizlilik/ sayfasını aç. Sayfada "Open-Meteo"
+   ve "deneme" (deneme süresi kaydı) geçmeli; `docs/gizlilik.md` ile aynı
+   olmalı. Değilse dur ve bana söyle. Benim onayımla, bilgisayarımdaki
+   `esik-gizlilik` deposunda `index.md`'yi `threshold/docs/gizlilik.md`'nin
+   içeriğiyle değiştirip commit ve push edebilirsin; birkaç dakika sonra sayfa
+   güncellenir. Veri güvenliği formundan önce sayfa güncel olmalı.
 
-   Ücretsizdir çünkü Plus uygulama içinden satılır. Beyan kutularını
-   işaretlemeden önce bana sor.
+2. **AAB'yi al.** GitHub'da `ishakdas/threshold` → **Actions** → **Android**
+   iş akışında `main` dalının en son **başarılı** çalıştırması → **Artifacts**
+   → `esik-<numara>-aab`. İndir ve zip'ten çıkar. Bu derleme `1.1.0` sürüm
+   adını taşımalı (Console yüklemede gösterir). Sürüm kodu, Console'daki son
+   yüklenen sürümden büyük olmalı. Değilse ya da `main`'de başarılı çalıştırma
+   yoksa dur ve bana söyle.
 
-2. **Ana mağaza girişi (tr-TR):** `magaza.md` dosyasındaki ad, kısa açıklama
-   ve tam açıklamayı olduğu gibi gir. Tam açıklama, kod bloğunun içindeki
-   metindir. Grafikler `gorseller/tr/` ve `ikon-512.png`.
-   Kategori: Verimlilik. Etiketleri de ekle. İletişim e-postası:
-   `developerishak@gmail.com`.
+3. **Dahili test sürümü.** Test → Dahili test → Yeni sürüm oluştur:
+   - AAB'yi yükle.
+   - Sürüm notu: `magaza.md` dosyasındaki "Sürüm 1.1" bloğu (üç dil).
+   - Console izinlerle ilgili bir uyarı ya da beyan isterse dur ve bana söyle.
+     1.1'deki yeni izinler normal izinlerdir: `INTERNET`,
+     `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`. Kamera izni yok; fotoğraf,
+     telefonun kamera uygulamasıyla çekiliyor.
+   - Dahili teste gönder.
 
-3. **Çeviriler: en-US ve es-ES mağaza girişleri.** Ad, kısa ve tam açıklama
-   `magaza.md` dosyasında her dil için hazır; olduğu gibi gir. Grafikler
-   `gorseller/en/` ve `gorseller/es/`.
+4. **Mağaza girişini güncelle** (tr-TR, en-US, es-ES ayrı ayrı):
+   - Tam açıklamayı `magaza.md`'deki yeni hâliyle değiştir. Ad ve kısa açıklama
+     aynı kaldıysa dokunma.
+   - Telefon ekran görüntülerinin hepsini sil, `<dil>/1.png`…`7.png`'yi bu
+     sırayla yükle. Öne çıkan grafiği `<dil>/one-cikan-1024x500.png` ile
+     değiştir.
+   - Kaydet. Yayınlama ya da incelemeye gönderme adımı çıkarsa onay almadan
+     geçme.
 
-4. **Uygulama içeriği formları:** `console-formlari.md` dosyasına göre
-   gizlilik politikası, reklamlar, uygulama erişimi, içerik
-   derecelendirmesi, hedef kitle ve veri güvenliği. Pil optimizasyonu izni
-   sorulursa dosyadaki gerekçeyi kullan.
+5. **Veri güvenliği formunu yeniden doldur.** `console-formlari.md` →
+   "Veri güvenliği" bölümündeki tabloya birebir uy:
+   - Veri topluyor ya da paylaşıyor mu: **Evet**. Aktarım şifreli: **Evet**.
+     Silme talebi: **Evet**, e-postayla.
+   - **Cihaz veya diğer kimlikler:** Toplanıyor, paylaşılmıyor. Amacı
+     dolandırıcılığı önleme. İsteğe bağlı değil.
+   - **Yaklaşık konum:** Toplanıyor ama geçici olarak işleniyor, paylaşılmıyor.
+     Amacı uygulama işlevi. İsteğe bağlı (yalnızca şehir seçilirse).
+   - Fotoğraflar telefondan çıkmadığı için beyan edilmez.
 
-5. **Dahili test sürümü:**
-   - Test → Dahili test → Yeni sürüm oluştur.
-   - Play Uygulama İmzalama'yı (Play App Signing) kabul etmeden önce bana
-     sor.
-   - AAB dosyası: GitHub'da `ishakdas/threshold` → Actions → `esik-plus`
-     dalındaki en son başarılı "Android" çalıştırması → Artifacts →
-     `-aab` ile biten dosya. İndir, zip'ten çıkar, `.aab` dosyasını yükle.
-     AAB yoksa dur ve bana söyle.
-   - Sürüm notu `magaza.md` dosyasında.
-   - Test kullanıcısı olarak kendi Gmail adresimi ekle (bana sor).
-   - Sürümü dahili teste göndermeden önce onayımı al.
+   Formun önizlemesini bana göster, onaylarsam kaydet.
 
-6. **Uygulama içi ürün:** Para kazanma → Ürünler → Uygulama içi ürünler.
-   `esik_plus` ürününü `console-formlari.md` dosyasındaki bilgilerle oluştur
-   (19,99 TL, tek seferlik) ve etkinleştir. Ödeme profili tamamlanmadığı için
-   bu ekran açılmıyorsa dur ve bana söyle.
+6. **Diğer formları kontrol et.** Reklamlar, oturum açma bilgileri, içerik
+   derecelendirmesi ve hedef kitle `console-formlari.md` ile aynı mı bak.
+   Farklıysa düzelt. Console bir formu "güncelleme gerekiyor" diye
+   işaretlediyse bana söyle.
 
-7. **Lisans testi:** Ayarlar → Lisans testi altına kendi Gmail adresimi ekle
-   (bana sor).
+7. **Uygulama içi ürünü kontrol et.** Para kazanma → Ürünler → Tek seferlik
+   ürünler. `esik_plus` **etkin** olmalı, Türkiye fiyatı 19,99 TL olmalı.
+   Değilse bana söyle; değiştirme.
 
-8. **Lisans anahtarı:** Para kazanma ayarları → Lisanslama bölümündeki
-   "MIIB…" ile başlayan Base64 RSA ortak anahtarını kopyala ve bana göster.
-   Bunu uygulamadaki satın alma doğrulamasına ekleteceğim.
+8. **Üretim için durumu öğren, ama gönderme.** Kontrol paneli → "Uygulamanızı
+   yayınlayın" listesinde eksik kalan her şeyi not et. Console üretimden önce
+   kapalı test istiyorsa ("en az 12 test kullanıcısı, 14 gün" gibi) bunu da
+   not et. Üretime ya da kapalı teste **gönderme**; bana sor.
 
 ## En sonda
 
-Bana kısa bir rapor ver. Raporda şunlar olsun:
+Bana kısa bir rapor ver:
 
-- Tamamlanan adımlar
-- Bekleyen ve benim yapmam gerekenler
-- Play Console'un kontrol panelinde ("Uygulamanızı kurun" listesi) hâlâ eksik
-  görünen maddeler
-- Lisans anahtarı
+- Tamamlanan adımlar ve yüklenen sürüm (sürüm adı ve kodu).
+- Gizlilik politikası sayfasının durumu.
+- Veri güvenliği formunun son hâli (özet).
+- Üretim için eksik kalanlar ve benim yapmam gerekenler.
+- Karşılaştığın uyarılar ya da hatalar.
